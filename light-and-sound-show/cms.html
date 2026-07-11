@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS — Light & Sound Show | Sandeep Patel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="../js/cms-auth.js"></script>
+    <style>
+        :root {
+            --accent:      #D98A29;
+            --bg:          #0B0B0B;
+            --bg2:         #050507;
+            --border:      rgba(255,255,255,0.08);
+            --text:        #F8F9FA;
+            --muted:       #8F929D;
+            --font-sans:   'Inter', sans-serif;
+            --font-head:   'Cormorant Garamond', serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; cursor: auto !important; }
+        body { background: var(--bg); color: var(--text); font-family: var(--font-sans); min-height: 100vh; display: flex; }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 220px; min-height: 100vh; background: var(--bg2);
+            border-right: 1px solid var(--border);
+            position: fixed; top: 0; left: 0; z-index: 100;
+            display: flex; flex-direction: column;
+        }
+        .sidebar-logo {
+            padding: 1.75rem 1.5rem; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 0.65rem;
+        }
+        .sidebar-logo-icon {
+            width: 28px; height: 28px; border-radius: 50%;
+            border: 1px solid var(--accent); color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-head); font-size: 0.95rem;
+        }
+        .sidebar-logo-text { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.02em; }
+        .sidebar-logo-sub { font-size: 0.62rem; color: var(--muted); margin-top: 1px; }
+        .sidebar-section { padding: 1.25rem 1.5rem 0.25rem; font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+        .sidebar-item {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.7rem 1.5rem; font-size: 0.82rem; color: var(--muted);
+            cursor: pointer !important; border: none; background: none; width: 100%; text-align: left;
+            transition: color 0.2s, background 0.2s;
+            text-decoration: none;
+        }
+        .sidebar-item:hover { color: var(--text); background: rgba(255,255,255,0.02); }
+        .sidebar-item.active { color: var(--accent); background: rgba(255,255,255,0.03); border-left: 2px solid var(--accent); padding-left: calc(1.5rem - 2px); }
+        .sidebar-item .icon { font-size: 1rem; width: 18px; text-align: center; opacity: 0.7; }
+        .sidebar-bottom { margin-top: auto; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); }
+        .sidebar-bottom a { font-size: 0.72rem; color: var(--muted); text-decoration: none; display: block; margin-bottom: 0.4rem; transition: color 0.2s; }
+        .sidebar-bottom a:hover { color: var(--accent); }
+
+        /* ── Main ── */
+        .main { margin-left: 220px; flex: 1; }
+
+        /* ── Topbar ── */
+        .topbar {
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(11,11,11,0.95); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 2.5rem; height: 58px;
+        }
+        .topbar-title { font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+        .topbar-title .breadcrumb { color: var(--muted); font-weight: 400; }
+        .topbar-title .sep { color: var(--border); margin: 0 0.25rem; }
+        .topbar-actions { display: flex; gap: 0.75rem; align-items: center; }
+
+        .btn-secondary {
+            padding: 0.45rem 1rem; border: 1px solid var(--border); border-radius: 5px;
+            background: transparent; color: var(--muted); font-size: 0.75rem;
+            cursor: pointer !important; transition: all 0.2s; font-family: var(--font-sans);
+        }
+        .btn-secondary:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+        .btn-primary {
+            padding: 0.45rem 1.25rem; border: 1px solid var(--accent); border-radius: 5px;
+            background: var(--accent); color: #000; font-size: 0.75rem; font-weight: 600;
+            cursor: pointer !important; transition: all 0.2s; font-family: var(--font-sans);
+        }
+        .btn-primary:hover { background: #f3a030; }
+
+        /* ── Content ── */
+        .content { padding: 2.5rem; max-width: 1000px; }
+
+        .section-block {
+            border: 1px solid var(--border); border-radius: 8px;
+            overflow: hidden; margin-bottom: 1.75rem;
+        }
+        .section-head {
+            background: rgba(255,255,255,0.02);
+            padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 0.6rem;
+        }
+        .section-head-icon { font-size: 1rem; }
+        .section-head-title { font-size: 0.85rem; font-weight: 500; }
+        .section-head-desc { font-size: 0.72rem; color: var(--muted); margin-left: auto; }
+        .section-body { padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        .section-body.single { grid-template-columns: 1fr; }
+        .section-body.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+        .field { display: flex; flex-direction: column; gap: 0.4rem; }
+        .field.full { grid-column: 1 / -1; }
+        .field-label {
+            font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--muted); font-weight: 500;
+        }
+        .field-input {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 5px; padding: 0.6rem 0.85rem; color: var(--text);
+            font-size: 0.82rem; font-family: var(--font-sans);
+            transition: border-color 0.2s; outline: none; width: 100%;
+        }
+        .field-input:focus { border-color: rgba(217,138,41,0.5); }
+        textarea.field-input { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+        /* ── Upload zone ── */
+        .upload-zone {
+            border: 2px dashed rgba(255,255,255,0.12); border-radius: 8px;
+            padding: 1.75rem 1.25rem; text-align: center; cursor: pointer !important;
+            background: rgba(255,255,255,0.015); transition: border-color 0.25s, background 0.25s;
+            position: relative;
+        }
+        .upload-zone:hover { border-color: var(--accent); background: rgba(217,138,41,0.03); }
+        .upload-zone input[type="file"] { display: none; }
+        .upload-zone-icon { font-size: 1.75rem; margin-bottom: 0.4rem; opacity: 0.6; display: block; }
+        .upload-zone-label { font-size: 0.75rem; color: var(--muted); line-height: 1.6; }
+        .upload-zone-label strong { color: var(--text); font-weight: 500; }
+        .upload-zone-hint { font-size: 0.62rem; color: rgba(255,255,255,0.25); margin-top: 0.3rem; }
+
+        /* URL input below upload zone */
+        .upload-or { display: flex; align-items: center; gap: 0.75rem; margin: 0.75rem 0; }
+        .upload-or::before, .upload-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .upload-or span { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+        .url-row { display: flex; gap: 0.5rem; }
+        .url-row .field-input { flex: 1; }
+        .url-row .btn-apply {
+            padding: 0.55rem 0.9rem; border: 1px solid var(--border); border-radius: 5px;
+            background: transparent; color: var(--muted); font-size: 0.72rem;
+            cursor: pointer !important; white-space: nowrap; transition: all 0.2s;
+            font-family: var(--font-sans);
+        }
+        .url-row .btn-apply:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* ── Preview card ── */
+        .preview-card {
+            border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+            background: rgba(255,255,255,0.02);
+            display: none; margin-top: 0.75rem; position: relative;
+        }
+        .preview-card img, .preview-card video {
+            width: 100%; max-height: 180px; object-fit: cover; display: block;
+        }
+        .preview-card-label {
+            padding: 0.5rem 0.75rem; font-size: 0.65rem; color: var(--muted);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .preview-card-name { color: var(--text); font-size: 0.7rem; font-weight: 500; }
+        .preview-remove {
+            background: none; border: none; color: var(--muted); cursor: pointer !important;
+            font-size: 0.7rem; padding: 0.1rem 0.35rem; border-radius: 3px;
+            transition: color 0.2s, background 0.2s;
+        }
+        .preview-remove:hover { color: #ff5252; background: rgba(255,82,82,0.08); }
+
+        /* WebP badge */
+        .webp-badge {
+            display: none; margin-top: 0.5rem; padding: 0.4rem 0.7rem;
+            background: rgba(30,160,90,0.09); border: 1px solid rgba(30,160,90,0.3);
+            border-radius: 5px; font-size: 0.65rem; color: #4ecb82;
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed; bottom: 2rem; right: 2rem;
+            background: #111; border: 1px solid var(--border); border-radius: 6px;
+            padding: 0.75rem 1.25rem; font-size: 0.78rem; color: var(--text);
+            z-index: 9999; transform: translateY(10px); opacity: 0;
+            transition: all 0.3s; pointer-events: none;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-color: rgba(78,203,130,0.4); color: #4ecb82; }
+        .toast.error { border-color: rgba(255,82,82,0.4); color: #ff5252; }
+
+        /* ── Saved status ── */
+        .draft-badge {
+            font-size: 0.68rem; color: var(--accent);
+            padding: 0.25rem 0.6rem; border: 1px solid rgba(217,138,41,0.3);
+            border-radius: 4px; display: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">S</div>
+        <div>
+            <div class="sidebar-logo-text">Sandeep Patel</div>
+            <div class="sidebar-logo-sub">Light & Sound CMS</div>
+        </div>
+    </div>
+
+    <nav>
+        <div class="sidebar-section">Content</div>
+        <button class="sidebar-item active" onclick="showPanel('images')">
+            <span class="icon">🖼</span> Images
+        </button>
+        <button class="sidebar-item" onclick="showPanel('video')">
+            <span class="icon">🎬</span> Video
+        </button>
+        <button class="sidebar-item" onclick="showPanel('text')">
+            <span class="icon">✏️</span> Text & Labels
+        </button>
+
+        <div class="sidebar-section" style="margin-top:0.5rem;">Site</div>
+        <a class="sidebar-item" href="../admin.html">
+            <span class="icon">⚙️</span> Main CMS
+        </a>
+        <a class="sidebar-item" href="index.html" target="_blank">
+            <span class="icon">↗</span> Preview Page
+        </a>
+        <a class="sidebar-item" href="../index.html">
+            <span class="icon">🏠</span> Back to Site
+        </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <a href="../admin.html">← Main Admin</a>
+        <a href="../cms-login.html" onclick="logout(); return false;">Sign Out</a>
+    </div>
+</aside>
+
+<!-- ── Main ── -->
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-title">
+            <span class="breadcrumb">CMS</span>
+            <span class="sep">/</span>
+            Light & Sound Show
+        </div>
+        <div class="topbar-actions">
+            <span class="draft-badge" id="draftBadge">● Unsaved changes</span>
+            <button class="btn-secondary" onclick="resetAll()">Reset</button>
+            <button class="btn-primary" onclick="saveAll()">Save & Publish</button>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- PANEL: Images -->
+        <div id="panel-images">
+
+            <!-- Day Layer -->
+            <div class="section-block">
+                <div class="section-head">
+                    <span class="section-head-icon">☀️</span>
+                    <span class="section-head-title">Day Layer Image</span>
+                    <span class="section-head-desc">Shows by default when mouse is at top</span>
+                </div>
+                <div class="section-body single">
+                    <div class="field full">
+                        <div class="upload-zone" id="zone-day" onclick="document.getElementById('file-day').click()">
+                            <input type="file" id="file-day" accept="image/*,.gif">
+                            <span class="upload-zone-icon">🌅</span>
+                            <div class="upload-zone-label"><strong>Click to upload</strong> or drag & drop<br><span class="upload-zone-hint">JPEG, PNG, WebP, GIF · Auto-converts to WebP</span></div>
+                        </div>
+                        <div class="upload-or"><span>or paste a link</span></div>
+                        <div class="url-row">
+                            <input class="field-input" id="url-day" type="text" placeholder="https://drive.google.com/... or direct image URL">
+                            <button class="btn-apply" onclick="applyUrl('day')">Apply</button>
+                        </div>
+                        <div class="webp-badge" id="webp-day"></div>
+                        <div class="preview-card" id="preview-day">
+                            <img id="preview-day-img" src="" alt="">
+                            <div class="preview-card-label">
+                                <span class="preview-card-name" id="preview-day-name"></span>
+                                <button class="preview-remove" onclick="clearField('day')">Remove ✕</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evening Layer -->
+            <div class="section-block">
+                <div class="section-head">
+                    <span class="section-head-icon">🌆</span>
+                    <span class="section-head-title">Evening Layer Image</span>
+                    <span class="section-head-desc">Appears as mouse moves toward middle</span>
+                </div>
+                <div class="section-body single">
+                    <div class="field full">
+                        <div class="upload-zone" id="zone-evening" onclick="document.getElementById('file-evening').click()">
+                            <input type="file" id="file-evening" accept="image/*,.gif">
+                            <span class="upload-zone-icon">🌇</span>
+                            <div class="upload-zone-label"><strong>Click to upload</strong> or drag & drop<br><span class="upload-zone-hint">JPEG, PNG, WebP, GIF · Auto-converts to WebP</span></div>
+                        </div>
+                        <div class="upload-or"><span>or paste a link</span></div>
+                        <div class="url-row">
+                            <input class="field-input" id="url-evening" type="text" placeholder="https://drive.google.com/...">
+                            <button class="btn-apply" onclick="applyUrl('evening')">Apply</button>
+                        </div>
+                        <div class="webp-badge" id="webp-evening"></div>
+                        <div class="preview-card" id="preview-evening">
+                            <img id="preview-evening-img" src="" alt="">
+                            <div class="preview-card-label">
+                                <span class="preview-card-name" id="preview-evening-name"></span>
+                                <button class="preview-remove" onclick="clearField('evening')">Remove ✕</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Night Layer -->
+            <div class="section-block">
+                <div class="section-head">
+                    <span class="section-head-icon">🌙</span>
+                    <span class="section-head-title">Night Layer Image</span>
+                    <span class="section-head-desc">Appears as mouse moves to bottom</span>
+                </div>
+                <div class="section-body single">
+                    <div class="field full">
+                        <div class="upload-zone" id="zone-night" onclick="document.getElementById('file-night').click()">
+                            <input type="file" id="file-night" accept="image/*,.gif">
+                            <span class="upload-zone-icon">🌃</span>
+                            <div class="upload-zone-label"><strong>Click to upload</strong> or drag & drop<br><span class="upload-zone-hint">JPEG, PNG, WebP, GIF · Auto-converts to WebP</span></div>
+                        </div>
+                        <div class="upload-or"><span>or paste a link</span></div>
+                        <div class="url-row">
+                            <input class="field-input" id="url-night" type="text" placeholder="https://drive.google.com/...">
+                            <button class="btn-apply" onclick="applyUrl('night')">Apply</button>
+                        </div>
+                        <div class="webp-badge" id="webp-night"></div>
+                        <div class="preview-card" id="preview-night">
+                            <img id="preview-night-img" src="" alt="">
+                            <div class="preview-card-label">
+                                <span class="preview-card-name" id="preview-night-name"></span>
+                                <button class="preview-remove" onclick="clearField('night')">Remove ✕</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Artwork / Post-Video Layer -->
+            <div class="section-block">
+                <div class="section-head">
+                    <span class="section-head-icon">🎨</span>
+                    <span class="section-head-title">Artwork / Post-Video Layer</span>
+                    <span class="section-head-desc">Revealed by mouse spotlight after video ends</span>
+                </div>
+                <div class="section-body single">
+                    <div class="field full">
+                        <div class="upload-zone" id="zone-artwork" onclick="document.getElementById('file-artwork').click()">
+                            <input type="file" id="file-artwork" accept="image/*,.gif">
+                            <span class="upload-zone-icon">🖼</span>
+                            <div class="upload-zone-label"><strong>Click to upload</strong> or drag & drop<br><span class="upload-zone-hint">Use a PNG with transparency for best spotlight effect</span></div>
+                        </div>
+                        <div class="upload-or"><span>or paste a link</span></div>
+                        <div class="url-row">
+                            <input class="field-input" id="url-artwork" type="text" placeholder="https://drive.google.com/...">
+                            <button class="btn-apply" onclick="applyUrl('artwork')">Apply</button>
+                        </div>
+                        <div class="webp-badge" id="webp-artwork"></div>
+                        <div class="preview-card" id="preview-artwork">
+                            <img id="preview-artwork-img" src="" alt="">
+                            <div class="preview-card-label">
+                                <span class="preview-card-name" id="preview-artwork-name"></span>
+                                <button class="preview-remove" onclick="clearField('artwork')">Remove ✕</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PANEL: Video -->
+        <div id="panel-video" style="display:none;">
+            <div class="section-block">
+                <div class="section-head">
+                    <span class="section-head-icon">🎬</span>
+                    <span class="section-head-title">Light & Sound Video (projection.mp4)</span>
+                    <span class="section-head-desc">Plays when visitor clicks "Start Light & Show"</span>
+                </div>
+                <div class="section-body single">
+                    <div class="field full">
+                        <div class="upload-zone" id="zone-video" onclick="document.getElementById('file-video').click()">
+                            <input type="file" id="file-video" accept="video/*">
+                            <span class="upload-zone-icon">🎥</span>
+                            <div class="upload-zone-label"><strong>Click to upload</strong> a video<br><span class="upload-zone-hint">MP4, WebM, MOV · HLS (.m3u8) links also supported</span></div>
+                        </div>
+                        <div class="upload-or"><span>or paste a link</span></div>
+                        <div class="url-row">
+                            <input class="field-input" id="url-video" type="text" placeholder="https://drive.google.com/... or .mp4 / .m3u8 URL">
+                            <button class="btn-apply" onclick="applyVideoUrl()">Apply</button>
+                        </div>
+                        <div class="webp-badge" id="webp-video" style="border-color:rgba(99,179,237,0.3);color:#63b3ed;"></div>
+                        <div class="preview-card" id="preview-video">
+                            <video id="preview-video-el" src="" controls muted style="max-height:200px;" controlsList="nodownload"></video>
+                            <div class="preview-card-label">
+                                <span class="preview-card-name" id="preview-video-name"></span>
+                                <button class="preview-remove" onclick="clearField('video')">Remove ✕</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL: Text -->
+        <div id="panel-text" style="display:none;">
+            <div class="section-block">
+                <div class="section-head">
+                    <span class="section-head-icon">✏️</span>
+                    <span class="section-head-title">Text & Labels</span>
+                </div>
+                <div class="section-body">
+                    <div class="field">
+                        <label class="field-label">Page Title</label>
+                        <input class="field-input" id="text-title" type="text" placeholder="Light and Sound Experience">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Start Button Text</label>
+                        <input class="field-input" id="text-startbtn" type="text" placeholder="Start Light & Show">
+                    </div>
+                    <div class="field full">
+                        <label class="field-label">Instruction Text (shown before video)</label>
+                        <input class="field-input" id="text-instruction" type="text" placeholder="Move Mouse Up & Down to Change Time">
+                    </div>
+                    <div class="field full">
+                        <label class="field-label">Post-Video Instruction</label>
+                        <input class="field-input" id="text-postinstruction" type="text" placeholder="Explore the Artwork with Your Mouse">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Redirect to login if not authenticated ──
+(function(){
+    // Auth guard — redirect to login if not authenticated
+    if(typeof CMSAuth !== 'undefined'){
+        if(!CMSAuth.isAuthenticated()){
+            window.location.replace('../cms-login.html?redirect=light-and-sound-show/cms.html');
+        }
+    }
+})();
+
+function logout(){ if(typeof CMSAuth !== 'undefined') CMSAuth.logout(); window.location.href = '../cms-login.html'; }
+
+// ── Storage key ──
+const LNS_KEY = 'lns_cms_data_v2';
+
+function getData(){ try{ return JSON.parse(localStorage.getItem(LNS_KEY)||'{}'); }catch(e){ return {}; } }
+function saveData(d){ try{ localStorage.setItem(LNS_KEY, JSON.stringify(d)); }catch(e){ toast('Storage full!','error'); } }
+
+// ── Toast ──
+function toast(msg, type='success', dur=2800){
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast show ' + type;
+    clearTimeout(el._t);
+    el._t = setTimeout(()=>{ el.className='toast'; }, dur);
+}
+
+// ── Panel switching ──
+function showPanel(name){
+    ['images','video','text'].forEach(p=>{
+        document.getElementById('panel-'+p).style.display = (p===name)?'':'none';
+    });
+    document.querySelectorAll('.sidebar-item').forEach(el=>{
+        el.classList.toggle('active', el.getAttribute('onclick') === `showPanel('${name}')`);
+    });
+}
+
+// ── Direct link converter (same logic as main CMS) ──
+function toDirectLink(url){
+    if(!url) return url;
+    let m;
+    m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if(m) return `https://drive.google.com/uc?export=download&id=${m[1]}`;
+    m = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+    if(m) return `https://drive.google.com/uc?export=download&id=${m[1]}`;
+    if(url.includes('dropbox.com') && url.includes('dl=0')) return url.replace('dl=0','dl=1');
+    return url;
+}
+
+// ── WebP/image compression (same as main CMS) ──
+function compressImage(file, maxDim=1400, quality=0.85){
+    return new Promise((resolve,reject)=>{
+        const origSize = file.size;
+        const reader = new FileReader();
+        reader.onload = e=>{
+            const img = new Image();
+            img.onload = ()=>{
+                const canvas = document.createElement('canvas');
+                let {width,height} = img;
+                if(width>maxDim||height>maxDim){
+                    if(width>height){ height=Math.round(height*maxDim/width); width=maxDim; }
+                    else { width=Math.round(width*maxDim/height); height=maxDim; }
+                }
+                canvas.width=width; canvas.height=height;
+                canvas.getContext('2d').drawImage(img,0,0,width,height);
+                const supWebP = canvas.toDataURL('image/webp').includes('image/webp');
+                const mime = supWebP ? 'image/webp' : 'image/jpeg';
+                const dataUrl = canvas.toDataURL(mime, quality);
+                const convSize = Math.round((dataUrl.split(',')[1].length*3)/4);
+                resolve({ dataUrl, origSize, convSize, format: supWebP?'WebP':'JPEG' });
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function fmtBytes(b){ if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(2)+' MB'; }
+
+// ── Show preview ──
+function showPreview(key, dataUrl, name, isVideo){
+    const card = document.getElementById('preview-'+key);
+    const nameEl = document.getElementById('preview-'+key+'-name');
+    card.style.display = 'block';
+    if(nameEl) nameEl.textContent = name||'';
+    if(isVideo){
+        const vEl = document.getElementById('preview-'+key+'-el');
+        if(vEl){ vEl.src=dataUrl; }
+    } else {
+        const imgEl = document.getElementById('preview-'+key+'-img');
+        if(imgEl){ imgEl.src=dataUrl; }
+    }
+}
+
+function clearField(key){
+    const d = getData();
+    d['lns_'+key] = ''; d['lns_'+key+'_name'] = '';
+    saveData(d);
+    const card = document.getElementById('preview-'+key);
+    if(card) card.style.display='none';
+    const badge = document.getElementById('webp-'+key);
+    if(badge) badge.style.display='none';
+    markDraft();
+    toast('Removed.','success');
+}
+
+// ── File upload handlers ──
+['day','evening','night','artwork'].forEach(key=>{
+    const input = document.getElementById('file-'+key);
+    if(!input) return;
+    input.addEventListener('change', async e=>{
+        const file = e.target.files[0]; if(!file) return;
+        try{
+            const result = await compressImage(file);
+            const d = getData();
+            d['lns_'+key] = result.dataUrl;
+            d['lns_'+key+'_name'] = file.name.replace(/\.[^.]+$/,'') + '.' + result.format.toLowerCase();
+            saveData(d);
+            showPreview(key, result.dataUrl, d['lns_'+key+'_name']);
+            const badge = document.getElementById('webp-'+key);
+            if(badge){
+                const saved = result.origSize - result.convSize;
+                const pct = result.origSize>0 ? Math.round(saved/result.origSize*100) : 0;
+                badge.textContent = `✅ Converted to ${result.format} · Before: ${fmtBytes(result.origSize)} → After: ${fmtBytes(result.convSize)} (${pct>0?'-'+pct+'%':'±0%'})`;
+                badge.style.display='block';
+            }
+            markDraft();
+            toast('Image uploaded & converted to '+result.format+'!');
+        }catch(err){ toast('Upload failed','error'); }
+    });
+});
+
+// Video file upload
+document.getElementById('file-video').addEventListener('change', e=>{
+    const file = e.target.files[0]; if(!file) return;
+    const url = URL.createObjectURL(file);
+    const d = getData();
+    d['lns_video_blob'] = ''; // can't persist blob across sessions
+    d['lns_video_url'] = '';
+    d['lns_video_name'] = file.name;
+    saveData(d);
+    showPreview('video', url, file.name, true);
+    const badge = document.getElementById('webp-video');
+    if(badge){ badge.textContent=`📹 Video loaded: ${file.name} (${fmtBytes(file.size)}) — save as a Drive/CDN link to persist across sessions.`; badge.style.display='block'; }
+    markDraft();
+    toast('Video loaded — apply a URL to save permanently.','success',4000);
+});
+
+// ── URL apply ──
+function applyUrl(key){
+    const raw = document.getElementById('url-'+key).value.trim();
+    if(!raw){ toast('Paste a URL first','error'); return; }
+    const direct = toDirectLink(raw);
+    const d = getData();
+    d['lns_'+key] = direct;
+    d['lns_'+key+'_name'] = direct.split('/').pop().split('?')[0] || key;
+    saveData(d);
+    showPreview(key, direct, d['lns_'+key+'_name']);
+    const badge = document.getElementById('webp-'+key);
+    if(badge){
+        badge.textContent = direct !== raw ? '✅ Link converted to direct URL and saved' : '✅ Link saved';
+        badge.style.display='block';
+    }
+    markDraft();
+    toast('URL applied!');
+}
+
+function applyVideoUrl(){
+    const raw = document.getElementById('url-video').value.trim();
+    if(!raw){ toast('Paste a URL first','error'); return; }
+    const direct = toDirectLink(raw);
+    const d = getData();
+    d['lns_video_url'] = direct;
+    d['lns_video_name'] = direct.split('/').pop().split('?')[0] || 'video';
+    saveData(d);
+    showPreview('video', direct, d['lns_video_name'], true);
+    const badge = document.getElementById('webp-video');
+    if(badge){ badge.textContent = direct!==raw ? '✅ Converted to direct link and saved' : '✅ Video URL saved'; badge.style.display='block'; }
+    markDraft();
+    toast('Video URL saved!');
+}
+
+// ── Save & Publish ──
+function saveAll(){
+    const d = getData();
+    // Text fields
+    d['lns_title'] = document.getElementById('text-title').value;
+    d['lns_startbtn'] = document.getElementById('text-startbtn').value;
+    d['lns_instruction'] = document.getElementById('text-instruction').value;
+    d['lns_postinstruction'] = document.getElementById('text-postinstruction').value;
+    saveData(d);
+    document.getElementById('draftBadge').style.display='none';
+    toast('✅ Light & Sound Show content saved & published!','success',3500);
+}
+
+function resetAll(){
+    if(!confirm('Clear all Light & Sound Show CMS data?')) return;
+    localStorage.removeItem(LNS_KEY);
+    toast('Reset complete — refresh the preview page.','success');
+    location.reload();
+}
+
+function markDraft(){
+    document.getElementById('draftBadge').style.display='inline-block';
+}
+
+// ── Load existing data on boot ──
+(function loadOnBoot(){
+    const d = getData();
+    const KEYS = ['day','evening','night','artwork'];
+    KEYS.forEach(key=>{
+        const src = d['lns_'+key];
+        if(src){ showPreview(key, src, d['lns_'+key+'_name']||key); }
+    });
+    const videoUrl = d['lns_video_url'];
+    if(videoUrl){ showPreview('video', videoUrl, d['lns_video_name']||'video', true); }
+    // Text fields
+    if(d['lns_title']) document.getElementById('text-title').value = d['lns_title'];
+    if(d['lns_startbtn']) document.getElementById('text-startbtn').value = d['lns_startbtn'];
+    if(d['lns_instruction']) document.getElementById('text-instruction').value = d['lns_instruction'];
+    if(d['lns_postinstruction']) document.getElementById('text-postinstruction').value = d['lns_postinstruction'];
+})();
+
+// Mark draft on any text field change
+document.querySelectorAll('.field-input').forEach(el=>{
+    el.addEventListener('input', markDraft);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Details | Sandeep Patel</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Lenis Smooth Scroll -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-dark">
+    <!-- Preloader Overlay -->
+    <div id="preloader" class="preloader-overlay">
+        <div class="preloader-corner tl"></div>
+        <div class="preloader-corner tr"></div>
+        <div class="preloader-corner bl"></div>
+        <div class="preloader-corner br"></div>
+        <div class="preloader-hud-label top-left">SYS // INIT</div>
+        <div class="preloader-hud-label top-right">REF.SP—01</div>
+        <div class="preloader-hud-label bottom-left" id="preloader-caption">&gt; Loading the work</div>
+        <div class="preloader-hud-label bottom-right">STATUS: ONLINE</div>
+        <div class="preloader-content">
+            <div class="preloader-core">
+                <svg viewBox="0 0 156 156">
+                    <g class="preloader-ring-ticks-spin">
+                        <circle class="preloader-ring-ticks" cx="78" cy="78" r="74" fill="none" stroke-dasharray="1 11.6"/>
+                    </g>
+                    <g class="preloader-ring-outer-spin">
+                        <circle class="preloader-ring-outer" cx="78" cy="78" r="64"/>
+                    </g>
+                    <g class="preloader-ring-mid-spin">
+                        <circle class="preloader-ring-mid-track" cx="78" cy="78" r="50"/>
+                        <circle class="preloader-ring-mid-arc" cx="78" cy="78" r="50" transform="rotate(-90 78 78)"/>
+                    </g>
+                </svg>
+                <div class="preloader-core-glow"></div>
+                <div class="preloader-core-percent"><span id="preloader-percent">00</span></div>
+            </div>
+            <div class="preloader-logo font-mono">Sandeep Patel</div>
+            <div class="preloader-bar-wrap">
+                <div class="preloader-bar" id="preloader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="theme-dark">
+        <div class="tr-container nav-wrapper">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">S</div>
+                <div class="logo-text">Sandeep Patel</div>
+            </a>
+            
+            <!-- Corner Rotating Text Badge (Trionn-style) -->
+            <div class="corner-rotating-badge font-mono">
+                <div class="badge-track">
+                    <div class="badge-word active">LIGHT & SOUND SHOWS</div>
+                    <div class="badge-word">PROJECTION MAPPING</div>
+                    <div class="badge-word">MUSEUM EXPERIENCES</div>
+                    <div class="badge-word">AI VISUAL STORYTELLING</div>
+                    <div class="badge-word">BRANDING</div>
+                </div>
+            </div>
+            
+            <ul class="nav-links">
+                <li><a href="index.html#section-home-about" class="nav-link nav-scroll-link"><span>About</span></a></li>
+                <li><a href="index.html#section-home-what-i-do" class="nav-link nav-scroll-link"><span>What I Do</span></a></li>
+                <li><a href="index.html#section-home-journey" class="nav-link nav-scroll-link"><span>Journey</span></a></li>
+                <li><a href="index.html#section-home-selected-work" class="nav-link nav-scroll-link"><span>Work</span></a></li>
+                <li><a href="index.html#section-home-archive" class="nav-link nav-scroll-link"><span>Archive</span></a></li>
+                <li><a href="contact.html" class="nav-link"><span>Contact</span></a></li>
+            <!-- Hamburger Button (mobile only) -->
+            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+                <span class="hamburger-line line-top"></span>
+                <span class="hamburger-line line-mid"></span>
+                <span class="hamburger-line line-bottom"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-menu-drawer" id="mobileMenuDrawer">
+        <nav>
+            <ul class="mobile-nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="what-i-do.html" class="nav-link">What I Do</a></li>
+                <li><a href="index.html#section-home-selected-work" class="nav-link">Work</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <!-- Dynamic Main Root Container -->
+    <main id="projectDetailRoot" class="theme-dark">
+        <!-- populated dynamically from js/main.js -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="theme-sand footer-overhaul" style="padding: 8rem 0 4rem 0;">
+        <div class="tr-container footer-wrap">
+            <div class="footer-huge-cta">
+                <h2 class="footer-huge-title">
+                    LET'S CREATE<br>SOMETHING<br>MEANINGFUL
+                </h2>
+                <div class="footer-btn-wrap">
+                    <a href="contact.html" class="btn btn-primary btn-cta">START A PROJECT</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom-grid">
+                <div class="footer-col-left">
+                    <span class="footer-label font-mono">CONTACT</span>
+                    <a href="mailto:design.sandeeppatel@gmail.com" class="footer-email-link" data-cms-key="contact_email">design.sandeeppatel@gmail.com</a>
+                    <span class="footer-copy-text" style="display:block; margin-top: 2rem; opacity: 1;"><a href="cms-login.html" class="cms-footer-link">©</a> 2026 Sandeep Patel ·&mdash; Creative Studio</span>
+                </div>
+                <div class="footer-col-right">
+                    <span class="footer-label font-mono">FOLLOW</span>
+                    <ul class="footer-social-links">
+                        <li><a href="https://www.instagram.com/sandy_clickzzzz" target="_blank" class="social-link-item">Instagram</a></li>
+                        <li><a href="https://www.linkedin.com/in/sandeep-patel-ab5878237" target="_blank" class="social-link-item">LinkedIn</a></li>
+                        <li><a href="https://www.behance.net/sandeeppat2070" target="_blank" class="social-link-item">Behance</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom Scripts -->
+    <script src="js/cms-core.js"></script>
+    <script src="js/site-loader.js?v=42"></script>
+    <script src="js/projects-data.js?v=24"></script>
+    <script src="js/main.js"></script>
+    <script>
+    (function(){
+        var btn = document.getElementById('hamburgerBtn');
+        var drawer = document.getElementById('mobileMenuDrawer');
+        var overlay = document.getElementById('mobileMenuOverlay');
+        if (!btn || !drawer) return;
+        function openMenu(){
+            drawer.classList.add('open');
+            btn.classList.add('open');
+            btn.setAttribute('aria-expanded','true');
+            if(overlay) overlay.classList.add('active');
+            document.body.style.overflow='hidden';
+        }
+        function closeMenu(){
+            drawer.classList.remove('open');
+            btn.classList.remove('open');
+            btn.setAttribute('aria-expanded','false');
+            if(overlay) overlay.classList.remove('active');
+            document.body.style.overflow='';
+        }
+        btn.addEventListener('click', function(){
+            drawer.classList.contains('open') ? closeMenu() : openMenu();
+        });
+        if(overlay) overlay.addEventListener('click', closeMenu);
+        drawer.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
+    })();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

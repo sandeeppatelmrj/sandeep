@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-cms-key="seo_home_title">Sandeep Patel | Immersive Graphic & AI Visual Designer</title>
+    <meta name="description" data-cms-key="seo_home_desc" content="Sandeep Patel is a Graphic Designer, AI Visual Designer, and Museum Experience Designer crafting immersive projection mapping and visual stories.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Lenis Smooth Scroll -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+    /* ── Visit My Gallery Hero Button ── */
+    .hero-gallery-btn-wrap {
+      margin-top: 2.6rem;
+    }
+    .hero-gallery-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 28px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 30px;
+      color: #ffffff;
+      text-decoration: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    .hero-gallery-btn:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.3);
+      color: #ffffff;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+    .hero-gallery-btn-text,
+    .hero-gallery-btn-icon {
+      display: inline;
+    }
+
+    .home-hero-right {
+        position: absolute;
+        bottom: 50px;
+        right: 0px;
+        max-width: 380px;
+        display: flex;
+        flex-direction: column;
+        text-align: right;
+        z-index: 10;
+        pointer-events: none;
+    }
+    .home-hero-quote {
+        color: #a0a0a0;
+        font-size: 15px;
+        line-height: 1.6;
+        margin-bottom: 25px;
+        pointer-events: auto;
+    }
+    .home-hero-quote strong {
+        color: #ffffff;
+        font-weight: 500;
+    }
+    .home-hero-signature {
+        font-family: 'La Belle Aurore', cursive;
+        font-size: 56px;
+        color: #ffffff;
+        line-height: 0.8;
+        transform: rotate(-3deg);
+        align-self: flex-end;
+        margin-right: 20px;
+        opacity: 0.9;
+    }
+    @media (max-width: 768px) {
+        .home-hero-right {
+            position: relative;
+            bottom: auto;
+            right: auto;
+            margin-top: 40px;
+            text-align: left;
+            align-items: flex-start;
+        }
+        .home-hero-signature {
+            align-self: flex-start;
+            margin-right: 0;
+            margin-left: 20px;
+        }
+    }
+    </style>
+</head>
+<body class="theme-dark">
+    <!-- Preloader Overlay -->
+    <div id="preloader" class="preloader-overlay">
+        <div class="preloader-corner tl"></div>
+        <div class="preloader-corner tr"></div>
+        <div class="preloader-corner bl"></div>
+        <div class="preloader-corner br"></div>
+        <div class="preloader-hud-label top-left">SYS // INIT</div>
+        <div class="preloader-hud-label top-right">REF.SP—01</div>
+        <div class="preloader-hud-label bottom-left" id="preloader-caption">&gt; Loading the work</div>
+        <div class="preloader-hud-label bottom-right">STATUS: ONLINE</div>
+        <div class="preloader-content">
+            <div class="preloader-core">
+                <svg viewBox="0 0 156 156">
+                    <g class="preloader-ring-ticks-spin">
+                        <circle class="preloader-ring-ticks" cx="78" cy="78" r="74" fill="none" stroke-dasharray="1 11.6"/>
+                    </g>
+                    <g class="preloader-ring-outer-spin">
+                        <circle class="preloader-ring-outer" cx="78" cy="78" r="64"/>
+                    </g>
+                    <g class="preloader-ring-mid-spin">
+                        <circle class="preloader-ring-mid-track" cx="78" cy="78" r="50"/>
+                        <circle class="preloader-ring-mid-arc" cx="78" cy="78" r="50" transform="rotate(-90 78 78)"/>
+                    </g>
+                </svg>
+                <div class="preloader-core-glow"></div>
+                <div class="preloader-core-percent"><span id="preloader-percent">00</span></div>
+            </div>
+            <div class="preloader-logo font-mono">Sandeep Patel</div>
+            <div class="preloader-bar-wrap">
+                <div class="preloader-bar" id="preloader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Canvas Background -->
+    <canvas id="interactive-bg"></canvas>
+
+    <!-- Header Navigation -->
+    <header class="theme-dark">
+        <div class="tr-container nav-wrapper">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">S</div>
+                <div class="logo-text">Sandeep Patel</div>
+            </a>
+            
+            <!-- Corner Rotating Text Badge (Trionn-style) -->
+            <div class="corner-rotating-badge font-mono">
+                <div class="badge-track">
+                    <div class="badge-word active">LIGHT & SOUND SHOWS</div>
+                    <div class="badge-word">PROJECTION MAPPING</div>
+                    <div class="badge-word">MUSEUM EXPERIENCES</div>
+                    <div class="badge-word">AI VISUAL STORYTELLING</div>
+                    <div class="badge-word">BRANDING</div>
+                </div>
+            </div>
+            
+            <ul class="nav-links">
+                <li><a href="index.html#section-home-about" class="nav-link nav-scroll-link"><span>About</span></a></li>
+                <li><a href="index.html#section-home-what-i-do" class="nav-link nav-scroll-link"><span>What I Do</span></a></li>
+                <li><a href="index.html#section-home-journey" class="nav-link nav-scroll-link"><span>Journey</span></a></li>
+                <li><a href="index.html#section-home-selected-work" class="nav-link nav-scroll-link"><span>Work</span></a></li>
+                <li><a href="index.html#section-home-archive" class="nav-link nav-scroll-link"><span>Archive</span></a></li>
+                <li><a href="contact.html" class="nav-link"><span>Contact</span></a></li>
+            <!-- Hamburger Button (mobile only) -->
+            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+                <span class="hamburger-line line-top"></span>
+                <span class="hamburger-line line-mid"></span>
+                <span class="hamburger-line line-bottom"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-menu-drawer" id="mobileMenuDrawer">
+        <nav>
+            <ul class="mobile-nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="what-i-do.html" class="nav-link">What I Do</a></li>
+                <li><a href="index.html#section-home-selected-work" class="nav-link">Work</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <main>
+
+        <!-- Vertical Scrollspy Dots Navigation -->
+        <nav id="scroll-dots-nav" aria-label="Page sections">
+            <div class="scroll-dots-track">
+                <div class="scroll-dots-progress-line">
+                    <div class="scroll-dots-fill" id="scrollDotsFill"></div>
+                </div>
+                <ul class="scroll-dots-list" id="scrollDotsList">
+                    <!-- dots injected by JS -->
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Row 1: Home Hero -->
+        <section class="theme-dark" id="section-home-hero" data-section="home-hero" style="background-color: transparent;">
+            <!-- Interactive Canvas Background for Hero -->
+            <canvas id="hero-interactive-canvas"></canvas>
+            
+            <!-- Floating Circles Background -->
+            <div class="hero-floating-elements"></div>
+            <!-- Background Radial Glow -->
+            <div class="hero-bg-glow"></div>
+            
+            <div class="hero-inner-container">
+                <!-- Signature Corner Pluses -->
+                <div class="corner-plus tl"></div>
+                <div class="corner-plus tr"></div>
+                <div class="corner-plus bl"></div>
+                <div class="corner-plus br"></div>
+                
+                <div class="hero-column hero-left-column">
+                    <div class="hero-left-content">
+                        <span class="hero-pretitle font-mono" data-cms-key="home_hero_pretitle">WORK</span>
+                        <h1 class="hero-title" id="heroTitle">
+                            <span class="line-wrap"><span class="line-text">Designed to</span></span>
+                            <span class="line-wrap">
+                                <span class="line-text">mean&nbsp;</span>
+                                <span class="rotating-word-wrap">
+                                    <span class="rotating-word">something</span>
+                                    <span class="rotating-word">depth</span>
+                                    <span class="rotating-word">impact</span>
+                                    <span class="rotating-word">purpose</span>
+                                    <span class="rotating-word">intention</span>
+                                    <span class="rotating-word">meaning</span>
+                                </span>
+                            </span>
+                        </h1>
+
+                        <!-- Gallery CTA Button -->
+                        <div class="hero-gallery-btn-wrap" data-cms-visibility="home_hero_gallery_btn_visibility">
+                            <a href="gallery.html" class="hero-gallery-btn">
+                                <span class="hero-gallery-btn-text">Visit My Gallery</span>
+                                <span class="hero-gallery-btn-icon">→</span>
+                            </a>
+                        </div>
+
+                    </div>
+                    
+                    <div class="hero-scroll-indicator">
+                        <span class="hero-scroll-line"></span>
+                        <span class="hero-scroll-arrow">↓</span>
+                        <span class="hero-scroll-text font-mono" data-cms-key="home_hero_scroll_label">SCROLL TO EXPLORE</span>
+                    </div>
+                </div>
+
+                <!-- Right Side Quote -->
+                <div class="home-hero-right">
+                    <p class="home-hero-quote">"I help brands transform ideas into<br><strong>impactful visual experiences</strong> using strategy,<br>creativity, and AI—not just pretty graphics."</p>
+                    <div class="home-hero-signature">
+                        Sandeep
+                    </div>
+                </div>
+
+            </div>
+        </section>        <!-- SECTION 01: About Me Section -->
+        <section class="grid-row theme-sand" id="section-home-about" data-section="home-about" style="padding: 10rem 0 8rem 0;">
+            <div class="corner-plus tl"></div>
+            <div class="corner-plus tr"></div>
+            <div class="corner-plus bl"></div>
+            <div class="corner-plus br"></div>
+            <div class="tr-container about-grid">
+                <div class="about-image-col">
+                    <div class="profile-card-wrapper gsap-fade-up">
+                        <div class="profile-card-outline"></div>
+                        <div class="profile-card-image-container">
+                            <img src="index image/About Section Profile Image.jpg" alt="Sandeep Patel" class="profile-card-img" data-cms-key="home_about_profile_image">
+                        </div>
+                    </div>
+                </div>
+                <div class="about-content-col">
+                    <span class="section-label font-mono" style="margin-bottom: 1.5rem; display: block; color: var(--muted-current);" data-cms-key="home_about_label">01 — ABOUT ME</span>
+                    <h2 class="about-desc-text" data-cms-key="home_about_text" style="font-size: clamp(1.4rem, 2.5vw, 2.2rem); line-height: 1.4; margin-bottom: 2rem;">
+                        A visual storyteller drawn to the pursuit of <em>distinct, impactful experiences</em> — those that challenge convention and connect deeply with audiences.
+                    </h2>
+                    <p class="about-bio-para gsap-fade-up" data-cms-key="home_about_bio_p1" style="font-size: 0.95rem; color: var(--muted-current); line-height: 1.8; margin-bottom: 1.5rem; font-family: var(--font-sans);">
+                        I am a Graphic Designer and AI Visual Designer specializing in visual storytelling, museum experiences, projection mapping, and creative campaigns. Over the last three years, I have worked across branding, advertising, exhibition design, and AI-powered content creation.
+                    </p>
+                    <p class="about-bio-para gsap-fade-up" data-cms-key="home_about_bio_p2" style="font-size: 0.95rem; color: var(--muted-current); line-height: 1.8; margin-bottom: 2.5rem; font-family: var(--font-sans);">
+                        Adept at delivering concept-to-execution excellence, I combine grid layouts with generative AI tools to craft narratives that engage audiences across physical and digital spaces. Detail-oriented and grounded in timeless design principles, I thrive on collaborative projects that value innovation, clarity, and emotional resonance — always aiming to create immersive experiences that people remember.
+                    </p>
+                    <div class="about-btn-wrap" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+                        <a href="about.html" class="btn btn-outlined">
+                            <span>MORE ABOUT US</span>
+                            <div class="btn-arrow">→</div>
+                        </a>
+                        <a id="resumeDownloadBtn" href="#" class="btn btn-outlined" style="display:none;" download>
+                            <span>DOWNLOAD RESUME</span>
+                            <div class="btn-arrow">↓</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 02: What I Do -->
+        <section class="grid-row theme-sand" id="section-home-what-i-do" data-section="home-what-i-do" style="padding: 6rem 0 10rem 0; border-top: 1px solid var(--border-current);">
+            <div class="corner-plus tl"></div>
+            <div class="corner-plus tr"></div>
+            <div class="corner-plus bl"></div>
+            <div class="corner-plus br"></div>
+            <div class="tr-container">
+                <span class="section-label font-mono" style="margin-bottom: 4rem; display: block; color: var(--muted-current);">02 — WHAT I DO</span>
+                <div class="services-list">
+                    <!-- Service 1 -->
+                    <div class="service-item card-light gsap-fade-up" id="what-i-do-card-1">
+                        <div class="corner-plus tl"></div>
+                        <div class="corner-plus tr"></div>
+                        <div class="corner-plus bl"></div>
+                        <div class="corner-plus br"></div>
+                        <span class="service-num">01</span>
+                        <h3 class="service-title">Museum & Experience Design</h3>
+                        <ul class="service-sublist">
+                            <li>Concept Development</li>
+                            <li>Exhibition Storytelling</li>
+                            <li>Interactive Installations</li>
+                            <li>Visitor Flow & Journey</li>
+                            <li>Spatial Visual Layouts</li>
+                        </ul>
+                    </div>
+                    <!-- Service 2 -->
+                    <div class="service-item card-dark gsap-fade-up" id="what-i-do-card-2">
+                        <div class="corner-plus tl"></div>
+                        <div class="corner-plus tr"></div>
+                        <div class="corner-plus bl"></div>
+                        <div class="corner-plus br"></div>
+                        <span class="service-num">02</span>
+                        <h3 class="service-title">Projection Mapping Design</h3>
+                        <ul class="service-sublist">
+                            <li>Storyboard Creation</li>
+                            <li>Visual Development</li>
+                            <li>Motion Mapping Concepts</li>
+                            <li>Historic & Cultural Shows</li>
+                            <li>Immersive Environments</li>
+                        </ul>
+                    </div>
+                    <!-- Service 3 -->
+                    <div class="service-item card-dark gsap-fade-up" id="what-i-do-card-3">
+                        <div class="corner-plus tl"></div>
+                        <div class="corner-plus tr"></div>
+                        <div class="corner-plus bl"></div>
+                        <div class="corner-plus br"></div>
+                        <span class="service-num">03</span>
+                        <h3 class="service-title">AI Visual Storytelling</h3>
+                        <ul class="service-sublist">
+                            <li>Film Pre-Visualization</li>
+                            <li>AI World Building</li>
+                            <li>Character Development</li>
+                            <li>Cinematic Image Generation</li>
+                            <li>AI Filmmaking Concepting</li>
+                        </ul>
+                    </div>
+                    <!-- Service 4 -->
+                    <div class="service-item card-light gsap-fade-up" id="what-i-do-card-4">
+                        <div class="corner-plus tl"></div>
+                        <div class="corner-plus tr"></div>
+                        <div class="corner-plus bl"></div>
+                        <div class="corner-plus br"></div>
+                        <span class="service-num">04</span>
+                        <h3 class="service-title">Brand & Advertising Design</h3>
+                        <ul class="service-sublist">
+                            <li>Campaign Strategy & Ads</li>
+                            <li>Print & Outdoor Media</li>
+                            <li>Social Media Campaigns</li>
+                            <li>Brand Identity Systems</li>
+                            <li>Grid Layout Systems</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2.5: Tools & Technologies -->
+        <section class="grid-row theme-sand" id="section-home-tools" data-section="home-tools" style="padding: 10rem 0; border-top: 1px solid var(--border-current);">
+            <div class="corner-plus tl"></div>
+            <div class="corner-plus tr"></div>
+            <div class="corner-plus bl"></div>
+            <div class="corner-plus br"></div>
+            
+            <div class="tr-container">
+                <span class="section-label font-mono" style="color: var(--color-accent); margin-bottom: 1.5rem; display: block;">— TOOLS & TECHNOLOGIES</span>
+                <h2 style="font-size: clamp(2.2rem, 4.5vw, 4.2rem); font-family: var(--font-heading); font-weight: 300; line-height: 1.15; margin-bottom: 5.5rem; color: var(--text-current);">The <em style="color: var(--color-accent); font-style: italic;">craft toolkit.</em></h2>
+                
+                <div class="tools-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 4rem;">
+                    <!-- Column 1: Design -->
+                    <div class="tools-col gsap-fade-up" style="border-top: 1px solid var(--text-current); padding-top: 2rem; position: relative;">
+                        <span class="font-mono" style="font-size: 0.8rem; color: var(--color-accent); display: block; margin-bottom: 1.25rem;">01 — DESIGN</span>
+                        <h3 style="font-family: var(--font-heading); font-size: 1.60rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-current); line-height: 1.2;">Design Tools</h3>
+                        <span style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--color-accent); font-style: italic; display: block; margin-bottom: 1.25rem;">Layout, Vector & Digital Crafting</span>
+                        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                            <li style="font-size: 0.95rem; color: var(--muted-current); display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--color-accent);">—</span> Adobe Photoshop</li>
+                            <li style="font-size: 0.95rem; color: var(--muted-current); display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--color-accent);">—</span> Adobe Illustrator</li>
+                            <li style="font-size: 0.95rem; color: var(--muted-current); display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--color-accent);">—</span> CorelDRAW</li>
+                            <li style="font-size: 0.95rem; color: var(--muted-current); display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--color-accent);">—</span> Canva</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Column 2: AI & Generation -->
+                    <div class="tools-col gsap-fade-up" style="border-top: 1px solid var(--text-current); padding-top: 2rem; position: relative;">
+                        <span class="font-mono" style="font-size: 0.8rem; color: var(--color-accent); display: block; margin-bottom: 1.25rem;">02 — AI & GENERATION</span>
+                        <h3 style="font-family: var(--font-heading); font-size: 1.60rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-current); line-height: 1.2;">AI & Generation</h3>
+                        <span style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--color-accent); font-style: italic; display: block; margin-bottom: 1.25rem;">Flow, Prompting & Generation Pipelines</span>
+                        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                            <li style="font-size: 0.95rem; color: var(--muted-current); display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--color-accent);">—</span> Google Flow</li>
+                            <li style="font-size: 0.95rem; color: var(--muted-current); display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--color-accent);">—</span> Magnific AI</li>
+                            <li style="font-size: 0.95rem; color: var(--muted-current); display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--color-accent);">—</span> ChatGPT</li>
+                            <li style="font-size: 0.95rem; color: var(--muted-current); display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--color-accent);">—</span> Google Gemini</li>
+                            <li style="font-size: 0.95rem; color: var(--muted-current); display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--color-accent);">—</span> Google Vids</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 03: Journey (Dark Timeline) -->
+        <section class="grid-row theme-dark" id="section-home-journey" data-section="home-journey" style="padding: 10rem 0; overflow: hidden; border-top: 1px solid rgba(255,255,255,0.05);">
+            <div class="corner-plus tl"></div>
+            <div class="corner-plus tr"></div>
+            <div class="corner-plus bl"></div>
+            <div class="corner-plus br"></div>
+            <div class="tr-container">
+                <span class="section-label font-mono" style="margin-bottom: 2rem; display: block; color: rgba(255,255,255,0.4);">03 — JOURNEY</span>
+                <h2 style="font-size: clamp(2rem, 4vw, 4rem); font-family: var(--font-heading); font-weight: 300; margin-bottom: 6rem; line-height: 1.2;" data-cms-key="home_journey_title">Three Years of Creative Evolution.</h2>
+                
+                <div class="journey-timeline">
+                    <!-- Vertical Timeline Line -->
+                    <div class="timeline-line">
+                        <div class="timeline-fill"></div>
+                    </div>
+                    
+                    <!-- Item 1 -->
+                    <div class="timeline-item timeline-left gsap-fade-up">
+                        <div class="timeline-node"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-date font-mono">September 2020 - May 2024</span>
+                            <h3 class="timeline-title">Freelance Graphic Designer</h3>
+                            <p class="timeline-company">Scrapped Films Media</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Item 2 -->
+                    <div class="timeline-item timeline-right gsap-fade-up">
+                        <div class="timeline-node"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-date font-mono">June 2020 - May 2024</span>
+                            <h3 class="timeline-title">Freelance Graphic Designer</h3>
+                            <p class="timeline-company">AB Films and Production</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Item 3 -->
+                    <div class="timeline-item timeline-left gsap-fade-up">
+                        <div class="timeline-node"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-date font-mono">2023 November - October 2024</span>
+                            <h3 class="timeline-title">Graphic Designer</h3>
+                            <p class="timeline-company">Barasia Advertising Pvt. Limited</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Item 4 -->
+                    <div class="timeline-item timeline-right gsap-fade-up">
+                        <div class="timeline-node"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-date font-mono">October 2024 - February 2025</span>
+                            <h3 class="timeline-title">Graphic Designer</h3>
+                            <p class="timeline-company">UWEUS Venture Pvt. limited</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Item 5 -->
+                    <div class="timeline-item timeline-left gsap-fade-up">
+                        <div class="timeline-node"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-date font-mono">2025 - present</span>
+                            <h3 class="timeline-title">Graphic Designer</h3>
+                            <p class="timeline-company">Tagbin Services Pvt. limited</p>
+                        </div>
+                    </div>
+                </div>
+        </section>
+
+        <!-- SECTION 04: Education (Light Editorial Grid) -->
+        <section class="grid-row theme-sand" id="section-home-education" data-section="home-education" style="padding: 10rem 0; border-top: 1px solid var(--border-current);">
+            <div class="corner-plus tl"></div>
+            <div class="corner-plus tr"></div>
+            <div class="corner-plus bl"></div>
+            <div class="corner-plus br"></div>
+            <div class="tr-container">
+                <span class="section-label font-mono" style="color: var(--color-accent); margin-bottom: 1.5rem; display: block;">04 — EDUCATION</span>
+                <h2 style="font-size: clamp(2.2rem, 4.5vw, 4.2rem); font-family: var(--font-heading); font-weight: 300; line-height: 1.15; margin-bottom: 5.5rem; color: var(--text-current);">Foundations in <em style="color: var(--color-accent); font-style: italic;">craft & communication.</em></h2>
+                
+                <div class="education-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4rem;">
+                    <!-- Column 1 -->
+                    <div class="education-col gsap-fade-up" style="border-top: 1px solid var(--text-current); padding-top: 2rem; position: relative;">
+                        <span class="font-mono" style="font-size: 0.8rem; color: var(--color-accent); display: block; margin-bottom: 1.25rem;" data-cms-key="home_edu_col1_date">2021 — 2023</span>
+                        <h3 style="font-family: var(--font-heading); font-size: 1.60rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-current); line-height: 1.2;" data-cms-key="home_edu_col1_title">Master Of Fine Arts</h3>
+                        <span style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--color-accent); font-style: italic; display: block; margin-bottom: 1.25rem;" data-cms-key="home_edu_col1_subtitle">Visualization & Design — C.S.J.M. University Kanpur</span>
+                        <p style="font-size: 0.95rem; color: var(--muted-current); line-height: 1.6; margin: 0;" data-cms-key="home_edu_col1_desc">Specialized in visual systems, layout theory, user flow designs, and experimental AI art pipelines.</p>
+                    </div>
+                    <!-- Column 2 -->
+                    <div class="education-col gsap-fade-up" style="border-top: 1px solid var(--text-current); padding-top: 2rem; position: relative;">
+                        <span class="font-mono" style="font-size: 0.8rem; color: var(--color-accent); display: block; margin-bottom: 1.25rem;" data-cms-key="home_edu_col2_date">2018 — 2021</span>
+                        <h3 style="font-family: var(--font-heading); font-size: 1.60rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-current); line-height: 1.2;" data-cms-key="home_edu_col2_title">Bachelor Of Fine Arts</h3>
+                        <span style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--color-accent); font-style: italic; display: block; margin-bottom: 1.25rem;" data-cms-key="home_edu_col2_subtitle">Applied Art — C.S.J.M. University Kanpur</span>
+                        <p style="font-size: 0.95rem; color: var(--muted-current); line-height: 1.6; margin: 0;" data-cms-key="home_edu_col2_desc">Grounded in classical art foundations, layout grids, branding principles, and typographic designs.</p>
+                    </div>
+                    <!-- Column 3 -->
+                    <div class="education-col gsap-fade-up" style="border-top: 1px solid var(--text-current); padding-top: 2rem; position: relative;">
+                        <span class="font-mono" style="font-size: 0.8rem; color: var(--color-accent); display: block; margin-bottom: 1.25rem;" data-cms-key="home_edu_col3_date">2016 — 2018</span>
+                        <h3 style="font-family: var(--font-heading); font-size: 1.60rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-current); line-height: 1.2;" data-cms-key="home_edu_col3_title">High School Certificate</h3>
+                        <span style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--color-accent); font-style: italic; display: block; margin-bottom: 1.25rem;" data-cms-key="home_edu_col3_subtitle">Pt. Deen Dayal Intermediate College Maharajan — Uttar Pradesh Board</span>
+                        <p style="font-size: 0.95rem; color: var(--muted-current); line-height: 1.6; margin: 0;" data-cms-key="home_edu_col3_desc">Completed early academic foundation with focus on communication design and basic graphics theory.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 05: Selected Work & Explorations (Marquee) -->
+        <section class="grid-row theme-dark" id="section-home-selected-work" data-section="home-selected-work" style="padding: 8rem 0; overflow: hidden; background-color: #0B0B0B; border-top: 1px solid rgba(255,255,255,0.05);">
+            <div class="corner-plus tl"></div>
+            <div class="corner-plus tr"></div>
+            <div class="corner-plus bl"></div>
+            <div class="corner-plus br"></div>
+            
+            <div class="tr-container" style="margin-bottom: 3rem;">
+                <span class="section-label font-mono" style="color: var(--color-accent); margin-bottom: 1.5rem; display: block;" data-cms-key="home_selected_work_label">05 — SELECTED WORK & EXPLORATIONS</span>
+                <h2 style="font-size: clamp(2rem, 4vw, 4rem); font-family: var(--font-heading); font-weight: 300; margin: 0; line-height: 1.2; color: #FFFFFF;" data-cms-key="home_selected_work_title">Selected Work & Explorations</h2>
+            </div>
+            
+            <!-- Premium Drag Slider -->
+            <div class="selected-work-marquee-wrapper" id="selectedWorkViewport">
+                <div class="selected-work-marquee-track" id="selectedWorkMarqueeTrack">
+                    <!-- Populated dynamically via main.js -->
+                </div>
+            </div>
+
+            <!-- Premium Nav Controls Row -->
+            <div class="selected-work-controls">
+                <button class="sw-nav-btn" id="swPrevBtn" aria-label="Previous project">←</button>
+                <span class="sw-counter" id="swCounter">1 / 1</span>
+                <button class="sw-nav-btn" id="swNextBtn" aria-label="Next project">→</button>
+            </div>
+
+            <!-- Drag to Explore &rarr;Hint -->
+            <div class="selected-work-drag-hint">
+                <span class="drag-hint-dot"></span>
+                <span class="drag-hint-text">Drag to Explore &rarr;→</span>
+            </div>
+        </section>
+
+        <!-- SECTION 07: The Archive (Light filterable grid) -->
+        <section class="grid-row theme-sand" id="section-home-archive" data-section="home-archive" style="padding: 10rem 0; border-top: 1px solid var(--border-current);">
+            <div class="corner-plus tl"></div>
+            <div class="corner-plus tr"></div>
+            <div class="corner-plus bl"></div>
+            <div class="corner-plus br"></div>
+            
+            <div class="tr-container">
+                <span class="section-label font-mono" style="margin-bottom: 2rem; display: block; color: var(--muted-current);">06 — THE ARCHIVE</span>
+                <h2 style="font-size: clamp(2rem, 4vw, 4rem); font-family: var(--font-heading); font-weight: 300; margin-bottom: 1rem; line-height: 1.1; color: var(--text-current);">30 projects, one continuous craft.</h2>
+                <p style="font-size: 1.1rem; color: var(--muted-current); max-width: 600px; margin-bottom: 4rem; line-height: 1.6;">Explore the archive index filterable by creative disciplines. Toggle tags to filter case studies dynamically.</p>
+                
+                <!-- Filter Buttons + Search Bar -->
+                <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:4rem; position:relative; z-index:5;">
+                    <div class="archive-filters font-mono" style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:0;">
+                        <button class="archive-filter-btn active" data-filter="all">ALL WORKS</button>
+                        <button class="archive-filter-btn" data-filter="campaign">CAMPAIGN ADS</button>
+                        <button class="archive-filter-btn" data-filter="museum">MUSEUMS & EXP CENTRE</button>
+                        <button class="archive-filter-btn" data-filter="projection">PROJECTION MAPPING</button>
+                        <button class="archive-filter-btn" data-filter="ai">AI STORYTELLING</button>
+                    </div>
+                    <div class="archive-search-wrap">
+                        <input type="text" id="archiveSearchInput" class="archive-search-input font-mono" placeholder="SEARCH PROJECTS…" autocomplete="off">
+                        <span class="archive-search-icon">⌕</span>
+                    </div>
+                </div>
+                
+                <!-- Archive Project Grid (Populated dynamically by main.js) -->
+                <div class="archive-project-grid" id="archiveProjectGrid">
+                    <!-- Project rows/cards rendered dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 05: Client Stories -->
+        <section class="grid-row theme-dark" id="section-home-testimonials" data-section="home-testimonials" style="padding: 8rem 0;">
+            <div class="corner-plus tl"></div>
+            <div class="corner-plus tr"></div>
+            <div class="corner-plus bl"></div>
+            <div class="corner-plus br"></div>
+            <div class="tr-container testimonials-wrap">
+                <span class="section-label font-mono" style="display:block; margin-bottom: 4rem;">CLIENT STORIES</span>
+                <div class="testimonials-grid">
+                    <!-- Card 1 -->
+                    <div class="testimonial-card gsap-fade-up">
+                        <div class="testimonial-quote">
+                            <span class="quote-mark">“</span>
+                            <p data-cms-key="home_testimonial1_quote">Sandeep has a unique ability to bridge historic storytelling with futuristic AI design concepts, creating stunning layouts that capture our museum's vision.</p>
+                        </div>
+                        <div class="testimonial-client">
+                            <h4 class="client-name" data-cms-key="home_testimonial1_author">Museum Project Lead</h4>
+                            <span class="client-company font-mono" data-cms-key="home_testimonial1_company">Exhibition Specialist</span>
+                            <span class="client-project" data-cms-key="home_testimonial1_project">HAL Heritage Museum</span>
+                        </div>
+                    </div>
+                    <!-- Card 2 -->
+                    <div class="testimonial-card gsap-fade-up">
+                        <div class="testimonial-quote">
+                            <span class="quote-mark">“</span>
+                            <p data-cms-key="home_testimonial2_quote">The architectural projection show was breathtaking. Sandeep's mapping precision and cinematic motion timing were flawless from storyboard to final light show.</p>
+                        </div>
+                        <div class="testimonial-client">
+                            <h4 class="client-name" data-cms-key="home_testimonial2_author">Cultural Director</h4>
+                            <span class="client-company font-mono" data-cms-key="home_testimonial2_company">State Heritage Council</span>
+                            <span class="client-project" data-cms-key="home_testimonial2_project">Ravidas Projection Spectacular</span>
+                        </div>
+                    </div>
+                    <!-- Card 3 -->
+                    <div class="testimonial-card gsap-fade-up">
+                        <div class="testimonial-quote">
+                            <span class="quote-mark">“</span>
+                            <p data-cms-key="home_testimonial3_quote">Stunning AI pre-visualizations. Sandeep developed full style sheets, creature designs, and cinematic environments that aligned our film production teams instantly.</p>
+                        </div>
+                        <div class="testimonial-client">
+                            <h4 class="client-name" data-cms-key="home_testimonial3_author">Executive Producer</h4>
+                            <span class="client-company font-mono" data-cms-key="home_testimonial3_company">Aura Films & Media</span>
+                            <span class="client-project" data-cms-key="home_testimonial3_project">Agnipankh Pre-Viz</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 06: Light & Sound Shows (Before/After Image Reveal) -->
+        <section class="grid-row theme-dark" id="section-home-scrolling-text" data-section="home-scrolling-text" style="padding: 8rem 0; overflow: hidden; background-color: #0B0B0B; border-top: 1px solid rgba(255,255,255,0.05);">
+            <div class="corner-plus tl"></div>
+            <div class="corner-plus tr"></div>
+            <div class="corner-plus bl"></div>
+            <div class="corner-plus br"></div>
+            
+            <div class="tr-container">
+                <span class="section-label font-mono" style="color: var(--color-accent); margin-bottom: 1.5rem; display: block;" data-cms-key="home_light_sound_label">06 — LIGHT & SOUND SHOWS</span>
+                <h2 style="font-size: clamp(2rem, 4vw, 4rem); font-family: var(--font-heading); font-weight: 300; margin-bottom: 3.5rem; line-height: 1.2; color: #FFFFFF;" data-cms-key="home_light_sound_title">Light & Sound Shows</h2>
+                
+                <!-- Interactive Comparison Slider -->
+                <div class="reveal-container" id="imageRevealContainer">
+                    <!-- Image 1 (Before - Base layer) -->
+                    <div class="reveal-img-wrap img-before">
+                        <img src="index image/Comparison Image 1 (Base - drop zone).jpg" alt="Light and Sound Show Original" class="parallax-reveal-img" data-cms-key="light_sound_reveal_img1">
+                    </div>
+                    
+                    <!-- Image 2 (After - Masked reveal layer) -->
+                    <div class="reveal-img-wrap img-after" id="revealImgAfter">
+                        <img src="index image/Comparison Image 2 (Masked - drop zone).jpg" alt="Light and Sound Show Art" class="parallax-reveal-img" id="revealInnerImage" data-cms-key="light_sound_reveal_img2">
+                    </div>
+                    
+                    <!-- Slider Handle Line -->
+                    <div class="reveal-handle" id="revealHandle">
+                        <div class="reveal-handle-line"></div>
+                        <div class="reveal-handle-button">
+                            <span class="handle-arrow-left">←</span>
+                            <span class="handle-arrow-right">→</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Experience Button Link -->
+                <div class="light-sound-btn-wrap" style="margin-top: 3.5rem; display: flex; justify-content: center; position: relative; z-index: 10;">
+                    <a href="light-and-sound-show/index.html" class="btn btn-outlined">
+                        <span>EXPERIENCE LIGHT & SOUND</span>
+                        <div class="btn-arrow">→</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Subtle background scrolling text overlaid below -->
+            <div class="scrolling-text-container" style="margin-top: 6rem; opacity: 0.15; width: 100%; display: flex; justify-content: center; align-items: center; white-space: nowrap;">
+                <h2 class="huge-scrolling-title" data-cms-key="home_light_sound_scroll_text">LIGHT & SOUND SHOWS</h2>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ── Fixed Up / Down Section Navigator ── -->
+    <div class="scroll-nav" id="scrollNav">
+        <button class="scroll-nav-btn" id="scrollNavUp" aria-label="Scroll to previous section" onclick="scrollNavStep(-1)">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polyline points="3,12 9,6 15,12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="scroll-nav-btn" id="scrollNavDown" aria-label="Scroll to next section" onclick="scrollNavStep(1)">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polyline points="3,6 9,12 15,6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="theme-sand footer-overhaul" style="padding: 8rem 0 4rem 0;">
+        <div class="tr-container footer-wrap">
+            <div class="footer-huge-cta">
+                <h2 class="footer-huge-title">
+                    LET'S CREATE<br>SOMETHING<br>MEANINGFUL
+                </h2>
+                <div class="footer-btn-wrap">
+                    <a href="contact.html" class="btn btn-primary btn-cta">START A PROJECT</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom-grid">
+                <div class="footer-col-left">
+                    <span class="footer-label font-mono">CONTACT</span>
+                    <a href="mailto:design.sandeeppatel@gmail.com" class="footer-email-link" data-cms-key="contact_email">design.sandeeppatel@gmail.com</a>
+                    <span class="footer-copy-text" style="display:block; margin-top: 2rem; opacity: 1;"><a href="cms-login.html" class="cms-footer-link">©</a> 2026 Sandeep Patel ·&mdash; Creative Studio</span>
+                </div>
+                <div class="footer-col-right">
+                    <span class="footer-label font-mono">FOLLOW</span>
+                    <ul class="footer-social-links">
+                        <li><a href="https://www.instagram.com/sandy_clickzzzz" target="_blank" class="social-link-item">Instagram</a></li>
+                        <li><a href="https://www.linkedin.com/in/sandeep-patel-ab5878237" target="_blank" class="social-link-item">LinkedIn</a></li>
+                        <li><a href="https://www.behance.net/sandeeppat2070" target="_blank" class="social-link-item">Behance</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts: CMS core first, then loader, then data, then main -->
+    <script src="js/cms-core.js"></script>
+    <script src="js/site-loader.js?v=42"></script>
+    <script src="js/projects-data.js?v=24"></script>
+    <script src="js/main.js"></script>
+
+    <!-- Resume Download Button: Load from CMS data -->
+    <script>
+    (function() {
+        function initResumeBtn() {
+            var btn = document.getElementById('resumeDownloadBtn');
+            if (!btn) return;
+            try {
+                var raw = localStorage.getItem('sandeep_site_data_v2');
+                var data = raw ? JSON.parse(raw) : {};
+                var resumeData = data['home_about_resume_file'] || '';
+                var resumeName = data['home_about_resume_filename'] || 'resume.pdf';
+                if (resumeData) {
+                    btn.href = resumeData;
+                    btn.setAttribute('download', resumeName);
+                    btn.style.display = 'inline-flex';
+                } else {
+                    btn.style.display = 'none';
+                }
+            } catch(e) {}
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initResumeBtn);
+        } else {
+            initResumeBtn();
+        }
+        window.addEventListener('load', function() { setTimeout(initResumeBtn, 400); });
+    })();
+    </script>
+
+    <!-- ── Section Scroll Navigator JS ── -->
+    <script>
+    (function() {
+        // Complete ordered list of all sections on the page + footer
+        var SECTIONS = [
+            'section-home-hero',
+            'section-home-about',
+            'section-home-what-i-do',
+            'section-home-tools',
+            'section-home-journey',
+            'section-home-education',
+            'section-home-selected-work',
+            'section-home-archive',
+            'section-home-testimonials',
+            'section-home-scrolling-text'
+        ];
+
+        var nav     = document.getElementById('scrollNav');
+        var upBtn   = document.getElementById('scrollNavUp');
+        var downBtn = document.getElementById('scrollNavDown');
+
+        // Show nav once user scrolls past hero
+        window.addEventListener('scroll', function() {
+            nav.classList.toggle('visible', window.scrollY > 120);
+            updateButtons();
+        }, { passive: true });
+
+        function getActiveIdx() {
+            var winH = window.innerHeight;
+            var best = 0, bestScore = -Infinity;
+            SECTIONS.forEach(function(id, i) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                var rect = el.getBoundingClientRect();
+                var midpoint = rect.top + rect.height / 2;
+                var score = -Math.abs(midpoint - winH / 2);
+                if (score > bestScore) { bestScore = score; best = i; }
+            });
+            return best;
+        }
+
+        function updateButtons() {
+            var idx = getActiveIdx();
+            // Up button: disabled only when already at the very top (hero)
+            upBtn.disabled = (window.scrollY < 10);
+            // Down button: disabled when at last section or near bottom of page
+            var nearBottom = (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 80);
+            downBtn.disabled = nearBottom;
+        }
+
+        window.scrollNavStep = function(dir) {
+            if (dir === -1) {
+                // UP → always jump straight to the top / hero section
+                var hero = document.getElementById('section-home-hero');
+                if (hero) {
+                    hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                setTimeout(updateButtons, 700);
+                return;
+            }
+            // DOWN → move to next section, or footer if at last section
+            var idx = getActiveIdx();
+            if (idx < SECTIONS.length - 1) {
+                var next = document.getElementById(SECTIONS[idx + 1]);
+                if (next) next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                // Already at last section — scroll to footer
+                var footer = document.querySelector('footer');
+                if (footer) footer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            setTimeout(updateButtons, 700);
+        };
+
+        // Init
+        setTimeout(updateButtons, 600);
+    })();
+    </script>
+    <script>
+    (function(){
+        var btn = document.getElementById('hamburgerBtn');
+        var drawer = document.getElementById('mobileMenuDrawer');
+        var overlay = document.getElementById('mobileMenuOverlay');
+        if (!btn || !drawer) return;
+        function openMenu(){
+            drawer.classList.add('open');
+            btn.classList.add('open');
+            btn.setAttribute('aria-expanded','true');
+            if(overlay) overlay.classList.add('active');
+            document.body.style.overflow='hidden';
+        }
+        function closeMenu(){
+            drawer.classList.remove('open');
+            btn.classList.remove('open');
+            btn.setAttribute('aria-expanded','false');
+            if(overlay) overlay.classList.remove('active');
+            document.body.style.overflow='';
+        }
+        btn.addEventListener('click', function(){
+            drawer.classList.contains('open') ? closeMenu() : openMenu();
+        });
+        if(overlay) overlay.addEventListener('click', closeMenu);
+        drawer.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
+    })();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,804 @@
+/* ============================================================
+   MUSEUM EXPERIENCE CSS — Sandeep Patel Portfolio
+   A luxury, minimal, architectural, and cinematic design system
+   ============================================================ */
+
+/* --- Fonts and Root Variables --- */
+:root {
+    --color-bg-museum: #050505;
+    --color-accent-museum: #D7B16A;
+    --color-text-museum: #F8F9FA;
+    --font-heading-museum: 'Cormorant Garamond', 'Playfair Display', serif;
+    --font-sans-museum: 'Inter', 'Space Grotesk', sans-serif;
+    --font-mono-museum: 'Space Mono', monospace;
+    --perspective-strength: 800px;
+    --corridor-width: 1200px;
+    --hover-scale: 1.05;
+}
+
+/* --- Base Layout --- */
+body.museum-theme {
+    background-color: var(--color-bg-museum);
+    color: var(--color-text-museum);
+    font-family: var(--font-sans-museum);
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent traditional scrolling, scroll handled by scroll container */
+    width: 100vw;
+    height: 100vh;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Hide default cursor on desktop */
+@media (min-width: 768px) {
+    body.museum-theme * {
+        cursor: none !important;
+    }
+}
+
+/* --- Preloader --- */
+.museum-preloader {
+    position: fixed;
+    inset: 0;
+    background: #030303;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 1.5s cubic-bezier(0.85, 0, 0.15, 1), visibility 1.5s;
+}
+
+.museum-preloader.loaded {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.preloader-title {
+    font-family: var(--font-heading-museum);
+    font-size: clamp(2rem, 5vw, 4.5rem);
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    color: var(--color-accent-museum);
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+}
+
+.preloader-loader-bar {
+    width: 200px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.preloader-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: var(--color-accent-museum);
+    transition: width 0.1s linear;
+}
+
+/* --- Custom Spotlight Cursor --- */
+.museum-cursor {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(215, 177, 106, 0.3);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s, background-color 0.3s, border-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.museum-cursor::after {
+    content: '';
+    width: 4px;
+    height: 4px;
+    background-color: var(--color-accent-museum);
+    border-radius: 50%;
+}
+
+.museum-cursor.explore {
+    width: 80px;
+    height: 80px;
+    background-color: rgba(215, 177, 106, 0.1);
+    border-color: var(--color-accent-museum);
+}
+
+.museum-cursor.explore::after {
+    content: 'EXPLORE';
+    font-family: var(--font-mono-museum);
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    color: var(--color-accent-museum);
+    background: none;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+}
+
+.museum-cursor-light {
+    position: fixed;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(215, 177, 106, 0.035) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+}
+
+/* --- Scroll Track (Defines Scroll Length) --- */
+.museum-scroll-track {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 500vh; /* Determines length of walk */
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* --- Hero Entry Overlay --- */
+.museum-hero-entry {
+    position: fixed;
+    inset: 0;
+    z-index: 990;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(5, 5, 5, 0.98);
+    transition: opacity 1.5s cubic-bezier(0.85, 0, 0.15, 1), visibility 1.5s;
+    text-align: center;
+    padding: 2rem;
+}
+
+.museum-hero-entry.entered {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.museum-hero-title {
+    font-family: var(--font-heading-museum);
+    font-size: clamp(2.5rem, 7vw, 6.5rem);
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: var(--color-text-museum);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    line-height: 1.1;
+    opacity: 0;
+    transform: translateY(40px);
+}
+
+.museum-hero-subtitle {
+    font-family: var(--font-mono-museum);
+    font-size: clamp(0.75rem, 2vw, 1rem);
+    letter-spacing: 0.4em;
+    color: var(--color-accent-museum);
+    margin-bottom: 2.5rem;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.museum-hero-desc {
+    font-family: var(--font-sans-museum);
+    font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+    font-weight: 300;
+    color: rgba(248, 249, 250, 0.6);
+    max-width: 600px;
+    line-height: 1.8;
+    margin-bottom: 3.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.museum-enter-btn {
+    background: transparent;
+    border: 1px solid var(--color-accent-museum);
+    color: var(--color-accent-museum);
+    padding: 1.25rem 3rem;
+    font-family: var(--font-mono-museum);
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.museum-enter-btn:hover {
+    background-color: var(--color-accent-museum);
+    color: #000000;
+    box-shadow: 0 0 30px rgba(215, 177, 106, 0.4);
+}
+
+/* --- Viewport & 3D Space --- */
+.museum-viewport {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    perspective: var(--perspective-strength);
+    perspective-origin: 50% 45%;
+    overflow: hidden;
+    background-color: var(--color-bg-museum);
+}
+
+/* Fog & Atmospheric Lighting Overlay */
+.museum-ambient-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 80;
+    background: radial-gradient(circle at center, transparent 30%, rgba(5, 5, 5, 0.85) 90%);
+    pointer-events: none;
+}
+
+.museum-fog-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 70;
+    background: linear-gradient(to bottom, transparent, rgba(5,5,5,0.4) 60%, rgba(5,5,5,0.9));
+    pointer-events: none;
+}
+
+/* 3D Room Container */
+.corridor-3d {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* --- Architecture elements --- */
+/* Ceiling */
+.corridor-ceiling {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) rotateX(90deg);
+    transform-origin: top center;
+    width: calc(var(--corridor-width) * 1.5);
+    height: 5000px;
+    background: repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 100px),
+                linear-gradient(to bottom, #070708, #030303);
+    z-index: 5;
+}
+
+/* Ceiling Spotlights */
+.ceiling-spotlight {
+    position: absolute;
+    width: 250px;
+    height: 600px;
+    background: radial-gradient(ellipse at top, rgba(215, 177, 106, 0.2) 0%, rgba(215, 177, 106, 0.04) 40%, transparent 70%);
+    transform-origin: top center;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    z-index: 15;
+}
+
+/* Reflective Floor */
+.corridor-floor {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) rotateX(90deg);
+    transform-origin: bottom center;
+    width: calc(var(--corridor-width) * 1.5);
+    height: 5000px;
+    background: linear-gradient(to top, rgba(5, 5, 5, 0.8), rgba(5, 5, 5, 0.98));
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 10;
+}
+
+.polished-reflection-cover {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 52vh; /* Coincides with bottom half */
+    z-index: 12;
+    background: linear-gradient(180deg, transparent 0%, rgba(5, 5, 5, 0.3) 10%, rgba(5, 5, 5, 0.85) 60%, #050505 100%);
+    backdrop-filter: blur(2px);
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+    pointer-events: none;
+}
+
+/* --- Project Frames (3D Room Content) --- */
+.museum-frame-container {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform-style: preserve-3d;
+    transform-origin: center center;
+    will-change: transform;
+}
+
+.museum-frame {
+    position: relative;
+    background: #0d0d0f;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+    transform-style: preserve-3d;
+    transition: box-shadow 0.5s ease, border-color 0.5s ease;
+    cursor: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.frame-media {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    background: #030303;
+}
+
+.frame-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.museum-frame:hover .frame-image {
+    transform: scale(1.05);
+}
+
+/* Glass Reflection Layer */
+.frame-glass-reflection {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.03) 40%, transparent 60%, rgba(255,255,255,0.08) 100%);
+    z-index: 5;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Highlight border */
+.frame-highlight {
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 6;
+    pointer-events: none;
+    transition: border-color 0.5s;
+}
+
+.museum-frame:hover .frame-highlight {
+    border-color: rgba(215, 177, 106, 0.6);
+}
+
+/* Soft Glow */
+.frame-glow {
+    position: absolute;
+    inset: -10px;
+    background: radial-gradient(circle, rgba(215, 177, 106, 0.15) 0%, transparent 70%);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+}
+
+.museum-frame:hover .frame-glow {
+    opacity: 1;
+}
+
+/* Frame Caption Overlay */
+.frame-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+    padding: 1.5rem;
+    z-index: 10;
+    pointer-events: none;
+    transform: translateY(10px);
+    opacity: 0.85;
+    transition: transform 0.5s, opacity 0.5s;
+}
+
+.museum-frame:hover .frame-caption {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.frame-title {
+    font-family: var(--font-heading-museum);
+    font-size: 1.25rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    color: var(--color-text-museum);
+    margin: 0 0 0.25rem 0;
+}
+
+.frame-subtitle {
+    font-family: var(--font-mono-museum);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--color-accent-museum);
+    text-transform: uppercase;
+}
+
+/* Spotlight Beam for specific frame */
+.frame-spotlight-beam {
+    position: absolute;
+    top: -400px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 450px;
+    background: radial-gradient(ellipse at top, rgba(215, 177, 106, 0.25) 0%, rgba(215, 177, 106, 0.05) 50%, transparent 80%);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    z-index: 4;
+    transition: opacity 0.5s;
+}
+
+/* --- Particle overlay --- */
+.museum-particles-container {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background-color: var(--color-accent-museum);
+    border-radius: 50%;
+    opacity: 0.3;
+}
+
+/* --- Fullscreen Project Case Study Viewer --- */
+.museum-project-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    background-color: var(--color-bg-museum);
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.8s;
+}
+
+.museum-project-viewer.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.viewer-header {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 3rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    position: sticky;
+    top: 0;
+    background-color: rgba(5,5,5,0.9);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+.btn-viewer-back {
+    background: none;
+    border: none;
+    color: var(--color-text-museum);
+    font-family: var(--font-mono-museum);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: color 0.3s;
+}
+
+.btn-viewer-back:hover {
+    color: var(--color-accent-museum);
+}
+
+.btn-viewer-back svg {
+    transition: transform 0.3s;
+}
+
+.btn-viewer-back:hover svg {
+    transform: translateX(-5px);
+}
+
+.viewer-content-wrap {
+    max-width: 1200px;
+    margin: 4rem auto;
+    padding: 0 2rem;
+}
+
+.viewer-hero-image-wrap {
+    width: 100%;
+    height: 55vh;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 4rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.viewer-hero-image-wrap img, .viewer-hero-image-wrap video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.viewer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 4rem;
+    margin-bottom: 5rem;
+}
+
+.viewer-left h1 {
+    font-family: var(--font-heading-museum);
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 300;
+    line-height: 1.25;
+    margin: 0 0 1rem 0;
+    color: var(--color-text-museum);
+}
+
+.viewer-left .viewer-subtitle {
+    font-family: var(--font-mono-museum);
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    color: var(--color-accent-museum);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 3rem;
+}
+
+.viewer-section-title {
+    font-family: var(--font-heading-museum);
+    font-size: 1.75rem;
+    font-weight: 300;
+    margin: 3rem 0 1.25rem 0;
+    color: var(--color-accent-museum);
+}
+
+.viewer-text {
+    font-size: 1rem;
+    line-height: 1.85;
+    color: rgba(248, 249, 250, 0.7);
+    font-weight: 300;
+    margin-bottom: 2rem;
+}
+
+.viewer-meta-card {
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 2rem;
+    position: sticky;
+    top: 120px;
+}
+
+.meta-group {
+    margin-bottom: 1.75rem;
+}
+
+.meta-group:last-child {
+    margin-bottom: 0;
+}
+
+.meta-label {
+    font-family: var(--font-mono-museum);
+    font-size: 0.65rem;
+    color: rgba(248, 249, 250, 0.4);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.meta-value {
+    font-size: 0.9rem;
+    color: var(--color-text-museum);
+    font-weight: 400;
+}
+
+/* Gallery Section */
+.viewer-gallery-title {
+    font-family: var(--font-heading-museum);
+    font-size: 1.8rem;
+    font-weight: 300;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.viewer-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 5rem;
+}
+
+.viewer-gallery-item {
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    aspect-ratio: 3/2;
+}
+
+.viewer-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.viewer-gallery-item:hover img {
+    transform: scale(1.03);
+}
+
+.viewer-video-embed {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.viewer-video-embed iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* --- Header / UI Controls --- */
+.museum-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 90px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4rem;
+    pointer-events: none;
+}
+
+.museum-header * {
+    pointer-events: auto;
+}
+
+.museum-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--color-text-museum);
+}
+
+.museum-logo-icon {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--color-accent-museum);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono-museum);
+    font-size: 0.9rem;
+    color: var(--color-accent-museum);
+}
+
+.museum-logo-text {
+    font-family: var(--font-heading-museum);
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* --- Scroll Instruction --- */
+.scroll-instruction {
+    position: fixed;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 85;
+    text-align: center;
+    pointer-events: none;
+    transition: opacity 1s;
+}
+
+.scroll-mouse-icon {
+    width: 20px;
+    height: 32px;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
+    margin: 0 auto 0.75rem auto;
+    position: relative;
+}
+
+.scroll-mouse-wheel {
+    width: 2px;
+    height: 6px;
+    background-color: var(--color-accent-museum);
+    border-radius: 1px;
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: scrollWheelAnim 1.8s infinite ease-in-out;
+}
+
+.scroll-text {
+    font-family: var(--font-mono-museum);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+}
+
+/* Animations */
+@keyframes scrollWheelAnim {
+    0% {
+        top: 6px;
+        opacity: 1;
+    }
+    80% {
+        top: 18px;
+        opacity: 0;
+    }
+    100% {
+        top: 6px;
+        opacity: 0;
+    }
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 991px) {
+    .viewer-grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+    }
+    .viewer-meta-card {
+        position: relative;
+        top: 0;
+    }
+    .viewer-gallery-grid {
+        grid-template-columns: 1fr;
+    }
+    .museum-header {
+        padding: 0 2rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .polished-reflection-cover {
+        display: none; /* Hide reflections on small screens for performance */
+    }
+    .corridor-floor {
+        background: #070708;
+    }
+}

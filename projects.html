@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandeep - Portfolio</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            background-color: #050505; 
+        }
+
+        /* =========================================
+           GLOBAL BACK BUTTON
+           ========================================= */
+        .back-btn {
+            position: fixed;
+            top: 40px;
+            left: 50px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            /* Ye background ke hisaab se color change karega (Dark pe white, Light pe dark) */
+            mix-blend-mode: difference; 
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-8px);
+        }
+
+        .back-btn .arrow {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        /* =========================================
+           SECTION 1: HERO BANNER 
+           ========================================= */
+        .hero-container {
+            position: relative;
+            width: 100vw;
+            height: 300vh; 
+            z-index: 10;
+        }
+
+        .hero-sticky {
+            position: sticky;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #050505 70%);
+            color: #ffffff;
+        }
+
+        .marquee-container {
+            position: absolute;
+            top: 40%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 100%;
+            height: 600px;
+            z-index: 1; 
+            display: flex;
+            align-items: center;
+        }
+
+        .marquee-track {
+            display: flex;
+            align-items: center;
+            gap: 40px; 
+            width: max-content;
+            will-change: transform;
+            padding: 0 50px;
+        }
+
+        .card-wrap {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .wrap-up { transform: translateY(-120px) scale(0.9); }
+        .wrap-down { transform: translateY(140px) scale(1.1); }
+        .wrap-mid { transform: translateY(10px) scale(0.85); }
+        .wrap-high { transform: translateY(-200px) scale(0.7); }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-25px) rotate(3deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        @keyframes float-reverse {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(20px) rotate(-2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .float-1 { animation: float 6s ease-in-out infinite; }
+        .float-2 { animation: float-reverse 8s ease-in-out infinite; }
+        .float-3 { animation: float 7s ease-in-out infinite; }
+        .float-4 { animation: float-reverse 9s ease-in-out infinite; }
+
+        .hero-card {
+            width: 240px; 
+            height: 340px;
+            background: #111;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.9);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+
+        .hero-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(80%) brightness(0.3);
+            transition: all 0.5s ease;
+        }
+
+        .hero-card:hover {
+            box-shadow: 0 25px 50px rgba(195, 164, 100, 0.4); 
+            border: 1px solid rgba(195, 164, 100, 0.8); 
+            cursor: pointer;
+        }
+
+        .hero-card:hover img {
+            filter: grayscale(0%) brightness(1.2); 
+            transform: scale(1.1); 
+        }
+
+        .subject-img {
+            position: absolute;
+            bottom: -5%;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 90vh; 
+            z-index: 2; 
+            pointer-events: none; 
+        }
+
+        .hero-text {
+            position: relative;
+            z-index: 3;
+            padding: 0 0 60px 80px;
+        }
+
+        .subtitle {
+            color: #c3a464; 
+            font-size: 14px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .title {
+            font-family: 'Playfair Display', serif;
+            font-size: 80px;
+            line-height: 1.1;
+            font-weight: 400;
+        }
+
+        /* =========================================
+           SECTION 2: DESIGN IN MOTION (Text Removed)
+           ========================================= */
+        .motion-container {
+            position: relative;
+            width: 100vw;
+            height: 400vh; 
+            z-index: 20;
+            background-color: #dcdcdc; 
+        }
+
+        .motion-sticky {
+            position: sticky;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            perspective: 1500px; 
+            background-color: #dcdcdc; 
+        }
+
+        .carousel-3d {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            z-index: 1;
+            will-change: transform; 
+        }
+
+        .motion-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 320px;
+            height: 200px;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            transform-origin: center center;
+            will-change: transform;
+            cursor: pointer;
+        }
+
+        .motion-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .motion-card:hover img {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Back Button -->
+    <a href="javascript:history.back()" class="back-btn">
+        <span class="arrow">←</span> Back
+    </a>
+
+    <section class="hero-container" id="heroSection">
+        <div class="hero-sticky">
+            <div class="marquee-container">
+                <div class="marquee-track" id="heroScrollTrack">
+                    
+                    <div class="card-wrap wrap-up"><div class="hero-card float-1"><img src="https://images.unsplash.com/photo-1618761714954-0b8cd0026356?auto=format&fit=crop&q=100&w=2160" alt="Work"></div></div>
+                    <div class="card-wrap wrap-down"><div class="hero-card float-2"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=100&w=2160" alt="Work"></div></div>
+                    <div class="card-wrap wrap-mid"><div class="hero-card float-3"><img src="https://images.unsplash.com/photo-1607252656733-fd742750d75a?auto=format&fit=crop&q=100&w=2160" alt="Work"></div></div>
+                    <div class="card-wrap wrap-high"><div class="hero-card float-4"><img src="https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&q=100&w=2160" alt="Work"></div></div>
+                    <div class="card-wrap wrap-down"><div class="hero-card float-1"><img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=100&w=2160" alt="Work"></div></div>
+                    <div class="card-wrap wrap-up"><div class="hero-card float-3"><img src="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=100&w=2160" alt="Work"></div></div>
+                    
+                    <!-- Loop duplicate -->
+                    <div class="card-wrap wrap-up"><div class="hero-card float-1"><img src="https://images.unsplash.com/photo-1618761714954-0b8cd0026356?auto=format&fit=crop&q=100&w=2160" alt="Work"></div></div>
+                    <div class="card-wrap wrap-down"><div class="hero-card float-2"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=100&w=2160" alt="Work"></div></div>
+                    <div class="card-wrap wrap-mid"><div class="hero-card float-3"><img src="https://images.unsplash.com/photo-1607252656733-fd742750d75a?auto=format&fit=crop&q=100&w=2160" alt="Work"></div></div>
+
+                </div>
+            </div>
+
+            <img src="https://png.pngtree.com/png-clipart/20231019/original/pngtree-user-profile-avatar-png-image_13369988.png" alt="Sandeep" class="subject-img">
+
+            <div class="hero-text">
+                <div class="subtitle">HI, I'M SANDEEP</div>
+                <h1 class="title">Graphic<br>Designer</h1>
+            </div>
+        </div>
+    </section>
+
+    <section class="motion-container" id="motionSection">
+        <div class="motion-sticky">
+            <!-- Background Text Removed from here -->
+
+            <div class="carousel-3d" id="motionCarousel">
+                <div class="motion-card"><img src="https://images.unsplash.com/photo-1618761714954-0b8cd0026356?auto=format&fit=crop&q=100&w=2160" alt="UI"></div>
+                <div class="motion-card"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=100&w=2160" alt="UI"></div>
+                <div class="motion-card"><img src="https://images.unsplash.com/photo-1607252656733-fd742750d75a?auto=format&fit=crop&q=100&w=2160" alt="UI"></div>
+                <div class="motion-card"><img src="https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&q=100&w=2160" alt="UI"></div>
+                <div class="motion-card"><img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=100&w=2160" alt="UI"></div>
+                <div class="motion-card"><img src="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=100&w=2160" alt="UI"></div>
+                <div class="motion-card"><img src="https://images.unsplash.com/photo-1618761714954-0b8cd0026356?auto=format&fit=crop&q=100&w=2160" alt="UI"></div>
+                <div class="motion-card"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=100&w=2160" alt="UI"></div>
+                <div class="motion-card"><img src="https://images.unsplash.com/photo-1607252656733-fd742750d75a?auto=format&fit=crop&q=100&w=2160" alt="UI"></div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const heroSection = document.getElementById('heroSection');
+        const heroTrack = document.getElementById('heroScrollTrack');
+        const motionSection = document.getElementById('motionSection');
+        const motionCarousel = document.getElementById('motionCarousel');
+        const motionCards = document.querySelectorAll('.motion-card');
+        
+        const numCards = motionCards.length;
+        const radius = 1000; 
+        const cols = 3; 
+        const cardWidth = 320;
+        const cardHeight = 200; 
+        const gapX = 40; 
+        const gapY = 40; 
+        const startX = -((cols - 1) * (cardWidth + gapX)) / 2;
+        const startY = -((Math.ceil(numCards/cols) - 1) * (cardHeight + gapY)) / 2;
+
+        let currentScroll = 0;
+        let targetScroll = 0;
+        const ease = 0.08; 
+
+        window.addEventListener('scroll', () => {
+            targetScroll = window.scrollY;
+        });
+
+        function updateScrollAnimations() {
+            currentScroll += (targetScroll - currentScroll) * ease;
+
+            // ----- 1. HERO ANIMATION -----
+            const heroStart = heroSection.offsetTop;
+            const heroEnd = heroStart + heroSection.offsetHeight - window.innerHeight;
+            
+            let heroProgress = (currentScroll - heroStart) / (heroEnd - heroStart);
+            heroProgress = Math.max(0, Math.min(1, heroProgress));
+            
+            heroTrack.style.transform = `translateX(${heroProgress * -50}%)`;
+
+            // ----- 2. MOTION (3D UNWRAP) ANIMATION -----
+            const motionStart = motionSection.offsetTop;
+            const motionEnd = motionStart + motionSection.offsetHeight - window.innerHeight;
+            
+            let motionProgress = (currentScroll - motionStart) / (motionEnd - motionStart);
+            motionProgress = Math.max(0, Math.min(1, motionProgress));
+
+            const easeProgress = motionProgress < 0.5 
+                ? 2 * motionProgress * motionProgress 
+                : 1 - Math.pow(-2 * motionProgress + 2, 2) / 2;
+            
+            const sceneTilt = -10 + (10 * easeProgress); 
+            motionCarousel.style.transform = `rotateX(${sceneTilt}deg)`;
+
+            motionCards.forEach((card, index) => {
+                const angle = (index / numCards) * Math.PI * 2;
+                const x3D = Math.sin(angle) * radius;
+                const z3D = Math.cos(angle) * radius;
+                const rotY3D = angle * (180 / Math.PI); 
+
+                const col = index % cols;
+                const row = Math.floor(index / cols);
+                const xGrid = startX + col * (cardWidth + gapX);
+                const yGrid = startY + row * (cardHeight + gapY);
+
+                const currentX = x3D + (xGrid - x3D) * easeProgress;
+                const currentY = 0 + (yGrid - 0) * easeProgress; 
+                const currentZ = z3D + (0 - z3D) * easeProgress;
+                const currentRotY = rotY3D + (0 - rotY3D) * easeProgress;
+
+                card.style.transform = `translate(-50%, -50%) translate3d(${currentX}px, ${currentY}px, ${currentZ}px) rotateY(${currentRotY}deg)`;
+            });
+
+            requestAnimationFrame(updateScrollAnimations);
+        }
+
+        updateScrollAnimations();
+    </script>
+</body>
+</html>

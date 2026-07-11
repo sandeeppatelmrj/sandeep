@@ -1,0 +1,7 @@
+﻿    el.innerHTML = allUrls.map((url, i) => {
+        const isUploaded = i < pGalleryDataUrls.length;
+        const removeCall = isUploaded 
+            ? `pGalleryDataUrls.splice(${i},1);renderGalleryPreviews();`
+            : `removeExternalGalleryUrl(${i - pGalleryDataUrls.length});`;
+        const resolvedUrl = resolveDirectMediaUrl(url, 'image') || url;
+        return `

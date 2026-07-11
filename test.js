@@ -1,0 +1,2607 @@
+﻿
+// ═══════════════════════════════════════════════
+//  PHOTO DATA
+// ═══════════════════════════════════════════════
+const GALLERY_PHOTOS = [
+    {
+        "url":  "GALLERY IMAGES/1575018824430-01.jpeg",
+        "title":  "1575018824430-01"
+    },
+    {
+        "url":  "GALLERY IMAGES/1579192057243.jpg",
+        "title":  "1579192057243"
+    },
+    {
+        "url":  "GALLERY IMAGES/BACK WALL KE LIYE.jpg",
+        "title":  "BACK WALL KE LIYE"
+    },
+    {
+        "url":  "GALLERY IMAGES/GOPR1534 (1).jpg",
+        "title":  "GOPR1534 (1)"
+    },
+    {
+        "url":  "GALLERY IMAGES/IMG_20190315_124246 (2).jpg",
+        "title":  "IMG_20190315_124246 (2)"
+    },
+    {
+        "url":  "GALLERY IMAGES/IMG_20200118_130236.jpg",
+        "title":  "IMG_20200118_130236"
+    },
+    {
+        "url":  "GALLERY IMAGES/IMG_20201010_060638 (1).jpg",
+        "title":  "IMG_20201010_060638 (1)"
+    },
+    {
+        "url":  "GALLERY IMAGES/IMG_20220516_110600_775.webp",
+        "title":  "IMG_20220516_110600_775"
+    },
+    {
+        "url":  "GALLERY IMAGES/IMG_20220816_171303.jpg",
+        "title":  "IMG_20220816_171303"
+    },
+    {
+        "url":  "GALLERY IMAGES/IMG_3011.jpg",
+        "title":  "IMG_3011"
+    },
+    {
+        "url":  "GALLERY IMAGES/IMG_8476.jpg",
+        "title":  "IMG_8476"
+    },
+    {
+        "url":  "GALLERY IMAGES/IMG_9106-01.jpg",
+        "title":  "IMG_9106-01"
+    },
+    {
+        "url":  "GALLERY IMAGES/KOLORO_1643401729195.jpg",
+        "title":  "KOLORO_1643401729195"
+    },
+    {
+        "url":  "GALLERY IMAGES/KOLORO_1643614624799.jpg",
+        "title":  "KOLORO_1643614624799"
+    },
+    {
+        "url":  "GALLERY IMAGES/KOLORO_1646888037418.jpg",
+        "title":  "KOLORO_1646888037418"
+    },
+    {
+        "url":  "GALLERY IMAGES/LRM_EXPORT_191967000733716_20190704_193850361.jpeg",
+        "title":  "LRM_EXPORT_191967000733716_20190704_193850361"
+    },
+    {
+        "url":  "GALLERY IMAGES/quickshot_9196921874610089569.jpg",
+        "title":  "quickshot_9196921874610089569"
+    }
+];
+let loadedCount = 0; let expectedCount = 0;
+const galleryCanvasMeshes = [];
+const galLeftMeshes = [];
+const galRightMeshes = [];
+const circCanvasMeshes = [];
+
+// ─── DAY/NIGHT STATE ───
+let isNightMode = false;
+let nightTransition = 0.0; // 0=day, 1=night, animates smoothly
+
+// ═══════════════════════════════════════════════
+//  RENDERER & SCENE
+// ═══════════════════════════════════════════════
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+
+// Target 120 FPS for smooth experience
+let _lastFrameTime = 0;
+const _targetFPS = 120;
+const _frameDuration = 1000 / _targetFPS;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#f5f5f5');
+scene.fog = new THREE.FogExp2('#f5f5f5', 0.005);
+
+const camera = new THREE.PerspectiveCamera(65,window.innerWidth/window.innerHeight,0.05,300);
+
+// ═══════════════════════════════════════════════
+//  DIMENSIONS
+// ═══════════════════════════════════════════════
+const GAL_W = 14, GAL_H = 8, GAL_L = 70;
+const R = 32, ROOM_H = 8;
+const offsetZ = Math.sqrt(R*R - (GAL_W/2)*(GAL_W/2));
+const ROOM_Z = -GAL_L - offsetZ + 2;
+const gapAngle = Math.atan2(GAL_W/2, offsetZ);
+
+// ═══════════════════════════════════════════════
+//  TEXTURES
+// ═══════════════════════════════════════════════
+const texLoader = new THREE.TextureLoader();
+// Generate ink art textures procedurally (no external dependency)
+function makeInkTexture(seed, vertical){
+  const cv=document.createElement('canvas'); cv.width=1024; cv.height=512;
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle='rgba(240,238,235,0)'; ctx.fillRect(0,0,1024,512);
+  const rng=(s)=>{ let x=Math.sin(s)*43758.5453; return x-Math.floor(x); };
+  for(let i=0;i<18;i++){
+    const x0=rng(seed+i*7)*1024, y0=rng(seed+i*11)*512;
+    const x1=rng(seed+i*13)*1024, y1=rng(seed+i*17)*512;
+    const alpha=0.04+rng(seed+i*3)*0.08;
+    ctx.strokeStyle=`rgba(30,20,10,${alpha})`;
+    ctx.lineWidth=rng(seed+i*5)*80+10;
+    ctx.lineCap='round'; ctx.beginPath();
+    ctx.moveTo(x0,y0); ctx.quadraticCurveTo(rng(seed+i*19)*1024,rng(seed+i*23)*512,x1,y1);
+    ctx.stroke();
+  }
+  const t=new THREE.CanvasTexture(cv);
+  t.wrapS=THREE.RepeatWrapping; t.wrapT=THREE.ClampToEdgeWrapping;
+  return t;
+}
+const inkArtUrl1 = null; // replaced by procedural
+const inkArtUrl2 = null; // replaced by procedural
+const _inkTex1 = makeInkTexture(42, false);
+const _inkTex2 = makeInkTexture(137, true);
+_inkTex1.repeat.set(3,1); _inkTex2.repeat.set(8,1);
+
+function makeGrainTexture(size, intensity, scale){
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = size;
+  const ctx = cv.getContext('2d');
+  const img = ctx.createImageData(size, size);
+  for(let i=0; i<img.data.length; i+=4){
+    const v = Math.random() * 255 * intensity;
+    img.data[i]=v; img.data[i+1]=v; img.data[i+2]=v; img.data[i+3]=255;
+  }
+  ctx.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(cv);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(scale, scale);
+  return t;
+}
+let grainTex = makeGrainTexture(512, 0.3, 8);
+
+// Generate bump texture procedurally (no external CDN needed)
+function makeBumpTexture(){
+  const cv=document.createElement('canvas'); cv.width=512; cv.height=512;
+  const ctx=cv.getContext('2d');
+  for(let y=0;y<512;y++) for(let x=0;x<512;x++){
+    const v=128+Math.sin(x*0.15)*20+Math.cos(y*0.12)*20+Math.sin((x+y)*0.08)*15;
+    ctx.fillStyle=`rgb(${v|0},${v|0},${((v+20)|0)})`;
+    ctx.fillRect(x,y,1,1);
+  }
+  const t=new THREE.CanvasTexture(cv);
+  t.wrapS=THREE.RepeatWrapping; t.wrapT=THREE.RepeatWrapping; t.repeat.set(10,2);
+  return t;
+}
+const bumpTex = makeBumpTexture();
+
+const inkDecalMatLeft = new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:0.35,depthWrite:false,roughness:0.9,side:THREE.DoubleSide});
+const inkDecalMatRight = new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:0.35,depthWrite:false,roughness:0.9,side:THREE.DoubleSide});
+const inkDecalMatCirc = new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:0.3,depthWrite:false,roughness:0.9,side:THREE.BackSide});
+
+// Apply procedural ink textures
+inkDecalMatLeft.map=_inkTex1; inkDecalMatLeft.needsUpdate=true;
+const _inkTex1b=_inkTex1.clone(); _inkTex1b.needsUpdate=true;
+inkDecalMatRight.map=_inkTex1b; inkDecalMatRight.needsUpdate=true;
+inkDecalMatCirc.map=_inkTex2; inkDecalMatCirc.needsUpdate=true;
+
+// ═══════════════════════════════════════════════
+//  DAY SKY SHADER
+// ═══════════════════════════════════════════════
+const skyVertexShader = `
+varying vec2 vUv; varying vec3 vWorldPos;
+void main(){
+  vUv=uv;
+  vec4 wp=modelMatrix*vec4(position,1.0); vWorldPos=wp.xyz;
+  gl_Position=projectionMatrix*viewMatrix*wp;
+}`;
+
+const daySkyFrag = `
+uniform float uTime; uniform float uNight;
+varying vec2 vUv; varying vec3 vWorldPos;
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+vec2 fade(vec2 t){return t*t*t*(t*(t*6.0-15.0)+10.0);}
+float cnoise(vec2 P){
+  vec4 Pi=floor(P.xyxy)+vec4(0,0,1,1);
+  vec4 Pf=fract(P.xyxy)-vec4(0,0,1,1);
+  Pi=mod289(Pi);
+  vec4 ix=Pi.xzxz,iy=Pi.yyww,fx=Pf.xzxz,fy=Pf.yyww;
+  vec4 i=permute(permute(ix)+iy);
+  vec4 gx=fract(i*(1.0/41.0))*2.0-1.0,gy=abs(gx)-0.5,tx=floor(gx+0.5);
+  gx=gx-tx;
+  vec2 g00=vec2(gx.x,gy.x),g10=vec2(gx.y,gy.y),g01=vec2(gx.z,gy.z),g11=vec2(gx.w,gy.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(g00,g00),dot(g01,g01),dot(g10,g10),dot(g11,g11)));
+  g00*=norm.x;g01*=norm.y;g10*=norm.z;g11*=norm.w;
+  float n00=dot(g00,vec2(fx.x,fy.x)),n10=dot(g10,vec2(fx.y,fy.y)),n01=dot(g01,vec2(fx.z,fy.z)),n11=dot(g11,vec2(fx.w,fy.w));
+  vec2 fade_xy=fade(Pf.xy);
+  vec2 n_x=mix(vec2(n00,n01),vec2(n10,n11),fade_xy.x);
+  return 2.3*mix(n_x.x,n_x.y,fade_xy.y);
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 rot=mat2(cos(0.5),sin(0.5),-sin(0.5),cos(0.5));
+  for(int i=0;i<5;i++){v+=a*cnoise(p);p=rot*p*2.0;a*=0.5;}
+  return v;
+}
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+
+void main(){
+  float h = normalize(vWorldPos).y;
+  // DAY SKY
+  vec3 dayTop=vec3(0.38,0.60,0.95);
+  vec3 dayBot=vec3(0.82,0.90,1.0);
+  vec3 dayColor=mix(dayBot,dayTop,clamp(h,0.0,1.0));
+  vec2 cloudUV=vUv*4.0+vec2(uTime*0.02,uTime*0.008);
+  float c1=fbm(cloudUV),c2=fbm(cloudUV*1.5+vec2(uTime*0.015,0.0));
+  float cloud=smoothstep(0.0,0.8,c1*0.5+c2*0.5+0.3);
+  vec3 cloudFinal=mix(vec3(0.8,0.82,0.88),vec3(1.0),cloud);
+  vec3 dayFinal=mix(dayColor,cloudFinal,cloud*0.7);
+  float sunAngle=dot(normalize(vWorldPos-vec3(0.0)),normalize(vec3(0.3,0.8,-0.2)));
+  dayFinal+=vec3(1.0,0.95,0.8)*pow(max(sunAngle,0.0),32.0)*0.5;
+
+  // NIGHT SKY
+  vec3 nightTop=vec3(0.01,0.01,0.06);
+  vec3 nightBot=vec3(0.02,0.02,0.08);
+  vec3 nightColor=mix(nightBot,nightTop,clamp(h,0.0,1.0));
+  // Stars
+  vec2 starUV=vUv*80.0;
+  vec2 starCell=floor(starUV);
+  vec2 starFrac=fract(starUV);
+  float star=0.0;
+  for(int dy=-1;dy<=1;dy++){
+    for(int dx=-1;dx<=1;dx++){
+      vec2 nb=starCell+vec2(dx,dy);
+      float h1=hash(nb);
+      float h2=hash(nb+vec2(13.7,91.3));
+      float h3=hash(nb+vec2(47.2,33.1));
+      vec2 sp=vec2(h1,h2);
+      float brightness=h3;
+      if(brightness>0.75){
+        float dist=length(starFrac-vec2(dx,dy)-sp);
+        float sz=0.04+brightness*0.06;
+        star+=smoothstep(sz,0.0,dist)*(brightness-0.75)*4.0;
+      }
+    }
+  }
+  star=clamp(star,0.0,1.0)*clamp(h*3.0,0.0,1.0);
+  // Twinkling
+  float twinkle=0.7+0.3*sin(uTime*3.0+hash(floor(vUv*80.0))*100.0);
+  star*=twinkle;
+  // Milky way
+  float mw=fbm(vUv*2.0+vec2(0.5))*0.5;
+  mw=max(0.0,mw-0.2)*clamp(h*2.0,0.0,1.0)*0.15;
+  nightColor+=vec3(star)+vec3(0.4,0.5,0.8)*mw;
+  // Moon
+  vec3 moonDir=normalize(vec3(0.5,0.7,-0.3));
+  float moonDot=dot(normalize(vWorldPos),moonDir);
+  float moonDisc=smoothstep(0.9985,0.9998,moonDot);
+  float moonGlow=pow(max(moonDot,0.0),80.0)*0.15;
+  nightColor+=vec3(0.95,0.95,0.85)*moonDisc+vec3(0.6,0.65,0.7)*moonGlow;
+
+  vec3 finalColor=mix(dayFinal,nightColor,uNight);
+  gl_FragColor=vec4(finalColor,1.0);
+}`;
+
+const skyUniforms = { uTime:{value:0.0}, uNight:{value:0.0} };
+const animatedSkyMat = new THREE.ShaderMaterial({
+  vertexShader:skyVertexShader, fragmentShader:daySkyFrag,
+  uniforms:skyUniforms, side:THREE.BackSide
+});
+
+// ═══════════════════════════════════════════════
+//  MATERIALS
+// ═══════════════════════════════════════════════
+const matWall  = new THREE.MeshStandardMaterial({color:0xf0f0f0,roughness:0.8,metalness:0.05,side:THREE.DoubleSide,bumpMap:bumpTex,bumpScale:0.002});
+const matFloor = new THREE.MeshStandardMaterial({color:0xe0e0e0,roughness:0.55,metalness:0.05});
+const matCeil  = new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.9,metalness:0.0,side:THREE.DoubleSide});
+const matFrame = new THREE.MeshStandardMaterial({color:0x111111,metalness:0.3,roughness:0.5});
+const matStrip = new THREE.MeshBasicMaterial({color:0xffffff});
+const grainOverlayMat = new THREE.MeshBasicMaterial({map:grainTex,transparent:true,opacity:0.08,depthWrite:false,side:THREE.DoubleSide});
+
+const allWallMeshes=[], allFloorMeshes=[], allCeilMeshes=[], allLights=[];
+let baseIntensityMultiplier=1.0;
+let backWallCanvasMesh=null;
+
+// Night-specific light groups
+const nightPathLights=[];    // glowing floor path lights
+const nightSpotLights=[];    // painting spotlights (night mode)
+const daySpotLights=[];      // painting spotlights (day mode)
+const wallUplighters=[];     // upward wall wash lights
+let nightAmbient=null;
+let nightInstallLight=null;  // warm light on center installation
+let nightInstallSpot1=null, nightInstallSpot2=null, nightInstallSpot3=null;
+let dayHemi=null, daySun=null;
+
+// Track path line meshes for night glow
+const pathLineMeshes=[];
+
+// ═══════════════════════════════════════════════
+//  LIGHTING
+// ═══════════════════════════════════════════════
+function addSpotLight(x,y,z,tx,ty,tz,int=3.0,dist=22,isDay=true){
+  // Museum-style: wide enough to cover full canvas, soft feathered edge (penumbra 0.45)
+  const spot=new THREE.SpotLight(0xfff8ee,int,dist,Math.PI/6,0.45,1.8);
+  spot.position.set(x,y,z);
+  const tgt=new THREE.Object3D(); tgt.position.set(tx,ty,tz);
+  scene.add(tgt); spot.target=tgt; scene.add(spot);
+  spot.castShadow=false;
+  spot.userData.baseIntensity=int;
+  allLights.push(spot);
+  if(isDay) daySpotLights.push(spot);
+  return spot;
+}
+
+// Day hemi + sun
+dayHemi = new THREE.HemisphereLight(0xffffff,0xd0d0d0,0.6);
+dayHemi.userData.baseIntensity=0.6; scene.add(dayHemi); allLights.push(dayHemi);
+
+daySun = new THREE.DirectionalLight(0xfffae6,2.5);
+daySun.position.set(15,ROOM_H+R,ROOM_Z+15);
+daySun.target.position.set(0,0,ROOM_Z);
+scene.add(daySun.target); scene.add(daySun);
+daySun.userData.baseIntensity=2.5; allLights.push(daySun);
+
+// Night ambient (very dark blue)
+nightAmbient = new THREE.AmbientLight(0x0a0f1a, 0.0);
+scene.add(nightAmbient);
+
+// ═══════════════════════════════════════════════
+//  NIGHT PATH GLOW MATERIAL (emissive lines)
+// ═══════════════════════════════════════════════
+const pathDayMat  = new THREE.MeshBasicMaterial({color:0xaaaaaa,transparent:true,opacity:0.5});
+const pathInnerMat= new THREE.MeshBasicMaterial({color:0xcccccc,transparent:true,opacity:0.3});
+const pathNightMat1= new THREE.MeshStandardMaterial({color:0x88aaff,emissive:0x4466ff,emissiveIntensity:0.0,roughness:0.2});
+const pathNightMat2= new THREE.MeshStandardMaterial({color:0xaabbff,emissive:0x6688ff,emissiveIntensity:0.0,roughness:0.2});
+
+// ═══════════════════════════════════════════════
+//  CENTER INSTALLATION
+// ═══════════════════════════════════════════════
+function buildCenterInstallation(){
+  window.sciFiBase = new THREE.Group();
+  window.sciFiBase.position.set(0,0,ROOM_Z);
+
+  const baseMat=new THREE.MeshStandardMaterial({color:0x111111,metalness:0.95,roughness:0.1});
+  const platform=new THREE.Mesh(new THREE.CylinderGeometry(4,4.5,0.3,64),baseMat);
+  platform.position.y=0.15; window.sciFiBase.add(platform);
+
+  const outerRingMat=new THREE.MeshStandardMaterial({color:0xFFD700,metalness:1.0,roughness:0.2,emissive:0xFFAA00,emissiveIntensity:0.5});
+  const outerRing=new THREE.Mesh(new THREE.TorusGeometry(4.5,0.12,16,64),outerRingMat);
+  outerRing.rotation.x=Math.PI/2; outerRing.position.y=0.3; window.sciFiBase.add(outerRing);
+
+  [
+    [2.0,0.08,0xFFD700,0.6],[3.0,0.06,0xFFAA00,0.4],[3.8,0.05,0xFF8800,0.25]
+  ].forEach(([r,t,c,o])=>{
+    const m=new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o});
+    const g=new THREE.Mesh(new THREE.TorusGeometry(r,t,8,64),m);
+    g.rotation.x=Math.PI/2; g.position.y=0.32; window.sciFiBase.add(g);
+  });
+
+  const beamMat=new THREE.MeshBasicMaterial({color:0xFFDD44,transparent:true,opacity:0.12,side:THREE.DoubleSide});
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.3,1.5,5.5,32,1,true),beamMat);
+  beam.position.y=3.0; window.sciFiBase.add(beam);
+  const beamMat2=new THREE.MeshBasicMaterial({color:0xFFEE88,transparent:true,opacity:0.08,side:THREE.DoubleSide});
+  const beam2=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.8,5.5,32,1,true),beamMat2);
+  beam2.position.y=3.0; window.sciFiBase.add(beam2);
+
+  for(let i=0;i<4;i++){
+    const dm=new THREE.MeshBasicMaterial({color:0xFFCC00,transparent:true,opacity:0.15,side:THREE.DoubleSide});
+    const disc=new THREE.Mesh(new THREE.RingGeometry(1.5+i*0.5,2.0+i*0.5,64),dm);
+    disc.rotation.x=Math.PI/2; disc.position.y=1.0+i*1.2;
+    disc.userData.floatDisc=true; disc.userData.baseY=1.0+i*1.2;
+    disc.userData.floatSpeed=0.8+i*0.3; disc.userData.rotSpeed=(i%2===0?1:-1)*(0.3+i*0.15);
+    window.sciFiBase.add(disc);
+  }
+
+  const gpl=new THREE.PointLight(0xFFAA00,3.0,15);
+  gpl.position.set(0,3,0); gpl.userData.baseIntensity=3.0;
+  window.sciFiBase.add(gpl); allLights.push(gpl);
+  const bl=new THREE.PointLight(0xFFDD00,2.0,8);
+  bl.position.set(0,0.5,0); bl.userData.baseIntensity=2.0;
+  window.sciFiBase.add(bl); allLights.push(bl);
+  scene.add(window.sciFiBase);
+
+  // Floating center art
+  window.centerArt=new THREE.Group();
+  window.centerArt.position.set(0,5.5,ROOM_Z);
+  const goldMat=new THREE.MeshStandardMaterial({color:0xFFD700,metalness:1.0,roughness:0.15,emissive:0x332200,emissiveIntensity:0.3});
+  const goldShiny=new THREE.MeshStandardMaterial({color:0xFFAA00,metalness:1.0,roughness:0.05,emissive:0x442200,emissiveIntensity:0.4});
+  const orb=new THREE.Mesh(new THREE.SphereGeometry(1.0,64,64),goldShiny);
+  window.centerArt.add(orb);
+  for(let i=0;i<6;i++){
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(1.8+i*0.7,0.06+(i%2)*0.04,16,128),goldMat);
+    ring.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
+    ring.userData.rotX=(Math.random()-0.5)*0.6; ring.userData.rotY=(Math.random()-0.5)*0.6; ring.userData.rotZ=(Math.random()-0.5)*0.3;
+    window.centerArt.add(ring);
+  }
+  for(let i=0;i<8;i++){
+    const so=new THREE.Mesh(new THREE.SphereGeometry(0.2,16,16),goldShiny);
+    so.userData.orbitAngle=(i/8)*Math.PI*2; so.userData.orbitRadius=3.0;
+    so.userData.orbitSpeed=0.5+Math.random()*0.5; so.userData.orbitY=(Math.random()-0.5)*1.5;
+    so.userData.isOrbiter=true; window.centerArt.add(so);
+  }
+  scene.add(window.centerArt);
+
+  // Day art light (spot from above)
+  const artLight=new THREE.SpotLight(0xffeedd,4.0,25,Math.PI/4,0.5,1);
+  artLight.position.set(0,14,ROOM_Z); artLight.target=window.centerArt;
+  artLight.userData.baseIntensity=4.0; scene.add(artLight); allLights.push(artLight);
+  daySpotLights.push(artLight);
+
+  // Night installation — NO central point light (removed as requested)
+  nightInstallLight = new THREE.PointLight(0xffcc66, 0.0, 40);
+  nightInstallLight.position.set(0, 7, ROOM_Z);
+  // Keep reference but never activate (intensity stays 0)
+  scene.add(nightInstallLight);
+
+  // Night spot 1 — left diagonal (strong)
+  nightInstallSpot1 = new THREE.SpotLight(0xffdd88, 0.0, 40, Math.PI/5, 0.4, 1.0);
+  nightInstallSpot1.position.set(-10, 16, ROOM_Z+8);
+  const nt1=new THREE.Object3D(); nt1.position.set(0,5,ROOM_Z); scene.add(nt1);
+  nightInstallSpot1.target=nt1; scene.add(nightInstallSpot1);
+
+  // Night spot 2 — right diagonal (strong)
+  nightInstallSpot2 = new THREE.SpotLight(0xffcc55, 0.0, 40, Math.PI/5, 0.4, 1.0);
+  nightInstallSpot2.position.set(10, 16, ROOM_Z+8);
+  const nt2=new THREE.Object3D(); nt2.position.set(0,5,ROOM_Z); scene.add(nt2);
+  nightInstallSpot2.target=nt2; scene.add(nightInstallSpot2);
+
+  // Night spot 3 — top fill (from directly above)
+  nightInstallSpot3 = new THREE.SpotLight(0xfff0cc, 0.0, 35, Math.PI/3.5, 0.5, 0.8);
+  nightInstallSpot3.position.set(0, 20, ROOM_Z);
+  const nt3=new THREE.Object3D(); nt3.position.set(0,4,ROOM_Z); scene.add(nt3);
+  nightInstallSpot3.target=nt3; scene.add(nightInstallSpot3);
+}
+
+// ═══════════════════════════════════════════════
+//  BUILD ARCHITECTURE
+// ═══════════════════════════════════════════════
+function buildEnvironment(){
+  // Floor + ceiling
+  const galFloor=new THREE.Mesh(new THREE.BoxGeometry(GAL_W,0.1,GAL_L),matFloor);
+  galFloor.position.set(0,-0.05,-GAL_L/2); scene.add(galFloor); allFloorMeshes.push(galFloor);
+  const galCeil=new THREE.Mesh(new THREE.BoxGeometry(GAL_W,0.1,GAL_L),matCeil);
+  galCeil.position.set(0,GAL_H+0.05,-GAL_L/2); scene.add(galCeil); allCeilMeshes.push(galCeil);
+
+  // Left wall + ink decal
+  const wallL=new THREE.Mesh(new THREE.BoxGeometry(0.1,GAL_H,GAL_L),matWall);
+  wallL.position.set(-GAL_W/2,GAL_H/2,-GAL_L/2); scene.add(wallL); allWallMeshes.push(wallL);
+  const decalL=new THREE.Mesh(new THREE.PlaneGeometry(GAL_L,GAL_H),inkDecalMatLeft);
+  decalL.position.set(-GAL_W/2+0.06,GAL_H/2,-GAL_L/2); decalL.rotation.y=Math.PI/2; scene.add(decalL);
+
+  // Right wall + ink decal
+  const wallR=new THREE.Mesh(new THREE.BoxGeometry(0.1,GAL_H,GAL_L),matWall);
+  wallR.position.set(GAL_W/2,GAL_H/2,-GAL_L/2); scene.add(wallR); allWallMeshes.push(wallR);
+  const decalR=new THREE.Mesh(new THREE.PlaneGeometry(GAL_L,GAL_H),inkDecalMatRight);
+  decalR.position.set(GAL_W/2-0.06,GAL_H/2,-GAL_L/2); decalR.rotation.y=-Math.PI/2; scene.add(decalR);
+
+  // Back wall — large LFD TV screen (16:9, no picture frame, modern commercial display)
+  const bWall=new THREE.Mesh(new THREE.BoxGeometry(GAL_W,GAL_H,0.1),matWall);
+  bWall.position.set(0,GAL_H/2,0); scene.add(bWall); allWallMeshes.push(bWall);
+
+  // TV dimensions — wide as possible, 16:9
+  const _bwW = GAL_W * 0.94;
+  const _bwH = _bwW * 9 / 16;
+  const _bwCenterY = GAL_H * 0.52;
+
+  // TV outer housing — very thin dark bezel (like commercial LFD)
+  const tvBezelMat = new THREE.MeshStandardMaterial({color:0x0a0a0a, metalness:0.6, roughness:0.3});
+  const bezelThick = 0.045;
+  const tvHousing = new THREE.Mesh(new THREE.BoxGeometry(_bwW + bezelThick*2, _bwH + bezelThick*2, 0.055), tvBezelMat);
+  tvHousing.position.set(0, _bwCenterY, -0.02); scene.add(tvHousing);
+
+  // Thin outer chrome edge
+  const chromeMat = new THREE.MeshStandardMaterial({color:0x555555, metalness:0.95, roughness:0.1});
+  const chromeEdge = new THREE.Mesh(new THREE.BoxGeometry(_bwW + bezelThick*2 + 0.025, _bwH + bezelThick*2 + 0.025, 0.02), chromeMat);
+  chromeEdge.position.set(0, _bwCenterY, -0.035); scene.add(chromeEdge);
+
+  // Screen panel — self-emissive like a real LCD/LED display
+  const bwCanvasMat = new THREE.MeshStandardMaterial({
+    color:0x050505, roughness:0.05, metalness:0.0,
+    emissive:new THREE.Color(0x080808), emissiveIntensity:1.0
+  });
+  backWallCanvasMesh = new THREE.Mesh(new THREE.PlaneGeometry(_bwW, _bwH), bwCanvasMat);
+  backWallCanvasMesh.position.set(0, _bwCenterY, 0.01); scene.add(backWallCanvasMesh);
+
+  window._bwW = _bwW; window._bwH = _bwH; window._bwCenterY = _bwCenterY;
+
+  // Apply default: black screen (off state) with subtle blue-grey glow
+  (function(){
+    const offMat = new THREE.MeshStandardMaterial({
+      color:0x020408, roughness:0.05, metalness:0.0,
+      emissive:new THREE.Color(0x010205), emissiveIntensity:1.0
+    });
+    backWallCanvasMesh.material = offMat;
+  })();
+
+  // Subtle screen glow onto the wall/floor (like a TV in a dark room)
+  const tvGlow = new THREE.PointLight(0x8899cc, 1.2, 12);
+  tvGlow.position.set(0, _bwCenterY, 0.5); scene.add(tvGlow);
+
+  // Two soft spots to illuminate the area in front of the TV
+  const bwSpot = addSpotLight(0, GAL_H-0.3, -3.5, 0, 2.0, 0.0, 2.0);
+  bwSpot.angle = Math.PI/4; bwSpot.penumbra = 0.5; bwSpot.distance = 20;
+
+  // Wall light strips
+  [[-GAL_W/2+0.05,0.1],[-GAL_W/2+0.05,GAL_H-0.1],[GAL_W/2-0.05,0.1],[GAL_W/2-0.05,GAL_H-0.1]].forEach(([x,y])=>{
+    const s=new THREE.Mesh(new THREE.BoxGeometry(0.15,0.1,GAL_L),matStrip);
+    s.position.set(x,y,-GAL_L/2); scene.add(s);
+  });
+
+  // ── FLOOR PATH LINES ──
+  // Left side
+  [-1,0,1].forEach((offset,i)=>{
+    const xPos=-GAL_W/2+1.5+offset*0.25;
+    const mat=i===1?pathInnerMat:pathDayMat;
+    const line=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.012,GAL_L-2),mat);
+    line.position.set(xPos,0.01,-GAL_L/2);
+    scene.add(line);
+    pathLineMeshes.push({mesh:line, isMid:i===1});
+  });
+  // Right side
+  [-1,0,1].forEach((offset,i)=>{
+    const xPos=GAL_W/2-1.5+offset*0.25;
+    const mat=i===1?pathInnerMat:pathDayMat;
+    const line=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.012,GAL_L-2),mat);
+    line.position.set(xPos,0.01,-GAL_L/2);
+    scene.add(line);
+    pathLineMeshes.push({mesh:line, isMid:i===1});
+  });
+
+  // ── WALL UPLIGHTERS (slick upward wash) ──
+  // These are slim strip lights at floor level on walls, pointing up
+  [-GAL_L*0.15,-GAL_L*0.4,-GAL_L*0.65,-GAL_L*0.85].forEach(zPos=>{
+    // Left wall uplighter
+    const ulL=new THREE.SpotLight(0x8899cc,0.0,12,Math.PI/8,0.5,1.5);
+    ulL.position.set(-GAL_W/2+0.3,0.3,zPos);
+    const tL=new THREE.Object3D(); tL.position.set(-GAL_W/2+0.1,GAL_H,zPos);
+    scene.add(tL); ulL.target=tL; scene.add(ulL);
+    wallUplighters.push(ulL);
+    // Right wall uplighter
+    const ulR=new THREE.SpotLight(0x8899cc,0.0,12,Math.PI/8,0.5,1.5);
+    ulR.position.set(GAL_W/2-0.3,0.3,zPos);
+    const tR=new THREE.Object3D(); tR.position.set(GAL_W/2-0.1,GAL_H,zPos);
+    scene.add(tR); ulR.target=tR; scene.add(ulR);
+    wallUplighters.push(ulR);
+  });
+  // Circular room uplighters
+  for(let i=0;i<8;i++){
+    const angle=(i/8)*Math.PI*2;
+    if(angle>gapAngle+0.4 && angle<Math.PI*2-gapAngle-0.4){
+      const wx=Math.sin(angle)*(R-0.5);
+      const wz=ROOM_Z+Math.cos(angle)*(R-0.5);
+      const ul=new THREE.SpotLight(0x8899cc,0.0,14,Math.PI/7,0.4,1.5);
+      ul.position.set(wx,0.5,wz);
+      const tgt=new THREE.Object3D(); tgt.position.set(wx*0.7,GAL_H,ROOM_Z+(wz-ROOM_Z)*0.7);
+      scene.add(tgt); ul.target=tgt; scene.add(ul);
+      wallUplighters.push(ul);
+    }
+  }
+
+  // ── GRAIN OVERLAYS ──
+  const grainL=new THREE.Mesh(new THREE.PlaneGeometry(GAL_L,GAL_H),grainOverlayMat.clone());
+  grainL.position.set(-GAL_W/2+0.07,GAL_H/2,-GAL_L/2); grainL.rotation.y=Math.PI/2; scene.add(grainL);
+  const grainR=new THREE.Mesh(new THREE.PlaneGeometry(GAL_L,GAL_H),grainOverlayMat.clone());
+  grainR.position.set(GAL_W/2-0.07,GAL_H/2,-GAL_L/2); grainR.rotation.y=-Math.PI/2; scene.add(grainR);
+
+  // ── CIRCULAR ROOM ──
+  const circleFloor=new THREE.Mesh(new THREE.CircleGeometry(R,64),matFloor);
+  circleFloor.rotation.x=-Math.PI/2; circleFloor.position.set(0,0,ROOM_Z);
+  scene.add(circleFloor); allFloorMeshes.push(circleFloor);
+
+  // Circular path rings
+  const circPathMat=new THREE.MeshBasicMaterial({color:0xaaaaaa,transparent:true,opacity:0.4});
+  const circPathInner=new THREE.Mesh(new THREE.RingGeometry(5.0,5.08,64),circPathMat);
+  circPathInner.rotation.x=-Math.PI/2; circPathInner.position.set(0,0.01,ROOM_Z); scene.add(circPathInner);
+  const circPathOuter=new THREE.Mesh(new THREE.RingGeometry(R*0.65,R*0.65+0.08,64),circPathMat);
+  circPathOuter.rotation.x=-Math.PI/2; circPathOuter.position.set(0,0.01,ROOM_Z); scene.add(circPathOuter);
+
+  const domeR=R*0.75;
+  const circleCeil=new THREE.Mesh(new THREE.RingGeometry(domeR,R+2,64),matCeil);
+  circleCeil.rotation.x=Math.PI/2; circleCeil.position.set(0,ROOM_H,ROOM_Z);
+  scene.add(circleCeil); allCeilMeshes.push(circleCeil);
+
+  const circWallGeo=new THREE.CylinderGeometry(R,R,ROOM_H,64,1,true,gapAngle,Math.PI*2-2*gapAngle);
+  const circWall=new THREE.Mesh(circWallGeo,matWall);
+  circWall.position.set(0,ROOM_H/2,ROOM_Z); circWall.material.side=THREE.BackSide;
+  scene.add(circWall); allWallMeshes.push(circWall);
+
+  const circDecal=new THREE.Mesh(new THREE.CylinderGeometry(R-0.05,R-0.05,ROOM_H,64,1,true,gapAngle,Math.PI*2-2*gapAngle),inkDecalMatCirc);
+  circDecal.position.set(0,ROOM_H/2,ROOM_Z); scene.add(circDecal);
+
+  const circGrainMat=grainOverlayMat.clone();
+  const circGrain=new THREE.Mesh(new THREE.CylinderGeometry(R-0.1,R-0.1,ROOM_H,64,1,true,gapAngle,Math.PI*2-2*gapAngle),circGrainMat);
+  circGrain.material.side=THREE.BackSide; circGrain.position.set(0,ROOM_H/2,ROOM_Z); scene.add(circGrain);
+
+  const ringStrip=(y)=>{
+    const r=new THREE.Mesh(new THREE.CylinderGeometry(R-0.05,R-0.05,0.15,64,1,true,gapAngle,Math.PI*2-2*gapAngle),matStrip);
+    r.material.side=THREE.BackSide; r.position.set(0,y,ROOM_Z); scene.add(r);
+  };
+  ringStrip(0.1); ringStrip(ROOM_H-0.1);
+
+  // Sky dome
+  const skyDome=new THREE.Mesh(new THREE.SphereGeometry(domeR*2.5,48,32,0,Math.PI*2,0,Math.PI/2),animatedSkyMat);
+  skyDome.position.set(0,ROOM_H-2,ROOM_Z); scene.add(skyDome);
+
+  const metalMat=new THREE.MeshStandardMaterial({color:0x222222,metalness:0.9,roughness:0.2});
+  const glassMat=new THREE.MeshStandardMaterial({color:0xccddff,transparent:true,opacity:0.1,metalness:0.8,roughness:0.05,side:THREE.DoubleSide});
+  const oculusCutoff=Math.PI*0.15;
+  const glassDome=new THREE.Mesh(new THREE.SphereGeometry(domeR,64,32,0,Math.PI*2,oculusCutoff,Math.PI/2-oculusCutoff),glassMat);
+  glassDome.position.set(0,ROOM_H,ROOM_Z); scene.add(glassDome);
+  const oculusRadius=domeR*Math.sin(oculusCutoff);
+  const oculusY=ROOM_H+domeR*Math.cos(oculusCutoff);
+  const oculusRing=new THREE.Mesh(new THREE.TorusGeometry(oculusRadius,0.2,16,64),metalMat);
+  oculusRing.rotation.x=Math.PI/2; oculusRing.position.set(0,oculusY,ROOM_Z); scene.add(oculusRing);
+  for(let i=1;i<=7;i++){
+    const phi=oculusCutoff+(i/8)*(Math.PI/2-oculusCutoff);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(domeR*Math.sin(phi),0.08,8,64),metalMat);
+    ring.rotation.x=Math.PI/2; ring.position.set(0,ROOM_H+domeR*Math.cos(phi),ROOM_Z); scene.add(ring);
+  }
+  for(let i=0;i<24;i++){
+    const angle=(i/24)*Math.PI*2;
+    const curve=new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(Math.cos(angle)*oculusRadius,oculusY,ROOM_Z+Math.sin(angle)*oculusRadius),
+      new THREE.Vector3(Math.cos(angle)*domeR*0.7,ROOM_H+domeR*0.6,ROOM_Z+Math.sin(angle)*domeR*0.7),
+      new THREE.Vector3(Math.cos(angle)*domeR,ROOM_H,ROOM_Z+Math.sin(angle)*domeR)
+    );
+    scene.add(new THREE.Mesh(new THREE.TubeGeometry(curve,32,0.06,8,false),metalMat));
+  }
+
+  buildCenterInstallation();
+}
+
+// ═══════════════════════════════════════════════
+//  PAINTINGS
+// ═══════════════════════════════════════════════
+// Store painting spotlights separately for night dimming
+const paintingSpots=[];
+
+function addPainting(data,x,y,z,rotY,isPortrait,canvasArray){
+    expectedCount++;
+    const group=new THREE.Group();
+    group.position.set(x,y,z); group.rotation.y=rotY;
+    const pw=isPortrait?2.0:3.2, ph=isPortrait?3.0:2.0;
+    const frame=new THREE.Mesh(new THREE.BoxGeometry(pw+0.3,ph+0.3,0.08),matFrame);
+    group.add(frame);
+    const canvasMesh=new THREE.Mesh(new THREE.PlaneGeometry(pw,ph),new THREE.MeshStandardMaterial({color:0x222222,emissiveIntensity:0.0}));
+    canvasMesh.position.z=0.045; group.add(canvasMesh); scene.add(group);
+    if(data.url){
+      texLoader.load(data.url,tex=>{
+        tex.encoding=THREE.sRGBEncoding; tex.generateMipmaps=true;
+        canvasMesh.material=new THREE.MeshStandardMaterial({map:tex,roughness:0.4,emissiveIntensity:0.0});
+        tickLoad();
+      }, undefined, err => {
+        tickLoad();
+      });
+    } else {
+      tickLoad();
+    }
+    if(canvasArray) canvasArray.push({canvasMesh,title:data.title,currentUrl:data.url});
+    return canvasMesh;
+  }
+  
+  function tickLoad(){
+    loadedCount++;
+    document.getElementById('lfill').style.width=(loadedCount/(expectedCount||1)*100)+'%';
+    if(loadedCount>=expectedCount) doneLoading();
+  }
+function doneLoading(){
+  const el=document.getElementById('loading');
+  el.style.opacity='0';
+  setTimeout(()=>el.style.display='none',1200);
+  buildCMSImageSlots();
+}
+
+buildEnvironment();
+
+// Gallery corridor paintings + soft day spotlights (4 per side)
+// NOTE: angle/penumbra tuned to avoid floor bleed
+for(let i=0;i<4;i++){
+  const zPos=-8-(i*14);
+  const photoL=GALLERY_PHOTOS[i], photoR=GALLERY_PHOTOS[(i+4)];
+  const cmL={canvasMesh:null,title:'Left Wall '+(i+1),currentUrl:photoL.url};
+  const mL=addPainting(photoL,-GAL_W/2+0.15,3.5,zPos,Math.PI/2,i%2===0,null);
+  cmL.canvasMesh=mL; galleryCanvasMeshes.push(cmL); galLeftMeshes.push(cmL);
+  // Tighter angle + higher position to avoid floor spill
+  const sl=new THREE.SpotLight(0xfff8ee,3,20,Math.PI/8,0.3,1.8);
+  sl.position.set(-GAL_W/2+1.5,7.2,zPos);
+  const slt=new THREE.Object3D(); slt.position.set(-GAL_W/2+0.15,3.5,zPos);
+  scene.add(slt); sl.target=slt; scene.add(sl);
+  sl.userData.baseIntensity=3; allLights.push(sl); daySpotLights.push(sl); paintingSpots.push(sl);
+  const cmR={canvasMesh:null,title:'Right Wall '+(i+1),currentUrl:photoR.url};
+  const mR=addPainting(photoR,GAL_W/2-0.15,3.5,zPos,-Math.PI/2,i%2!==0,null);
+  cmR.canvasMesh=mR; galleryCanvasMeshes.push(cmR); galRightMeshes.push(cmR);
+  const sr=new THREE.SpotLight(0xfff8ee,3,20,Math.PI/8,0.3,1.8);
+  sr.position.set(GAL_W/2-1.5,7.2,zPos);
+  const srt=new THREE.Object3D(); srt.position.set(GAL_W/2-0.15,3.5,zPos);
+  scene.add(srt); sr.target=srt; scene.add(sr);
+  sr.userData.baseIntensity=3; allLights.push(sr); daySpotLights.push(sr); paintingSpots.push(sr);
+}
+
+// Night-only painting spots (4 per side) — warm focused museum spotlights
+for(let i=0;i<4;i++){
+  const zPos=-8-(i*14);
+  const nsl=new THREE.SpotLight(0xffdd99,0.0,16,Math.PI/6,0.45,1.8);
+  nsl.position.set(-GAL_W/2+2.2,7.0,zPos);
+  const tl=new THREE.Object3D(); tl.position.set(-GAL_W/2+0.15,3.5,zPos);
+  scene.add(tl); nsl.target=tl; scene.add(nsl); nightSpotLights.push(nsl);
+  const nsr=new THREE.SpotLight(0xffdd99,0.0,16,Math.PI/6,0.45,1.8);
+  nsr.position.set(GAL_W/2-2.2,7.0,zPos);
+  const tr=new THREE.Object3D(); tr.position.set(GAL_W/2-0.15,3.5,zPos);
+  scene.add(tr); nsr.target=tr; scene.add(nsr); nightSpotLights.push(nsr);
+}
+
+// Circular room paintings — 16 frames with proper museum ceiling spotlights
+for(let i=0;i<16;i++){
+  const angle=(i/16)*Math.PI*2;
+  if(angle>gapAngle+0.15 && angle<Math.PI*2-gapAngle-0.15){
+    const px=Math.sin(angle)*(R-0.25), pz=ROOM_Z+Math.cos(angle)*(R-0.25);
+    const photo=GALLERY_PHOTOS[i%GALLERY_PHOTOS.length];
+    const cm={canvasMesh:null,title:'Room Frame '+(i+1),currentUrl:photo.url};
+    const m=addPainting(photo,px,3.5,pz,angle+Math.PI,i%2===0,null);
+    cm.canvasMesh=m; circCanvasMeshes.push(cm);
+    // Ceiling-mounted day spotlight angled toward painting (same museum style as gallery)
+    const lx=Math.sin(angle)*(R-5), lz=ROOM_Z+Math.cos(angle)*(R-5);
+    const cs=new THREE.SpotLight(0xfff8ee,4.5,22,Math.PI/7,0.35,1.4);
+    cs.position.set(lx,ROOM_H-0.5,lz);
+    const cst=new THREE.Object3D(); cst.position.set(px,3.5,pz);
+    scene.add(cst); cs.target=cst; scene.add(cs);
+    cs.userData.baseIntensity=4.5; allLights.push(cs); daySpotLights.push(cs); paintingSpots.push(cs);
+    // Night spotlight warm focused museum beam
+    const ncs=new THREE.SpotLight(0xffdd99,0.0,20,Math.PI/7,0.35,1.4);
+    ncs.position.set(lx,ROOM_H-0.5,lz);
+    const nt=new THREE.Object3D(); nt.position.set(px,3.5,pz);
+    scene.add(nt); ncs.target=nt; scene.add(ncs); nightSpotLights.push(ncs);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  CONTROLS & CAMERA
+// ═══════════════════════════════════════════════
+let yaw=0,pitch=0,targetYaw=0,targetPitch=0;
+let targetPos=new THREE.Vector3(0,2.5,-2);
+camera.position.copy(targetPos);
+const keys={};
+let locked=false,started=false;
+
+document.addEventListener('keydown',e=>{keys[e.code]=true});
+document.addEventListener('keyup',e=>{keys[e.code]=false});
+canvas.addEventListener('click',()=>{if(started)canvas.requestPointerLock()});
+document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===canvas});
+document.addEventListener('mousemove',e=>{
+  if(!locked)return;
+  _panoramaMode = false;
+  targetYaw-=e.movementX*0.0018;
+  targetPitch-=e.movementY*0.0018;
+  targetPitch=Math.max(-1.2,Math.min(1.2,targetPitch));
+});
+
+// ═══════════════════════════════════════════════
+//  DAY / NIGHT TOGGLE
+// ═══════════════════════════════════════════════
+function toggleDayNight(){
+  isNightMode=!isNightMode;
+  const btn=document.getElementById('daynight-btn');
+  const label=document.getElementById('daynight-label');
+  if(isNightMode){
+    btn.classList.add('night-mode');
+    btn.querySelector('.btn-icon').textContent='🌙';
+    label.textContent='Night';
+  } else {
+    btn.classList.remove('night-mode');
+    btn.querySelector('.btn-icon').textContent='☀️';
+    label.textContent='Day';
+  }
+}
+
+// Lerp helper
+function lerp(a,b,t){return a+(b-a)*t}
+
+// Apply night transition to all lights + scene
+function applyNightTransition(t){
+  // Sky
+  skyUniforms.uNight.value=t;
+
+  // Scene background + fog — warm dark amber-black at night
+  const dayBgColor=new THREE.Color(0xf5f5f5);
+  const nightBgColor=new THREE.Color(0x060402);
+  scene.background.lerpColors(dayBgColor,nightBgColor,t);
+  scene.fog.color.lerpColors(dayBgColor,new THREE.Color(0x0a0804),t);
+  scene.fog.density=lerp(0.005,0.010,t);
+
+  // Hemi + sun dim
+  dayHemi.intensity=lerp(0.6,0.0,t)*baseIntensityMultiplier;
+  daySun.intensity=lerp(2.5,0.0,t)*baseIntensityMultiplier;
+
+  // Night ambient — very warm low amber
+  nightAmbient.intensity=lerp(0.0,0.18,t);
+  nightAmbient.color.set(new THREE.Color(0.15,0.08,0.02).lerp(new THREE.Color(0.15,0.08,0.02),t));
+
+  // Day painting spots → dim to zero
+  paintingSpots.forEach(s=>{ s.intensity=lerp(s.userData.baseIntensity||3,0.0,t)*baseIntensityMultiplier; });
+
+  // Night painting spots → warm focused museum beam
+  nightSpotLights.forEach(s=>{ s.intensity=lerp(0.0,5.5,t)*baseIntensityMultiplier; });
+
+  // Wall uplighters — off entirely
+  wallUplighters.forEach(ul=>{ ul.intensity=0; });
+
+  // Path lines → warm amber glow at night
+  pathLineMeshes.forEach(({mesh,isMid})=>{
+    if(t>0.01){
+      if(mesh.material!==pathNightMat1 && mesh.material!==pathNightMat2){
+        mesh.material=isMid?pathNightMat2:pathNightMat1;
+      }
+      const ei=lerp(0.0,isMid?1.4:2.0,t);
+      mesh.material.emissiveIntensity=ei;
+      if(!mesh.userData.nightLight && t>0.5){
+        const pl=new THREE.PointLight(0xff9944,0,5);
+        pl.position.copy(mesh.position); pl.position.y=0.5;
+        scene.add(pl); mesh.userData.nightLight=pl;
+      }
+      if(mesh.userData.nightLight){
+        mesh.userData.nightLight.intensity=lerp(0,isMid?0.4:0.7,t)*baseIntensityMultiplier;
+      }
+    } else {
+      mesh.material=isMid?pathInnerMat:pathDayMat;
+      if(mesh.userData.nightLight) mesh.userData.nightLight.intensity=0;
+    }
+  });
+
+  // Center installation — 3 strong angle spotlights only (NO central point light)
+  if(nightInstallLight){
+    nightInstallLight.intensity = 0; // Always OFF — removed as per requirement
+  }
+  if(nightInstallSpot1){ nightInstallSpot1.intensity=lerp(0.0,14.0,t)*baseIntensityMultiplier; }
+  if(nightInstallSpot2){ nightInstallSpot2.intensity=lerp(0.0,12.0,t)*baseIntensityMultiplier; }
+  if(nightInstallSpot3){ nightInstallSpot3.intensity=lerp(0.0,10.0,t)*baseIntensityMultiplier; }
+
+  // Wall colors darken to warm dark
+  const dayWall=new THREE.Color(0xf0f0f0);
+  const nightWall=new THREE.Color(0x18140e);
+  allWallMeshes.forEach(m=>{m.material.color.lerpColors(dayWall,nightWall,t);});
+  const dayFloor=new THREE.Color(0xe0e0e0);
+  const nightFloor=new THREE.Color(0x111009);
+  allFloorMeshes.forEach(m=>{m.material.color.lerpColors(dayFloor,nightFloor,t);});
+  const dayCeil=new THREE.Color(0xffffff);
+  const nightCeil=new THREE.Color(0x100e09);
+  allCeilMeshes.forEach(m=>{m.material.color.lerpColors(dayCeil,nightCeil,t);});
+}
+
+// ═══════════════════════════════════════════════
+//  UI FUNCTIONS
+// ═══════════════════════════════════════════════
+function changeWallColor(hex){
+  if(isNightMode) return;
+  const c=new THREE.Color(hex);
+  allWallMeshes.forEach(m=>m.material.color.set(c));
+  scene.fog.color.set(c); scene.background.set(c);
+}
+function changeFloorColor(hex){if(isNightMode)return;const c=new THREE.Color(hex);allFloorMeshes.forEach(m=>m.material.color.set(c));}
+function changeCeilingColor(hex){if(isNightMode)return;const c=new THREE.Color(hex);allCeilMeshes.forEach(m=>m.material.color.set(c));}
+function changeFrameColor(hex){matFrame.color.set(new THREE.Color(hex));}
+function changeLightIntensity(val){
+  baseIntensityMultiplier=parseFloat(val);
+  allLights.forEach(l=>{if(l.userData.baseIntensity)l.intensity=l.userData.baseIntensity*baseIntensityMultiplier;});
+}
+function changeWallGrain(val){grainOverlayMat.opacity=parseFloat(val)*0.3;}
+function changeWallGrainScale(val){grainTex.repeat.set(parseInt(val),parseInt(val));}
+function changeWallBump(val){matWall.bumpScale=parseFloat(val);}
+function changeFloorTexture(type){
+  if(type==='marble'){
+    const cv=document.createElement('canvas'); cv.width=cv.height=512;
+    const ctx=cv.getContext('2d'); ctx.fillStyle='#e8e8e8'; ctx.fillRect(0,0,512,512);
+    for(let i=0;i<20;i++){
+      ctx.strokeStyle=`rgba(150,150,150,${Math.random()*0.3})`;
+      ctx.lineWidth=Math.random()*3+1; ctx.beginPath();
+      ctx.moveTo(Math.random()*512,0);
+      ctx.bezierCurveTo(Math.random()*512,Math.random()*512,Math.random()*512,Math.random()*512,Math.random()*512,512);
+      ctx.stroke();
+    }
+    const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(4,4);
+    allFloorMeshes.forEach(m=>{m.material.map=t;m.material.needsUpdate=true;});
+  } else {
+    allFloorMeshes.forEach(m=>{m.material.map=null;m.material.needsUpdate=true;});
+  }
+}
+
+// ─── CMS BASE IMAGE (admin sets permanent default) ───
+// Admin base image URL stored here — only CMS can change it
+let _cmsBaseImageUrl = null; // Set via CMS "Set as Permanent Base Image"
+let _cmsBaseImageDataUrl = null; // After loading
+
+function setCMSBaseImage(){
+  const url = (document.getElementById('cms-base-image-url')||{value:''}).value.trim();
+  if(!url) return;
+  _cmsBaseImageUrl = url;
+  try{ localStorage.setItem('cms_base_image_url', url); }catch(e){}
+  // Load and apply
+  const img = new Image(); img.crossOrigin = 'anonymous';
+  img.onload = function(){
+    const tex = new THREE.CanvasTexture(img);
+    tex.encoding = THREE.sRGBEncoding; tex.needsUpdate = true;
+    if(backWallCanvasMesh){
+      backWallCanvasMesh.material = new THREE.MeshStandardMaterial({map:tex,roughness:0.05,emissive:0xffffff,emissiveIntensity:0.9});
+      backWallCanvasMesh.material.needsUpdate = true;
+    }
+    // Save as data URL for reliable reset
+    const cv = document.createElement('canvas');
+    cv.width = Math.min(img.width, 2048); cv.height = Math.min(img.height, 2048);
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    try{ _cmsBaseImageDataUrl = cv.toDataURL('image/jpeg', 0.92);
+      localStorage.setItem('cms_base_image_data', _cmsBaseImageDataUrl);
+    }catch(e){}
+    const pr=document.getElementById('bw-preview');
+    if(pr) pr.innerHTML = `<img src="${url}" style="width:100%;height:70px;object-fit:cover;border-radius:3px">`;
+    // Flash confirm
+    const btn = document.querySelector('[onclick="setCMSBaseImage()"]');
+    if(btn){ const orig=btn.textContent; btn.textContent='✓ Base Image Set!'; btn.style.color='#4CAF50'; setTimeout(()=>{btn.textContent=orig;btn.style.color='#FFD700';},2000); }
+  };
+  img.onerror = function(){
+    const urls2=_resolveImageUrl(url);
+    _applyFirstWorking(urls2, backWallCanvasMesh, 0.05, 0xffffff, ()=>{});
+    _cmsBaseImageUrl=url;
+  };
+  img.src = url;
+}
+
+// Load saved CMS base image on startup
+(function loadCMSBaseOnStartup(){
+  try{
+    const savedUrl = localStorage.getItem('cms_base_image_url');
+    const savedData = localStorage.getItem('cms_base_image_data');
+    if(savedUrl){
+      _cmsBaseImageUrl = savedUrl;
+      document.getElementById('cms-base-image-url').value = savedUrl;
+    }
+    if(savedData){
+      _cmsBaseImageDataUrl = savedData;
+      // Apply base image immediately
+      const img = new Image();
+      img.onload = function(){
+        const tex = new THREE.CanvasTexture(img);
+        tex.encoding = THREE.sRGBEncoding; tex.needsUpdate = true;
+        if(backWallCanvasMesh){
+          backWallCanvasMesh.material = new THREE.MeshStandardMaterial({map:tex,roughness:0.05,emissive:0xffffff,emissiveIntensity:0.9});
+          backWallCanvasMesh.material.needsUpdate = true;
+        }
+        const pr = document.getElementById('bw-preview');
+        if(pr) pr.innerHTML = `<img src="${savedData}" style="width:100%;height:70px;object-fit:cover;border-radius:3px">`;
+      };
+      img.src = savedData;
+    } else if(savedUrl){
+      // Load from URL
+      const img = new Image(); img.crossOrigin='anonymous';
+      img.onload = function(){
+        const tex = new THREE.CanvasTexture(img); tex.encoding=THREE.sRGBEncoding; tex.needsUpdate=true;
+        if(backWallCanvasMesh){ backWallCanvasMesh.material=new THREE.MeshStandardMaterial({map:tex,roughness:0.05,emissive:0xffffff,emissiveIntensity:0.9}); }
+      };
+      img.src = savedUrl;
+    }
+  }catch(e){}
+})();
+
+function handleBackWallUpload(event){
+  const file=event.target.files[0]; if(!file)return;
+  closeBwOverlay();
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const img=new Image();
+    img.crossOrigin='anonymous';
+    img.onload=function(){
+      const tex=new THREE.CanvasTexture(img); tex.encoding=THREE.sRGBEncoding; tex.needsUpdate=true;
+      if(backWallCanvasMesh){
+        backWallCanvasMesh.material=new THREE.MeshStandardMaterial({map:tex,roughness:0.05,emissive:0xffffff,emissiveIntensity:1.0});
+        backWallCanvasMesh.material.needsUpdate=true;
+      }
+    };
+    img.src=e.target.result;
+    // Store as user temp (NOT permanent — resets on exit)
+    window._userUploadedBackWall=e.target.result;
+    document.getElementById('bw-preview').innerHTML=`<img src="${e.target.result}" style="width:100%;height:70px;object-fit:cover;border-radius:3px">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+// User leaves page → reset to admin base image automatically
+window.addEventListener('beforeunload', function(){
+  // On next load, base image will reload from localStorage — user image is gone (not saved)
+});
+// Also reset when user navigates away within SPA
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState==='hidden' && window._userUploadedBackWall){
+    // Reset flag — next time page is visible or user returns, base image shows
+    window._userUploadedBackWall = null;
+  }
+});
+
+// "Upload Your Work" — snap camera to front view of back wall, show overlay
+function openBackWallView(){
+  if(locked) document.exitPointerLock();
+  if(started){
+    // Teleport camera to face back wall straight on
+    targetPos.set(0, GAL_H/2, -6);
+    targetYaw = Math.PI; // facing toward z=0 (back wall at z=0, camera at z=-6 facing +z)
+    targetPitch = 0;
+    yaw = Math.PI; pitch = 0;
+    camera.position.set(0, GAL_H/2, -6);
+    // Force camera to look at back wall immediately
+    const euler2 = new THREE.Euler(0, Math.PI, 0, 'YXZ');
+    camera.quaternion.setFromEuler(euler2);
+  }
+  const ov = document.getElementById('bw-view-overlay');
+  ov.style.display='flex';
+}
+function closeBwOverlay(){
+  const ov = document.getElementById('bw-view-overlay');
+  if(ov) ov.style.display='none';
+}
+function applyUserBwUrl(){
+  const url = (document.getElementById('bw-user-url')||{}).value||'';
+  if(!url.trim()) return;
+  closeBwOverlay();
+  const isVideo = /\.(mp4|webm|mov|avi)(\?|$)/i.test(url) || url.includes('youtube') || url.includes('drive.google') || url.includes('instagram') || url.includes('youtu.be');
+  if(isVideo){
+    applyVideoToBackWall(url.trim());
+    window._userUploadedBackWall = url.trim();
+  } else {
+    // Treat as image
+    window._userUploadedBackWall = url.trim();
+    const pr=document.getElementById('bw-preview');
+    if(pr) pr.innerHTML=`<span style="color:#FFD700;font-size:8px;padding:4px">Loading...</span>`;
+    const urls=_resolveImageUrl(url.trim());
+    _applyFirstWorking(urls, backWallCanvasMesh, 0.05, 0xffffff, (workingUrl)=>{
+      if(backWallCanvasMesh&&backWallCanvasMesh.material){
+        backWallCanvasMesh.material.emissive=new THREE.Color(0xffffff);
+        backWallCanvasMesh.material.emissiveIntensity=0.8;
+        backWallCanvasMesh.material.needsUpdate=true;
+      }
+      if(pr) pr.innerHTML=`<span style="color:#4CAF50;font-size:8px;padding:4px">✓ Applied</span>`;
+    });
+  }
+}
+function goBack(){
+  resetBackWall();
+  closeBwOverlay();
+  if(locked) document.exitPointerLock();
+  history.back();
+}
+function saveBackWallImage(){
+  const src = window._userUploadedBackWall || window._savedBackWallSrc;
+  if(src){localStorage.setItem('bw_saved',src);const b=document.getElementById('bw-preview');b.style.outline='2px solid #4CAF50';setTimeout(()=>b.style.outline='',1500);}
+}
+function applyURLToBackWall(){
+  const url=document.getElementById('bw-url-input').value.trim(); if(!url)return;
+  const img=new Image(); img.crossOrigin='anonymous';
+  img.onload=function(){
+    const tex=new THREE.CanvasTexture(img); tex.encoding=THREE.sRGBEncoding; tex.needsUpdate=true;
+    if(backWallCanvasMesh){backWallCanvasMesh.material=new THREE.MeshStandardMaterial({map:tex,roughness:0.05,emissive:0xffffff,emissiveIntensity:1.0});backWallCanvasMesh.material.needsUpdate=true;}
+    document.getElementById('bw-preview').innerHTML=`<img src="${url}" style="width:100%;height:70px;object-fit:cover;border-radius:3px">`;
+  };
+  img.onerror=function(){
+    texLoader.load(url,tex=>{
+      tex.encoding=THREE.sRGBEncoding;
+      if(backWallCanvasMesh){backWallCanvasMesh.material=new THREE.MeshStandardMaterial({map:tex,roughness:0.05,emissive:0xffffff,emissiveIntensity:1.0});backWallCanvasMesh.material.needsUpdate=true;}
+    });
+  };
+  img.src=url;
+}
+function resetBackWall(){
+  window._userUploadedBackWall = null;
+  // If admin set a default, show it; otherwise TV goes to black (off)
+  if(_cmsBaseImageDataUrl){
+    const img = new Image();
+    img.onload = function(){
+      const tex = new THREE.CanvasTexture(img); tex.encoding=THREE.sRGBEncoding; tex.needsUpdate=true;
+      if(backWallCanvasMesh){ backWallCanvasMesh.material=new THREE.MeshStandardMaterial({map:tex,roughness:0.05,emissive:new THREE.Color(0xffffff),emissiveIntensity:1.2}); backWallCanvasMesh.material.needsUpdate=true; }
+    };
+    img.src = _cmsBaseImageDataUrl;
+    const wrap=document.getElementById('bw-preview-wrap');
+    if(wrap) wrap.innerHTML=`<img src="${_cmsBaseImageDataUrl}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;">`;
+  } else if(_cmsBaseImageUrl){
+    const urls=_resolveImageUrl(_cmsBaseImageUrl);
+    _applyFirstWorking(urls, backWallCanvasMesh, 0.05, 0xffffff, ()=>{}, 1.2);
+    const wrap=document.getElementById('bw-preview-wrap');
+    if(wrap) wrap.innerHTML=`<span style="color:#FFD700;font-size:8px;padding:4px">Loading default…</span>`;
+  } else {
+    // TV off — black screen
+    if(backWallCanvasMesh) backWallCanvasMesh.material=new THREE.MeshStandardMaterial({
+      color:0x020408, roughness:0.05, emissive:new THREE.Color(0x010205), emissiveIntensity:1.0
+    });
+    const wrap=document.getElementById('bw-preview-wrap');
+    if(wrap) wrap.innerHTML=`<span style="color:rgba(100,180,255,0.35);font-size:9px;">📺 Screen Off</span>`;
+    const ui=document.getElementById('bw-url-input'); if(ui) ui.value='';
+  }
+}
+
+function enterGallery(){
+  started=true;
+  document.getElementById('enter-overlay').style.display='none';
+  canvas.requestPointerLock();
+  document.getElementById('xhair').classList.add('show');
+  // Autoplay music on user gesture (gallery entry)
+  if(_bgAudio && _bgAudio.paused){
+    _bgAudio.play().catch(()=>{});
+    _musicPaused=false;
+    const nb=document.getElementById('nav-music-toggle'); if(nb) nb.textContent='⏸';
+    const tb=document.getElementById('cms-music-toggle'); if(tb) tb.textContent='⏸ Pause';
+    updateMusicStatus();
+  }
+}
+
+// CMS
+function toggleCMS(e){
+  e&&e.stopPropagation();
+  // Auth check: must be logged in via CMS session
+  if(typeof CMSAuth === 'undefined' || !CMSAuth.isAuthenticated()){
+    window.location.href = 'cms-login.html';
+    return;
+  }
+  const overlay=document.getElementById('cms-overlay');
+  overlay.classList.toggle('open');
+  if(overlay.classList.contains('open')&&locked) document.exitPointerLock();
+}
+function closeCMS(){document.getElementById('cms-overlay').classList.remove('open');}
+function closeCMSOutside(e){}
+
+function buildCMSImageSlots(){
+  buildSlots('gal-left-slots',galLeftMeshes,'gal-l');
+  buildSlots('gal-right-slots',galRightMeshes,'gal-r');
+  buildSlots('circ-img-slots',circCanvasMeshes,'circ');
+  // Standee slots built after standees are created (called from buildStandees hook)
+  setTimeout(buildStandeeSlots, 100);
+}
+// Map prefix → mesh array for upload/url handlers
+const _prefixToArr = {};
+
+function toggleAcc(bodyId, btn){
+  const body = document.getElementById(bodyId);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+
+function buildSlots(containerId, meshArray, prefix){
+  _prefixToArr[prefix] = meshArray;
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  container.innerHTML = '';
+  meshArray.forEach((item, idx) => {
+    const fid = `${prefix}-file-${idx}`;
+    const label = item.title || ('Artwork ' + (idx+1));
+    const previewSrc = item.currentUrl || '';
+
+    const slot = document.createElement('div');
+    slot.className = 'img-slot';
+    slot.style.marginBottom = '14px';
+    slot.innerHTML = `
+      <div class="img-slot-header">
+        <span class="img-slot-title" style="font-size:10px;color:#ccc;letter-spacing:1px;">${label}</span>
+      </div>
+      <div id="${prefix}-preview-wrap-${idx}" style="width:100%;height:80px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:4px;margin-bottom:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+        ${previewSrc
+          ? `<img id="${prefix}-prev-${idx}" src="${previewSrc}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;display:block;" onerror="this.parentElement.innerHTML='<span style=color:rgba(255,255,255,0.2);font-size:9px;letter-spacing:2px>NO IMAGE</span>'">`
+          : `<span style="color:rgba(255,255,255,0.2);font-size:9px;letter-spacing:2px;" id="${prefix}-prev-${idx}">NO IMAGE</span>`
+        }
+      </div>
+      <div class="img-slot-actions" style="flex-wrap:wrap;gap:5px;margin-bottom:6px;">
+        <button class="img-slot-btn" onclick="document.getElementById('${fid}').click()" style="padding:6px 0;flex:1 1 calc(33% - 4px);">⬆ Upload</button>
+        <button class="img-slot-btn" onclick="applyURLToPainting('${prefix}',${idx})" style="padding:6px 0;flex:1 1 calc(33% - 4px);">🔗 Apply URL</button>
+        <button class="img-slot-btn" onclick="savePaintingImage('${prefix}',${idx})" style="padding:6px 0;flex:1 1 calc(33% - 4px);border-color:#4CAF50;color:#4CAF50;">💾 Save</button>
+      </div>
+      <input type="text" class="img-slot-url" id="${prefix}-url-${idx}" placeholder="https://... paste image URL here" style="margin-bottom:0;">
+      <input type="file" id="${fid}" accept="image/*" style="display:none" onchange="handlePaintingUpload(event,'${prefix}',${idx})">
+    `;
+    container.appendChild(slot);
+  });
+}
+
+function savePaintingImage(prefix, idx){
+  const wrap = document.getElementById(`${prefix}-preview-wrap-${idx}`);
+  if(wrap){
+    wrap.style.outline = '2px solid #4CAF50';
+    setTimeout(() => wrap.style.outline = '', 1600);
+  }
+}
+function handlePaintingUpload(event,prefix,idx){
+  const file=event.target.files[0]; if(!file)return;
+  const arr=_prefixToArr[prefix];
+  if(!arr){console.warn('No array for prefix',prefix);return;}
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const imgEl=new Image();
+    imgEl.onload=function(){
+      const tex=new THREE.CanvasTexture(imgEl); tex.encoding=THREE.sRGBEncoding; tex.needsUpdate=true;
+      if(arr[idx]&&arr[idx].canvasMesh){
+        arr[idx].canvasMesh.material=new THREE.MeshStandardMaterial({map:tex,roughness:0.3});
+        arr[idx].canvasMesh.material.needsUpdate=true;
+      }
+    };
+    imgEl.src=e.target.result;
+    try{localStorage.setItem(`saved_${prefix}_${idx}`,e.target.result);}catch(err){}
+    // Update preview wrap
+    const wrap=document.getElementById(`${prefix}-preview-wrap-${idx}`);
+    if(wrap){wrap.innerHTML=`<img src="${e.target.result}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;display:block;">`;}
+  };
+  reader.readAsDataURL(file);
+}
+function applyURLToPainting(prefix,idx){
+  const urlInput=document.getElementById(`${prefix}-url-${idx}`); if(!urlInput)return;
+  const url=urlInput.value.trim(); if(!url)return;
+  const arr=_prefixToArr[prefix];
+  if(!arr||!arr[idx]){return;}
+  const applyTex=(tex)=>{
+    tex.encoding=THREE.sRGBEncoding; tex.needsUpdate=true;
+    arr[idx].canvasMesh.material=new THREE.MeshStandardMaterial({map:tex,roughness:0.3});
+    arr[idx].canvasMesh.material.needsUpdate=true;
+    const wrap=document.getElementById(`${prefix}-preview-wrap-${idx}`);
+    if(wrap){wrap.innerHTML=`<img src="${url}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;display:block;" onerror="this.parentElement.innerHTML='<span style=color:rgba(255,255,255,0.2);font-size:9px>URL Error</span>'">`;}
+  };
+  const imgEl=new Image(); imgEl.crossOrigin='anonymous';
+  imgEl.onload=()=>{applyTex(new THREE.CanvasTexture(imgEl));};
+  imgEl.onerror=()=>{texLoader.load(url,applyTex);};
+  imgEl.src=url;
+}
+
+// ═══════════════════════════════════════════════
+//  ANIMATION LOOP
+// ═══════════════════════════════════════════════
+const clock=new THREE.Clock();
+const euler=new THREE.Euler(0,0,0,'YXZ');
+
+function animate(timestamp){
+  requestAnimationFrame(animate);
+  // 120 FPS cap — skip frame if too early
+  if(timestamp - _lastFrameTime < _frameDuration - 0.5) return;
+  _lastFrameTime = timestamp;
+  const dt=Math.min(clock.getDelta(),0.025); // tighter clamp for 120fps smoothness
+  const elapsed=clock.elapsedTime;
+
+  // Smooth day/night transition
+  const targetNight=isNightMode?1.0:0.0;
+  nightTransition=lerp(nightTransition,targetNight,dt*1.5);
+  if(Math.abs(nightTransition-targetNight)>0.001) applyNightTransition(nightTransition);
+
+  skyUniforms.uTime.value=elapsed;
+
+  if(started && !_aerialMode){
+    // Panorama auto-rotate
+    if(_panoramaMode){
+      targetYaw += 0.12 * dt;
+      yaw = targetYaw;
+    }
+    yaw+=(targetYaw-yaw)*16*dt;
+    pitch+=(targetPitch-pitch)*16*dt;
+    euler.set(pitch,yaw,0);
+    camera.quaternion.setFromEuler(euler);
+    const speed=_cameraSpeed;
+    const dir=new THREE.Vector3();
+    if(keys['KeyW']||keys['ArrowUp'])    dir.z-=1;
+    if(keys['KeyS']||keys['ArrowDown'])  dir.z+=1;
+    if(keys['KeyA']||keys['ArrowLeft'])  dir.x-=1;
+    if(keys['KeyD']||keys['ArrowRight']) dir.x+=1;
+    if(dir.lengthSq()>0){dir.normalize().applyEuler(new THREE.Euler(0,yaw,0));targetPos.add(dir.multiplyScalar(speed*dt));}
+    const distToRoomCenter=Math.sqrt(targetPos.x*targetPos.x+Math.pow(targetPos.z-ROOM_Z,2));
+    const inGalleryZRange=targetPos.z>-GAL_L&&targetPos.z<-0.5;
+    const inTransitionZone=targetPos.z<=-GAL_L&&targetPos.z>-GAL_L-offsetZ+2;
+    targetPos.y=2.5;
+    if(inGalleryZRange){
+      targetPos.x=Math.max(-GAL_W/2+0.8,Math.min(GAL_W/2-0.8,targetPos.x));
+      targetPos.z=Math.min(-0.5,targetPos.z);
+    } else if(inTransitionZone){
+      targetPos.x=Math.max(-GAL_W/2+0.8,Math.min(GAL_W/2-0.8,targetPos.x));
+    } else {
+      if(distToRoomCenter>R-1.2){
+        const a=Math.atan2(targetPos.x,targetPos.z-ROOM_Z);
+        const na=a<0?a+Math.PI*2:a;
+        const inGap = na<gapAngle+0.25 || na>Math.PI*2-gapAngle-0.25;
+        if(inGap){
+          targetPos.x=Math.max(-GAL_W/2+0.8,Math.min(GAL_W/2-0.8,targetPos.x));
+        } else {
+          targetPos.x=Math.sin(a)*(R-1.2);
+          targetPos.z=ROOM_Z+Math.cos(a)*(R-1.2);
+        }
+      }
+      if(distToRoomCenter<5.0){
+        const a=Math.atan2(targetPos.x,targetPos.z-ROOM_Z);
+        targetPos.x=Math.sin(a)*5.0;
+        targetPos.z=ROOM_Z+Math.cos(a)*5.0;
+      }
+    }
+    const lerpSpeed = (!inGalleryZRange && !inTransitionZone) ? 9 : 18;
+    camera.position.lerp(targetPos, lerpSpeed*dt);
+  } else if(_aerialMode){
+    // Aerial: smooth hold at top, allow slow pan with keys
+    yaw+=(targetYaw-yaw)*8*dt;
+    pitch+=(targetPitch-pitch)*8*dt;
+    const aerialEuler=new THREE.Euler(-Math.PI/2,0,0,'YXZ');
+    camera.quaternion.setFromEuler(aerialEuler);
+    camera.position.lerp(targetPos, 6*dt);
+  }
+
+  // Center art hover + rotate
+  if(window.centerArt){
+    window.centerArt.position.y=5.5+Math.sin(elapsed*0.8)*0.4;
+    window.centerArt.rotation.y+=0.15*dt;
+    window.centerArt.children.forEach(child=>{
+      if(child.userData.rotX){
+        child.rotation.x+=child.userData.rotX*dt;
+        child.rotation.y+=child.userData.rotY*dt;
+        if(child.userData.rotZ)child.rotation.z+=child.userData.rotZ*dt;
+      }
+      if(child.userData.isOrbiter){
+        child.userData.orbitAngle+=child.userData.orbitSpeed*dt;
+        const a=child.userData.orbitAngle,r=child.userData.orbitRadius;
+        child.position.set(Math.cos(a)*r,child.userData.orbitY+Math.sin(elapsed*1.5+a)*0.3,Math.sin(a)*r);
+      }
+    });
+  }
+
+  // Sci-fi base animate
+  if(window.sciFiBase){
+    window.sciFiBase.children.forEach(child=>{
+      if(child.userData.floatDisc){
+        child.position.y=child.userData.baseY+Math.sin(elapsed*child.userData.floatSpeed)*0.15;
+        child.rotation.z+=child.userData.rotSpeed*dt;
+      }
+    });
+  }
+
+  // Night: 3 strong angle spotlights on installation (NO central point light)
+  if(isNightMode && nightTransition>0.3){
+    const pulse=1.0+Math.sin(elapsed*0.9)*0.08;
+    const nt=nightTransition*baseIntensityMultiplier;
+    if(nightInstallLight) nightInstallLight.intensity=0; // Always OFF
+    if(nightInstallSpot1) nightInstallSpot1.intensity=14.0*nt*(1.0+Math.sin(elapsed*1.1+1)*0.07);
+    if(nightInstallSpot2) nightInstallSpot2.intensity=12.0*nt*(1.0+Math.sin(elapsed*1.3+2)*0.07);
+    if(nightInstallSpot3) nightInstallSpot3.intensity=10.0*nt*(1.0+Math.sin(elapsed*0.7+3)*0.05);
+  }
+
+  renderer.render(scene,camera);
+  _updateVideoTextures();
+  _updateProximityAudio();
+}
+
+// ═══════════════════════════════════════════════
+//  STANDEES AT GALLERY END (wall-attached, both sides)
+// ═══════════════════════════════════════════════
+const standeeMeshes = [];  // [{mesh, lightDay, lightNight}]
+const standeeCanvases = []; // for CMS image upload
+
+function buildStandees(){
+  const standeeW = 2.4, standeeH = 6.0, standeeD = 0.06; // thin flat board
+  const standeeZPositions = [-56, -63];
+
+  // Materials — plain white board like a real standee/banner
+  const boardMat  = new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.55, metalness:0.0});
+  const frameMat  = new THREE.MeshStandardMaterial({color:0x222222, metalness:0.7, roughness:0.3});
+  const baseMat   = new THREE.MeshStandardMaterial({color:0x1a1a1a, metalness:0.8, roughness:0.3});
+  const poleMat   = new THREE.MeshStandardMaterial({color:0x888888, metalness:0.9, roughness:0.15});
+
+  for(let si=0;si<2;si++){
+    const isLeft = si===0;
+    // Position standee slightly away from wall so it faces the aisle
+    const wallX  = isLeft ? -GAL_W/2 + 0.45 : GAL_W/2 - 0.45;
+    const rotY   = isLeft ? Math.PI/2 : -Math.PI/2;
+    const sideLabel = isLeft ? 'Left' : 'Right';
+
+    for(let ni=0;ni<standeeZPositions.length;ni++){
+      const zPos = standeeZPositions[ni];
+      const group = new THREE.Group();
+      group.position.set(wallX, 0, zPos);
+      group.rotation.y = rotY;
+
+      // ── Main printed board ──
+      const board = new THREE.Mesh(new THREE.BoxGeometry(standeeW, standeeH, standeeD), boardMat.clone());
+      board.position.y = standeeH/2;
+      group.add(board);
+
+      // ── Thin frame border around board ──
+      const frameThick = 0.06;
+      [[standeeW+frameThick*2, frameThick, standeeD+0.01, 0, standeeH/2 + standeeH/2 + frameThick/2, 0],
+       [standeeW+frameThick*2, frameThick, standeeD+0.01, 0, standeeH/2 - standeeH/2 - frameThick/2, 0],
+       [frameThick, standeeH, standeeD+0.01, -standeeW/2 - frameThick/2, standeeH/2, 0],
+       [frameThick, standeeH, standeeD+0.01,  standeeW/2 + frameThick/2, standeeH/2, 0],
+      ].forEach(([w,h,d,x,y,z])=>{
+        const f=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), frameMat);
+        f.position.set(x,y,z); group.add(f);
+      });
+
+      // ── Two slim metal poles behind board ──
+      const poleGeo = new THREE.CylinderGeometry(0.03, 0.03, standeeH+0.4, 8);
+      [-standeeW/3, standeeW/3].forEach(px=>{
+        const pole=new THREE.Mesh(poleGeo, poleMat);
+        pole.position.set(px, standeeH/2, -standeeD/2 - 0.05);
+        group.add(pole);
+        // Foot T-bar
+        const foot=new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.04, 0.35), baseMat);
+        foot.position.set(px, 0.02, -standeeD/2 - 0.05);
+        group.add(foot);
+      });
+
+      scene.add(group);
+
+      // Canvas mesh is the board face
+      const canvasMesh = board;
+      canvasMesh.material = new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.55, metalness:0.0});
+
+      const label = `${sideLabel} Standee ${ni+1}`;
+      standeeMeshes.push({group, canvasMesh, edgeMat:null, label, side:sideLabel, ni});
+      standeeCanvases.push({canvasMesh, title:label, side:sideLabel, ni});
+
+      // ── Ceiling spotlight aimed at this standee ──
+      const spotX  = isLeft ? wallX + 1.8 : wallX - 1.8;
+      const spot = new THREE.SpotLight(0xfff8ee, 5.0, 14, Math.PI/7, 0.35, 1.6);
+      spot.position.set(spotX, GAL_H - 0.3, zPos);
+      const tgt = new THREE.Object3D();
+      tgt.position.set(wallX, standeeH * 0.55, zPos);
+      scene.add(tgt); spot.target = tgt; scene.add(spot);
+      spot.userData.baseIntensity = 5.0;
+      allLights.push(spot); daySpotLights.push(spot);
+
+      // Night warm spot
+      const nspot = new THREE.SpotLight(0xffdd88, 0.0, 14, Math.PI/7, 0.35, 1.6);
+      nspot.position.set(spotX, GAL_H - 0.3, zPos);
+      const ntgt = new THREE.Object3D();
+      ntgt.position.set(wallX, standeeH * 0.55, zPos);
+      scene.add(ntgt); nspot.target = ntgt; scene.add(nspot);
+      nightSpotLights.push(nspot);
+    }
+  }
+}
+buildStandees();
+
+// Standee lights — handled by spotlights now, no-op here
+function updateStandeeLights(t){
+  // Spotlights handled in nightSpotLights array, nothing extra needed
+}
+
+// Hook into applyNightTransition (call updateStandeeLights from there)
+const _origApplyNight = applyNightTransition;
+window.applyNightTransition = function(t){
+  _origApplyNight(t);
+  updateStandeeLights(t);
+};
+
+// ═══════════════════════════════════════════════
+//  CERAMIC RAFTER PANELS (1.5ft white panel at base of every wall)
+// ═══════════════════════════════════════════════
+function buildRafterPanels(){
+  const panelH = 0.46; // ~1.5 feet
+  const panelMat = new THREE.MeshStandardMaterial({color:0xf8f8f5,roughness:0.15,metalness:0.05});
+  const groutMat = new THREE.MeshStandardMaterial({color:0xd8d8d5,roughness:0.4,metalness:0.0});
+
+  function addPanel(geo, x, y, z, ry){
+    const m = new THREE.Mesh(geo, panelMat);
+    m.position.set(x,y,z); if(ry) m.rotation.y=ry;
+    scene.add(m);
+    allWallMeshes.push(m); // so night transition colors it too
+  }
+  // Gallery left wall panel
+  addPanel(new THREE.BoxGeometry(0.06, panelH, GAL_L), -GAL_W/2+0.05, panelH/2, -GAL_L/2);
+  // Gallery right wall panel
+  addPanel(new THREE.BoxGeometry(0.06, panelH, GAL_L),  GAL_W/2-0.05, panelH/2, -GAL_L/2);
+  // Gallery back wall panel
+  addPanel(new THREE.BoxGeometry(GAL_W, panelH, 0.06), 0, panelH/2, 0.05);
+  // Circular room panel (ring at base)
+  const circPanel = new THREE.Mesh(
+    new THREE.CylinderGeometry(R-0.02, R-0.02, panelH, 64, 1, true, gapAngle, Math.PI*2-2*gapAngle),
+    panelMat
+  );
+  circPanel.material.side = THREE.BackSide;
+  circPanel.position.set(0, panelH/2, ROOM_Z);
+  scene.add(circPanel);
+  allWallMeshes.push(circPanel);
+
+  // Grout lines (thin strips at top of rafter)
+  const groutL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.015, GAL_L), groutMat);
+  groutL.position.set(-GAL_W/2+0.06, panelH, -GAL_L/2); scene.add(groutL);
+  const groutR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.015, GAL_L), groutMat);
+  groutR.position.set( GAL_W/2-0.06, panelH, -GAL_L/2); scene.add(groutR);
+  const groutB = new THREE.Mesh(new THREE.BoxGeometry(GAL_W, 0.015, 0.08), groutMat);
+  groutB.position.set(0, panelH, 0.06); scene.add(groutB);
+}
+buildRafterPanels();
+
+// ═══════════════════════════════════════════════
+//  CEILING SPEAKERS (10 white speakers total)
+// ═══════════════════════════════════════════════
+function buildCeilingSpeakers(){
+  const speakerMat = new THREE.MeshStandardMaterial({color:0xfafafa, roughness:0.3, metalness:0.2});
+  const grilleMat  = new THREE.MeshStandardMaterial({color:0xcccccc, roughness:0.6, metalness:0.1});
+  const mountMat   = new THREE.MeshStandardMaterial({color:0x444444, roughness:0.5, metalness:0.5});
+
+  function addSpeaker(x, y, z){
+    const g = new THREE.Group();
+    // Housing (round disc)
+    const housing = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.10, 24), speakerMat);
+    g.add(housing);
+    // Grille (thin ring on face)
+    const grille = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.02, 24), grilleMat);
+    grille.position.y = -0.06;
+    g.add(grille);
+    // Mount ring
+    const mountRing = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.03, 8, 24), mountMat);
+    mountRing.rotation.x = Math.PI/2;
+    mountRing.position.y = 0.04;
+    g.add(mountRing);
+    // Speaker cone (inner circle)
+    const cone = new THREE.Mesh(new THREE.CircleGeometry(0.10, 16), new THREE.MeshStandardMaterial({color:0x888888,roughness:0.8}));
+    cone.rotation.x = Math.PI/2; cone.position.y = -0.07;
+    g.add(cone);
+    g.position.set(x, y, z);
+    g.rotation.x = 0; // face downward
+    scene.add(g);
+  }
+
+  const ceilY = GAL_H - 0.06;
+  // 6 speakers in gallery corridor (3 per side)
+  const galSpeakerZs = [-10, -25, -40, -55];
+  galSpeakerZs.forEach(z => {
+    addSpeaker(-GAL_W/2 + 2.5, ceilY, z);
+    addSpeaker( GAL_W/2 - 2.5, ceilY, z);
+  });
+  // 2 speakers in circular room ceiling
+  addSpeaker(-8, ROOM_H - 0.06, ROOM_Z);
+  addSpeaker( 8, ROOM_H - 0.06, ROOM_Z);
+}
+buildCeilingSpeakers();
+
+// ═══════════════════════════════════════════════
+//  BACKGROUND MUSIC SYSTEM
+// ═══════════════════════════════════════════════
+let _bgAudio = null;
+let _musicVolume = 0.7;
+let _musicPaused = false;
+
+function initBgMusic(src){
+  if(_bgAudio){ _bgAudio.pause(); _bgAudio.src=''; _bgAudio=null; }
+  _bgAudio = new Audio();
+  _bgAudio.crossOrigin = 'anonymous';
+  _bgAudio.loop = true;
+  _bgAudio.volume = _musicVolume;
+  _bgAudio.src = src;
+  _bgAudio.load();
+  _bgAudio.play().catch(()=>{
+    // Autoplay blocked — wait for first user gesture
+    const resume=()=>{ if(_bgAudio&&_bgAudio.paused) _bgAudio.play().catch(()=>{}); document.removeEventListener('click',resume); };
+    document.addEventListener('click',resume);
+  });
+  updateMusicStatus();
+}
+
+// Default ambient music (royalty-free)
+// Default ambient music — multiple fallbacks
+const DEFAULT_MUSIC_SOURCES = [
+  'https://archive.org/download/art-of-silence/art-of-silence.mp3',
+  'https://archive.org/download/calm-ambient-music/calm-ambient.mp3',
+];
+let _defaultMusicIdx = 0;
+function tryDefaultMusic(){
+  if(_defaultMusicIdx >= DEFAULT_MUSIC_SOURCES.length) return; // all failed, no music
+  initBgMusic(DEFAULT_MUSIC_SOURCES[_defaultMusicIdx]);
+  if(_bgAudio){
+    _bgAudio.onerror = function(){
+      _defaultMusicIdx++;
+      tryDefaultMusic();
+    };
+  }
+}
+tryDefaultMusic();
+
+function handleMusicUpload(event){
+  const file=event.target.files[0]; if(!file)return;
+  const url=URL.createObjectURL(file);
+  initBgMusic(url);
+  document.getElementById('cms-music-status').textContent='Playing: '+file.name;
+  document.getElementById('cms-music-toggle').textContent='⏸ Pause';
+  _musicPaused=false;
+}
+function _resolveMusicUrl(url){
+  if(!url) return url;
+  // Google Drive: /file/d/ID/view or ?id=ID or /uc?id=ID
+  let m=url.match(/drive\.google\.com\/file\/d\/([^\/\?#]+)/);
+  if(!m) m=url.match(/drive\.google\.com\/[^?]*[?&]id=([^&#]+)/);
+  if(!m) m=url.match(/drive\.google\.com\/uc\?[^#]*id=([^&#]+)/);
+  if(m){
+    const id=m[1];
+    // Use allorigins proxy as primary — direct Google export is blocked by CORS
+    return `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/uc?export=open&id=${id}`)}`;
+  }
+  // Dropbox: change dl=0 to dl=1 for direct download
+  if(url.includes('dropbox.com')){
+    return url.replace('dl=0','dl=1').replace('www.dropbox.com','dl.dropboxusercontent.com');
+  }
+  return url;
+}
+function applyMusicURL(){
+  const raw=document.getElementById('cms-music-url').value.trim(); if(!raw)return;
+  // Try multiple resolved URLs for Drive/Dropbox
+  const urls = _resolveMusicUrlAll(raw);
+  _initBgMusicWithFallbacks(urls);
+  document.getElementById('cms-music-status').textContent='Connecting to music source…';
+  document.getElementById('cms-music-toggle').textContent='⏸ Pause';
+  const nb=document.getElementById('nav-music-toggle'); if(nb) nb.textContent='⏸';
+  _musicPaused=false;
+}
+
+function _resolveMusicUrlAll(raw){
+  const urls=[];
+  let m=raw.match(/drive\.google\.com\/file\/d\/([^\/\?#]+)/);
+  if(!m) m=raw.match(/drive\.google\.com\/[^?]*[?&]id=([^&#]+)/);
+  if(!m) m=raw.match(/drive\.google\.com\/uc\?[^#]*id=([^&#]+)/);
+  if(m){
+    const id=m[1];
+    urls.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/uc?export=open&id=${id}`)}`);
+    urls.push(`https://docs.google.com/uc?export=open&id=${id}`);
+    urls.push(`https://drive.google.com/uc?export=download&id=${id}`);
+    return urls;
+  }
+  if(raw.includes('dropbox.com')){
+    urls.push(raw.replace('dl=0','dl=1').replace('www.dropbox.com','dl.dropboxusercontent.com'));
+    urls.push(raw.replace('dl=0','dl=1'));
+  }
+  urls.push(raw);
+  return urls;
+}
+
+function _initBgMusicWithFallbacks(urls){
+  if(!urls || !urls.length) return;
+  let idx=0;
+  function tryNext(){
+    if(idx>=urls.length){ updateMusicStatus(); return; }
+    const src=urls[idx++];
+    if(_bgAudio){ _bgAudio.pause(); _bgAudio=null; }
+    _bgAudio=new Audio(src);
+    _bgAudio.loop=true; _bgAudio.volume=_musicVolume;
+    _bgAudio.onerror=tryNext;
+    _bgAudio.play().then(()=>{
+      _musicPaused=false; updateMusicStatus();
+      document.getElementById('cms-music-status').textContent='Playing from link';
+    }).catch(()=>{
+      // Autoplay blocked — wait for gesture
+      const resume=()=>{ _bgAudio&&_bgAudio.play().catch(tryNext); document.removeEventListener('click',resume); };
+      document.addEventListener('click',resume);
+    });
+  }
+  tryNext();
+}
+function setMusicVolume(val){
+  _musicVolume=parseInt(val)/100;
+  if(_bgAudio) _bgAudio.volume=_musicVolume;
+  document.getElementById('cms-vol-val').textContent=val+'%';
+}
+function toggleMusic(){
+  if(!_bgAudio)return;
+  if(_musicPaused){ _bgAudio.play(); _musicPaused=false; document.getElementById('cms-music-toggle').textContent='⏸ Pause'; }
+  else { _bgAudio.pause(); _musicPaused=true; document.getElementById('cms-music-toggle').textContent='▶ Play'; }
+  updateMusicStatus();
+}
+function stopMusic(){ if(_bgAudio){_bgAudio.pause();_bgAudio.currentTime=0;_musicPaused=true;document.getElementById('cms-music-toggle').textContent='▶ Play';updateMusicStatus();} }
+function updateMusicStatus(){ const el=document.getElementById('cms-music-status'); if(el) el.textContent=_musicPaused?'Paused':'Playing ambient music'; }
+
+// ═══════════════════════════════════════════════
+//  CMS PUBLISH
+// ═══════════════════════════════════════════════
+function publishCMS(){
+  // Collect current settings and flash a confirmation
+  const btn=document.getElementById('cms-publish-btn');
+  const orig=btn.textContent;
+  btn.textContent='✓ Published!';
+  btn.style.background='#4CAF50';
+  setTimeout(()=>{btn.textContent=orig;btn.style.background='#FFD700';},2000);
+  // Save to localStorage
+  try{
+    localStorage.setItem('cms_published_v21', JSON.stringify({
+      wallColor:document.getElementById('cms-wall-color').value,
+      floorColor:document.getElementById('cms-floor-color').value,
+      ceilColor:document.getElementById('cms-ceil-color').value,
+      frameColor:document.getElementById('cms-frame-color').value,
+      lightVal:document.getElementById('cms-light-slider').value,
+      ts:Date.now()
+    }));
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════
+//  CMS: Build standee slots into accordion bodies
+// ═══════════════════════════════════════════════
+function buildStandeeSlots(){
+  // Split standeeCanvases into left (si=0: indices 0,1) and right (si=1: indices 2,3)
+  const leftItems  = standeeCanvases.filter((_,i)=>i<2);
+  const rightItems = standeeCanvases.filter((_,i)=>i>=2);
+  buildGenericSlots('std-left-slots',  leftItems,  'std-l', handleStandeeUpload, applyURLToStandee);
+  buildGenericSlots('std-right-slots', rightItems, 'std-r', handleStandeeUpload, applyURLToStandee, 2);
+}
+
+function buildGenericSlots(containerId, items, prefix, uploadFn, urlFn, idxOffset){
+  idxOffset = idxOffset||0;
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  container.innerHTML = '';
+  items.forEach((item, localIdx)=>{
+    const globalIdx = localIdx + idxOffset;
+    const fid = `${prefix}-file-${localIdx}`;
+    const fidv = `${prefix}-vidfile-${localIdx}`;
+    const slot = document.createElement('div');
+    slot.className = 'img-slot';
+    slot.style.marginBottom = '14px';
+    slot.innerHTML = `
+      <div class="img-slot-header">
+        <span class="img-slot-title" style="font-size:10px;color:#ccc;letter-spacing:1px;">${item.title}</span>
+      </div>
+      <div id="${prefix}-preview-wrap-${localIdx}" style="width:100%;height:80px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:4px;margin-bottom:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+        <span style="color:rgba(255,255,255,0.2);font-size:9px;letter-spacing:2px;" id="${prefix}-prev-${localIdx}">NO IMAGE</span>
+      </div>
+      <div style="display:flex;gap:0;margin-bottom:6px;border:1px solid rgba(255,215,0,0.2);border-radius:4px;overflow:hidden;">
+        <button onclick="stdSetTab('${prefix}',${localIdx},'img')" id="${prefix}-tab-img-${localIdx}" style="flex:1;background:rgba(255,215,0,0.12);border:none;color:#FFD700;padding:5px 0;font-size:8px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:inherit;">🖼 Image</button>
+        <button onclick="stdSetTab('${prefix}',${localIdx},'vid')" id="${prefix}-tab-vid-${localIdx}" style="flex:1;background:transparent;border:none;color:rgba(255,255,255,0.35);padding:5px 0;font-size:8px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:inherit;">🎬 Video</button>
+      </div>
+      <div id="${prefix}-img-panel-${localIdx}">
+        <div class="img-slot-actions" style="flex-wrap:wrap;gap:5px;margin-bottom:6px;">
+          <button class="img-slot-btn" onclick="document.getElementById('${fid}').click()" style="padding:6px 0;flex:1 1 calc(33% - 4px);">⬆ Upload</button>
+          <button class="img-slot-btn" onclick="applyURLToStandee(${globalIdx})" style="padding:6px 0;flex:1 1 calc(33% - 4px);">🔗 Apply URL</button>
+          <button class="img-slot-btn" onclick="saveStandeeUI('${prefix}',${localIdx})" style="padding:6px 0;flex:1 1 calc(33% - 4px);border-color:#4CAF50;color:#4CAF50;">💾 Save</button>
+        </div>
+        <input type="text" class="img-slot-url" id="std-url-${globalIdx}" placeholder="https://... image URL" style="margin-bottom:0;">
+      </div>
+      <div id="${prefix}-vid-panel-${localIdx}" style="display:none;">
+        <div style="font-size:8px;color:rgba(255,255,255,0.3);line-height:1.6;margin-bottom:5px;letter-spacing:1px;">YouTube, Drive, Instagram, Figma, Behance or direct MP4. Auto-play loop.</div>
+        <div class="img-slot-actions" style="flex-wrap:wrap;gap:5px;margin-bottom:6px;">
+          <button class="img-slot-btn" onclick="document.getElementById('${fidv}').click()" style="padding:6px 0;flex:1 1 calc(50% - 4px);">⬆ Upload Video</button>
+          <button class="img-slot-btn" onclick="applyVideoURLToStandee(${globalIdx},'${prefix}',${localIdx})" style="padding:6px 0;flex:1 1 calc(50% - 4px);border-color:#4CAF50;color:#4CAF50;">▶ Apply Link</button>
+        </div>
+        <input type="text" class="img-slot-url" id="std-vid-url-${globalIdx}" placeholder="YouTube / Drive / Instagram / MP4 link…" style="margin-bottom:0;">
+        <input type="file" id="${fidv}" accept="video/*" style="display:none" onchange="handleStandeeVideoUpload(event,${globalIdx},'${prefix}',${localIdx})">
+      </div>
+      <input type="file" id="${fid}" accept="image/*" style="display:none" onchange="handleStandeeUpload(event,${globalIdx},'${prefix}',${localIdx})">
+    `;
+    container.appendChild(slot);
+  });
+}
+function stdSetTab(prefix, localIdx, tab){
+  const imgP=document.getElementById(`${prefix}-img-panel-${localIdx}`);
+  const vidP=document.getElementById(`${prefix}-vid-panel-${localIdx}`);
+  const imgT=document.getElementById(`${prefix}-tab-img-${localIdx}`);
+  const vidT=document.getElementById(`${prefix}-tab-vid-${localIdx}`);
+  if(tab==='img'){
+    imgP.style.display=''; vidP.style.display='none';
+    imgT.style.background='rgba(255,215,0,0.12)'; imgT.style.color='#FFD700';
+    vidT.style.background='transparent'; vidT.style.color='rgba(255,255,255,0.35)';
+  } else {
+    imgP.style.display='none'; vidP.style.display='';
+    vidT.style.background='rgba(255,215,0,0.12)'; vidT.style.color='#FFD700';
+    imgT.style.background='transparent'; imgT.style.color='rgba(255,255,255,0.35)';
+  }
+}
+function applyVideoURLToStandee(globalIdx, prefix, localIdx){
+  const input=document.getElementById(`std-vid-url-${globalIdx}`); if(!input)return;
+  const url=input.value.trim(); if(!url)return;
+  applyVideoToStandee(globalIdx, url);
+  const wrap=document.getElementById(`${prefix}-preview-wrap-${localIdx}`);
+  if(wrap) wrap.innerHTML=`<span style="color:#4CAF50;font-size:9px;padding:4px">✓ Video Applied</span>`;
+}
+function handleStandeeVideoUpload(event, globalIdx, prefix, localIdx){
+  const file=event.target.files[0]; if(!file)return;
+  const url=URL.createObjectURL(file);
+  applyVideoToStandee(globalIdx, url);
+  const wrap=document.getElementById(`${prefix}-preview-wrap-${localIdx}`);
+  if(wrap) wrap.innerHTML=`<span style="color:#4CAF50;font-size:9px;padding:4px">✓ ${file.name}</span>`;
+}
+function saveStandeeUI(prefix,localIdx){
+  const wrap=document.getElementById(`${prefix}-preview-wrap-${localIdx}`);
+  if(wrap){wrap.style.outline='2px solid #4CAF50';setTimeout(()=>wrap.style.outline='',1600);}
+}
+function handleStandeeUpload(event,globalIdx,prefix,localIdx){
+  const file=event.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const imgEl=new Image();
+    imgEl.onload=function(){
+      const tex=new THREE.CanvasTexture(imgEl); tex.encoding=THREE.sRGBEncoding; tex.needsUpdate=true;
+      if(standeeCanvases[globalIdx]){
+        standeeCanvases[globalIdx].canvasMesh.material=new THREE.MeshStandardMaterial({map:tex,roughness:0.04,emissive:0xffffff,emissiveIntensity:0.28});
+        standeeCanvases[globalIdx].canvasMesh.material.needsUpdate=true;
+      }
+    };
+    imgEl.src=e.target.result;
+    // Update preview in accordion
+    if(prefix!==undefined && localIdx!==undefined){
+      const wrap=document.getElementById(`${prefix}-preview-wrap-${localIdx}`);
+      if(wrap){wrap.innerHTML=`<img src="${e.target.result}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;display:block;">`;}
+    }
+    try{localStorage.setItem(`saved_std_${globalIdx}`,e.target.result);}catch(err){}
+  };
+  reader.readAsDataURL(file);
+}
+function applyURLToStandee(globalIdx){
+  const input=document.getElementById(`std-url-${globalIdx}`); if(!input)return;
+  const url=input.value.trim(); if(!url)return;
+  const applyTex=(tex)=>{
+    tex.encoding=THREE.sRGBEncoding; tex.needsUpdate=true;
+    if(standeeCanvases[globalIdx]){standeeCanvases[globalIdx].canvasMesh.material=new THREE.MeshStandardMaterial({map:tex,roughness:0.04,emissive:0xffffff,emissiveIntensity:0.28});standeeCanvases[globalIdx].canvasMesh.material.needsUpdate=true;}
+    // Update preview — find the right accordion wrap
+    const prefix = globalIdx<2?'std-l':'std-r';
+    const localIdx = globalIdx<2?globalIdx:globalIdx-2;
+    const wrap=document.getElementById(`${prefix}-preview-wrap-${localIdx}`);
+    if(wrap){wrap.innerHTML=`<img src="${url}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;display:block;" onerror="this.parentElement.innerHTML='<span style=color:rgba(255,255,255,0.2);font-size:9px>URL Error</span>'">`;}
+  };
+  const imgEl=new Image(); imgEl.crossOrigin='anonymous';
+  imgEl.onload=()=>{applyTex(new THREE.CanvasTexture(imgEl));};
+  imgEl.onerror=()=>{texLoader.load(url,applyTex);};
+  imgEl.src=url;
+}
+
+// ═══════════════════════════════════════════════
+//  CAMERA SPEED
+// ═══════════════════════════════════════════════
+let _cameraSpeed = 8.8; // 10% higher than original 8.0
+function setCameraSpeed(val){
+  _cameraSpeed = parseFloat(val);
+  const el = document.getElementById('speed-val');
+  if(el) el.textContent = val;
+}
+
+// ═══════════════════════════════════════════════
+//  AERIAL VIEW
+// ═══════════════════════════════════════════════
+let _aerialMode = false;
+let _panoramaMode = false;
+let _savedCamPos = null, _savedYaw = 0, _savedPitch = 0;
+function toggleAerialView(){
+  if(!started) return;
+  _aerialMode = !_aerialMode;
+  const btn = document.getElementById('aerial-btn');
+  if(_aerialMode){
+    // Save current position
+    _savedCamPos = camera.position.clone();
+    _savedYaw = yaw; _savedPitch = pitch;
+    if(locked) document.exitPointerLock();
+    // Fly to aerial position above circular room
+    targetPos.set(0, 45, ROOM_Z);
+    camera.position.set(0, 45, ROOM_Z);
+    targetPitch = -Math.PI/2; pitch = -Math.PI/2;
+    targetYaw = 0; yaw = 0;
+    if(btn){ btn.textContent='🏛 Ground View'; btn.style.borderColor='rgba(255,215,0,0.6)'; btn.style.color='#FFD700'; }
+  } else {
+    // Restore
+    if(_savedCamPos){ targetPos.copy(_savedCamPos); camera.position.copy(_savedCamPos); }
+    targetYaw = _savedYaw; yaw = _savedYaw;
+    targetPitch = _savedPitch; pitch = _savedPitch;
+    if(btn){ btn.textContent='🛸 Top View'; btn.style.borderColor='rgba(100,200,255,0.4)'; btn.style.color='#88ccff'; }
+    canvas.requestPointerLock();
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  UNDO / REDO SYSTEM
+// ═══════════════════════════════════════════════
+const _undoStack = [];
+const _redoStack = [];
+function _pushUndo(action){
+  _undoStack.push(action);
+  if(_undoStack.length > 30) _undoStack.shift();
+  _redoStack.length = 0; // clear redo on new action
+}
+function undoUserChange(){
+  if(!_undoStack.length) return;
+  const act = _undoStack.pop();
+  _redoStack.push(act);
+  _applyState(act.prev);
+}
+function redoUserChange(){
+  if(!_redoStack.length) return;
+  const act = _redoStack.pop();
+  _undoStack.push(act);
+  _applyState(act.next);
+}
+function _applyState(state){
+  if(state.wallColor !== undefined){ changeWallColor(state.wallColor); document.getElementById('wall-color').value=state.wallColor; document.getElementById('cms-wall-color').value=state.wallColor; }
+  if(state.floorColor !== undefined){ changeFloorColor(state.floorColor); document.getElementById('floor-color').value=state.floorColor; document.getElementById('cms-floor-color').value=state.floorColor; }
+  if(state.ceilColor !== undefined){ changeCeilingColor(state.ceilColor); document.getElementById('ceil-color').value=state.ceilColor; document.getElementById('cms-ceil-color').value=state.ceilColor; }
+  if(state.frameColor !== undefined){ changeFrameColor(state.frameColor); document.getElementById('frame-color').value=state.frameColor; document.getElementById('cms-frame-color').value=state.frameColor; }
+  if(state.lightVal !== undefined){ changeLightIntensity(state.lightVal); document.getElementById('light-slider').value=state.lightVal; document.getElementById('cms-light-slider').value=state.lightVal; }
+}
+
+// Nav bar user change wrappers (for undo support + syncing CMS)
+function userChangeWallColor(v){
+  const prev={wallColor:document.getElementById('cms-wall-color').value||'#f0f0f0'};
+  changeWallColor(v); document.getElementById('cms-wall-color').value=v;
+  _pushUndo({prev, next:{wallColor:v}});
+}
+function userChangeFloorColor(v){
+  const prev={floorColor:document.getElementById('cms-floor-color').value||'#e0e0e0'};
+  changeFloorColor(v); document.getElementById('cms-floor-color').value=v;
+  _pushUndo({prev, next:{floorColor:v}});
+}
+function userChangeCeilingColor(v){
+  const prev={ceilColor:document.getElementById('cms-ceil-color').value||'#ffffff'};
+  changeCeilingColor(v); document.getElementById('cms-ceil-color').value=v;
+  _pushUndo({prev, next:{ceilColor:v}});
+}
+function userChangeFrameColor(v){
+  const prev={frameColor:document.getElementById('cms-frame-color').value||'#111111'};
+  changeFrameColor(v); document.getElementById('cms-frame-color').value=v;
+  _pushUndo({prev, next:{frameColor:v}});
+}
+function userChangeLightIntensity(v){
+  const prev={lightVal:document.getElementById('cms-light-slider').value||'1'};
+  changeLightIntensity(v); document.getElementById('cms-light-slider').value=v; document.getElementById('cms-light-val').textContent=parseFloat(v).toFixed(1);
+  _pushUndo({prev, next:{lightVal:v}});
+}
+
+// ═══════════════════════════════════════════════
+//  USER SESSION RESET (exit → restore CMS defaults)
+// ═══════════════════════════════════════════════
+function _getCMSDefaults(){
+    try{
+      for(let i=localStorage.length-1; i>=0; i--){
+        let k=localStorage.key(i);
+        if(k && k.startsWith('cms_published_') && k!=='cms_published_v21'){ localStorage.removeItem(k); }
+      }
+    }catch(e){}
+    try{
+    const p = localStorage.getItem('cms_published_v21');
+    if(p) return JSON.parse(p);
+  }catch(e){}
+  return null;
+}
+function _restoreCMSDefaults(){
+  const d = _getCMSDefaults();
+  if(!d) return;
+  if(d.wallColor){ changeWallColor(d.wallColor); document.getElementById('wall-color').value=d.wallColor; }
+  if(d.floorColor){ changeFloorColor(d.floorColor); document.getElementById('floor-color').value=d.floorColor; }
+  if(d.ceilColor){ changeCeilingColor(d.ceilColor); document.getElementById('ceil-color').value=d.ceilColor; }
+  if(d.frameColor){ changeFrameColor(d.frameColor); document.getElementById('frame-color').value=d.frameColor; }
+  if(d.lightVal){ changeLightIntensity(d.lightVal); document.getElementById('light-slider').value=d.lightVal; }
+  // Reset back wall to CMS base
+  resetBackWall();
+}
+// On page hide/exit, reset everything
+window.addEventListener('pagehide', _restoreCMSDefaults);
+window.addEventListener('beforeunload', _restoreCMSDefaults);
+// On page become visible again (tab switch back), also restore
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState==='hidden'){
+    window._userUploadedBackWall = null;
+    _restoreCMSDefaults();
+  }
+});
+
+// ═══════════════════════════════════════════════
+//  UNIVERSAL IMAGE LOADER — works from file:// + handles Drive/Behance/etc
+// ═══════════════════════════════════════════════
+
+// Convert any share URL to a loadable direct image URL
+function _resolveImageUrl(url){
+  if(!url || url.startsWith('data:')) return [url]; // data URL — use directly
+  const variants = [];
+
+  // Google Drive: /file/d/ID/view or ?id=ID
+  let m = url.match(/drive\.google\.com\/file\/d\/([^\/\?#]+)/);
+  if(!m) m = url.match(/drive\.google\.com\/[^?]*[?&]id=([^&#]+)/);
+  if(!m) m = url.match(/drive\.google\.com\/uc\?[^#]*id=([^&#]+)/);
+  if(m){
+    const id = m[1];
+    variants.push(`https://lh3.googleusercontent.com/d/${id}`);
+    variants.push(`https://drive.google.com/thumbnail?id=${id}&sz=w1600`);
+    variants.push(`https://wsrv.nl/?url=${encodeURIComponent(`https://drive.google.com/uc?export=view&id=${id}`)}&w=1600&output=jpg&we`);
+    variants.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://drive.google.com/uc?export=view&id=${id}`)}`);
+    return variants;
+  }
+
+  // Dropbox share link → direct
+  if(url.includes('dropbox.com')){
+    const direct = url.replace('dl=0','dl=1').replace('www.dropbox.com','dl.dropboxusercontent.com');
+    variants.push(direct);
+    variants.push(url.replace('dl=0','dl=1'));
+    return variants;
+  }
+
+  // YouTube — extract thumbnail
+  m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?#]+)/);
+  if(m) return [`https://img.youtube.com/vi/${m[1]}/maxresdefault.jpg`, `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg`];
+
+  // Any other external URL: try direct first, then two CORS proxies
+  variants.push(url);
+  variants.push(`https://wsrv.nl/?url=${encodeURIComponent(url)}&w=1600&output=jpg&we`);
+  variants.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+  return variants;
+}
+
+// Apply texture to mesh from the first working URL in a list
+function _applyFirstWorking(urls, mesh, roughness, emissiveHex, onDone, emissiveIntensityOverride){
+  if(!mesh || !urls.length) return;
+  roughness = roughness||0.35;
+  const emissiveColor = emissiveHex ? new THREE.Color(emissiveHex) : new THREE.Color(0x000000);
+  const emissiveIntensity = emissiveHex ? (emissiveIntensityOverride !== undefined ? emissiveIntensityOverride : 0.8) : 0.0;
+
+  let idx = 0;
+  function tryNext(){
+    if(idx >= urls.length){ console.warn('All image URLs failed:', urls); return; }
+    const src = urls[idx++];
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function(){
+      const tex = new THREE.CanvasTexture(img);
+      tex.encoding = THREE.sRGBEncoding; tex.needsUpdate = true;
+      mesh.material = new THREE.MeshStandardMaterial({
+        map:tex, roughness:roughness,
+        emissive:emissiveColor, emissiveIntensity:emissiveIntensity
+      });
+      mesh.material.needsUpdate = true;
+      if(onDone) onDone(src);
+    };
+    img.onerror = tryNext;
+    img.src = src;
+  }
+  tryNext();
+}
+
+function _loadImageToMesh(src, mesh, roughness, emissiveHex){
+  _applyFirstWorking(_resolveImageUrl(src), mesh, roughness, emissiveHex);
+}
+
+// Show status in a preview wrap
+function _updatePreviewWrap(wrapEl, firstWorkingUrl, originalUrl){
+  if(!wrapEl) return;
+  if(firstWorkingUrl && firstWorkingUrl.startsWith('data:')){
+    wrapEl.innerHTML=`<img src="${firstWorkingUrl}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;display:block;">`;
+    return;
+  }
+  // Try to show a preview image using the same resolved URLs
+  const previewUrls = _resolveImageUrl(originalUrl||firstWorkingUrl||'');
+  let pi=0;
+  function tryPreview(){
+    if(pi>=previewUrls.length){ wrapEl.innerHTML=`<span style="color:#4CAF50;font-size:9px;letter-spacing:1px;padding:4px">✓ Applied to wall</span>`; return; }
+    const pUrl=previewUrls[pi++];
+    const img=new Image(); img.crossOrigin='anonymous';
+    img.onload=()=>{ wrapEl.innerHTML=`<img src="${img.src}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;display:block;">`; };
+    img.onerror=tryPreview;
+    img.src=pUrl;
+  }
+  tryPreview();
+}
+
+// Override handlePaintingUpload to use fixed loader
+function handlePaintingUpload(event,prefix,idx){
+  const file=event.target.files[0]; if(!file)return;
+  const arr=_prefixToArr[prefix];
+  if(!arr){ console.warn('No array for prefix',prefix); return; }
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const src = e.target.result;
+    if(arr[idx]&&arr[idx].canvasMesh){
+      _loadImageToMesh(src, arr[idx].canvasMesh, 0.35, null);
+    }
+    const wrap=document.getElementById(`${prefix}-preview-wrap-${idx}`);
+    if(wrap) wrap.innerHTML=`<img src="${src}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;display:block;">`;
+    try{ localStorage.setItem(`saved_${prefix}_${idx}`, src); }catch(err){}
+  };
+  reader.readAsDataURL(file);
+}
+
+// Override applyURLToPainting to use universal loader
+function applyURLToPainting(prefix,idx){
+  const urlInput=document.getElementById(`${prefix}-url-${idx}`); if(!urlInput)return;
+  const url=urlInput.value.trim(); if(!url)return;
+  const arr=_prefixToArr[prefix];
+  if(!arr||!arr[idx])return;
+  const mesh = arr[idx].canvasMesh;
+  const wrap=document.getElementById(`${prefix}-preview-wrap-${idx}`);
+
+  // Check if it's a video link
+  const isVideoLink = /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(url) ||
+    url.includes('youtube.com') || url.includes('youtu.be') ||
+    url.includes('drive.google.com') || url.includes('dropbox.com') ||
+    url.includes('instagram.com') || url.includes('figma.com') || url.includes('behance.net');
+
+  if(isVideoLink){
+    // Route to a painting-level video texture
+    _applyVideoToPainting(mesh, url, wrap);
+    return;
+  }
+
+  if(wrap) wrap.innerHTML=`<span style="color:#FFD700;font-size:8px;letter-spacing:1px;padding:4px">Loading...</span>`;
+  const urls = _resolveImageUrl(url);
+  _applyFirstWorking(urls, mesh, 0.35, null, (workingUrl)=>{
+    _updatePreviewWrap(wrap, workingUrl, url);
+  });
+}
+
+// Painting-level video player (for gallery/circ frames)
+const _paintingVideoEls = {};
+function _applyVideoToPainting(mesh, url, wrapEl){
+  const resolved = _resolveVideoUrl(url);
+  if(!resolved) return;
+  if(wrapEl) wrapEl.innerHTML=`<span style="color:#4CAF50;font-size:9px;padding:4px">✓ Video Applied</span>`;
+  if(_isEmbedLink(url)){
+    // For embed links — create iframe overlay near mesh
+    // Can't do 3D iframe for painting; show info message
+    if(wrapEl) wrapEl.innerHTML=`<span style="color:#88ccff;font-size:8px;padding:4px">Embed: use back wall for video</span>`;
+    return;
+  }
+  // Direct video — apply as VideoTexture
+  const v = _createVideoElement(resolved);
+  const tex = new THREE.VideoTexture(v);
+  tex.encoding = THREE.sRGBEncoding;
+  mesh.material = new THREE.MeshStandardMaterial({map:tex, roughness:0.04, emissive:new THREE.Color(0xffffff), emissiveIntensity:0.3});
+  mesh.material.needsUpdate = true;
+}
+
+// Override handleStandeeUpload
+function handleStandeeUpload(event,globalIdx,prefix,localIdx){
+  const file=event.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const src=e.target.result;
+    if(standeeCanvases[globalIdx]){
+      const imgEl=new Image();
+      imgEl.onload=function(){
+        const tex=new THREE.CanvasTexture(imgEl); tex.encoding=THREE.sRGBEncoding; tex.needsUpdate=true;
+        standeeCanvases[globalIdx].canvasMesh.material=new THREE.MeshStandardMaterial({map:tex,roughness:0.45,emissiveIntensity:0.0});
+        standeeCanvases[globalIdx].canvasMesh.material.needsUpdate=true;
+      };
+      imgEl.src=src;
+    }
+    if(prefix!==undefined && localIdx!==undefined){
+      const wrap=document.getElementById(`${prefix}-preview-wrap-${localIdx}`);
+      if(wrap) wrap.innerHTML=`<img src="${src}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;display:block;">`;
+    }
+    try{ localStorage.setItem(`saved_std_${globalIdx}`,src); }catch(err){}
+  };
+  reader.readAsDataURL(file);
+}
+
+// Override applyURLToStandee
+function applyURLToStandee(globalIdx){
+  const input=document.getElementById(`std-url-${globalIdx}`); if(!input)return;
+  const url=input.value.trim(); if(!url)return;
+  const prefix=globalIdx<2?'std-l':'std-r';
+  const localIdx=globalIdx<2?globalIdx:globalIdx-2;
+  const wrap=document.getElementById(`${prefix}-preview-wrap-${localIdx}`);
+  if(wrap) wrap.innerHTML=`<span style="color:#FFD700;font-size:8px;padding:4px">Loading...</span>`;
+  const urls=_resolveImageUrl(url);
+  _applyFirstWorking(urls, standeeCanvases[globalIdx]?.canvasMesh, 0.45, null, (workingUrl)=>{
+    _updatePreviewWrap(wrap, workingUrl, url);
+  }, 0.0);
+}
+
+// Override handleBackWallUpload — TV screen emissive
+function handleBackWallUpload(event){
+  const file=event.target.files[0]; if(!file)return;
+  closeBwOverlay();
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const src=e.target.result;
+    window._userUploadedBackWall=src;
+    const img=new Image();
+    img.onload=function(){
+      const tex=new THREE.CanvasTexture(img);
+      tex.encoding=THREE.sRGBEncoding; tex.needsUpdate=true;
+      if(backWallCanvasMesh){
+        backWallCanvasMesh.material=new THREE.MeshStandardMaterial({
+          map:tex, roughness:0.05,
+          emissive:new THREE.Color(0xffffff), emissiveIntensity:1.2
+        });
+        backWallCanvasMesh.material.needsUpdate=true;
+      }
+    };
+    img.src=src;
+    const wrap=document.getElementById('bw-preview-wrap');
+    if(wrap) wrap.innerHTML=`<img src="${src}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;">`;
+    try{ localStorage.setItem('saved_bw_user', src); }catch(err){}
+  };
+  reader.readAsDataURL(file);
+}
+
+// Override applyURLToBackWall — auto-detects image vs video, TV screen emissive
+function applyURLToBackWall(){
+  const url=document.getElementById('bw-url-input').value.trim(); if(!url)return;
+  window._userUploadedBackWall=url;
+  const bwWrap=document.getElementById('bw-preview-wrap');
+
+  // Detect video link
+  const isVideoLink = /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(url) ||
+    url.includes('youtube.com') || url.includes('youtu.be') ||
+    (url.includes('drive.google.com') && !url.includes('thumbnail')) ||
+    url.includes('instagram.com') || url.includes('figma.com') || url.includes('behance.net');
+
+  if(isVideoLink){
+    applyVideoToBackWall(url);
+    if(bwWrap) bwWrap.innerHTML=`<span style="color:#4CAF50;font-size:9px;padding:4px">✓ Video on TV</span>`;
+    return;
+  }
+
+  if(bwWrap) bwWrap.innerHTML=`<span style="color:#FFD700;font-size:8px;padding:4px">Loading…</span>`;
+  const urls=_resolveImageUrl(url);
+  // TV screen = emissive (self-lit display)
+  _applyFirstWorking(urls, backWallCanvasMesh, 0.05, 0xffffff, (workingUrl)=>{
+    if(backWallCanvasMesh&&backWallCanvasMesh.material){
+      backWallCanvasMesh.material.emissive = new THREE.Color(0xffffff);
+      backWallCanvasMesh.material.emissiveIntensity = 1.2;
+      backWallCanvasMesh.material.needsUpdate=true;
+    }
+    if(bwWrap){
+      const img2=new Image(); img2.crossOrigin='anonymous';
+      img2.onload=()=>{ bwWrap.innerHTML=`<img src="${img2.src}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;">`; };
+      img2.onerror=()=>{ bwWrap.innerHTML=`<span style="color:#4CAF50;font-size:8px;padding:4px">✓ On Screen</span>`; };
+      img2.src=workingUrl;
+    }
+  }, 1.2);
+}
+
+// Music volume sync with nav bar slider
+function setMusicVolume(val){
+  _musicVolume=parseInt(val)/100;
+  if(_bgAudio && !_isDucking) _bgAudio.volume=_musicVolume;
+  const cms=document.getElementById('cms-vol-val'); if(cms) cms.textContent=val+'%';
+  const nav=document.getElementById('nav-vol-slider'); if(nav) nav.value=val;
+  const cmsSlider=document.getElementById('cms-vol-slider'); if(cmsSlider) cmsSlider.value=val;
+}
+
+// Back wall video handlers (CMS)
+function applyVideoURLToBackWall(){
+  const url=(document.getElementById('bw-video-url-input')||{}).value||''; if(!url.trim())return;
+  applyVideoToBackWall(url.trim());
+  window._userUploadedBackWall = url.trim();
+  const pr=document.getElementById('bw-preview');
+  if(pr) pr.innerHTML=`<span style="color:#4CAF50;font-size:9px;padding:4px">✓ Video Applied</span>`;
+}
+function handleBackWallVideoUpload(event){
+  const file=event.target.files[0]; if(!file)return;
+  const url=URL.createObjectURL(file);
+  applyVideoToBackWall(url);
+  window._userUploadedBackWall = url;
+  const pr=document.getElementById('bw-preview');
+  if(pr) pr.innerHTML=`<span style="color:#4CAF50;font-size:9px;padding:4px">✓ ${file.name}</span>`;
+}
+function bwSetTab(tab){
+  const imgPanel=document.getElementById('bw-img-panel');
+  const vidPanel=document.getElementById('bw-vid-panel');
+  const imgTab=document.getElementById('bw-tab-img');
+  const vidTab=document.getElementById('bw-tab-vid');
+  if(tab==='img'){
+    imgPanel.style.display=''; vidPanel.style.display='none';
+    imgTab.style.background='rgba(255,215,0,0.12)'; imgTab.style.color='#FFD700';
+    vidTab.style.background='transparent'; vidTab.style.color='rgba(255,255,255,0.35)';
+  } else {
+    imgPanel.style.display='none'; vidPanel.style.display='';
+    vidTab.style.background='rgba(255,215,0,0.12)'; vidTab.style.color='#FFD700';
+    imgTab.style.background='transparent'; imgTab.style.color='rgba(255,255,255,0.35)';
+  }
+}
+function setCMSBaseImageFromInput(){
+  // Alias kept for legacy calls — delegates to main function
+  setCMSBaseImage();
+}
+
+// Music toggle also updates nav button
+const _origToggleMusic = toggleMusic;
+function toggleMusic(){
+  if(!_bgAudio)return;
+  if(_musicPaused){ _bgAudio.play(); _musicPaused=false;
+    const t=document.getElementById('cms-music-toggle'); if(t) t.textContent='⏸ Pause';
+    const nb=document.getElementById('nav-music-toggle'); if(nb) nb.textContent='⏸';
+  } else { _bgAudio.pause(); _musicPaused=true;
+    const t=document.getElementById('cms-music-toggle'); if(t) t.textContent='▶ Play';
+    const nb=document.getElementById('nav-music-toggle'); if(nb) nb.textContent='▶';
+  }
+  updateMusicStatus();
+}
+
+// ═══════════════════════════════════════════════
+//  VIDEO TEXTURE SYSTEM (back wall + standees)
+// ═══════════════════════════════════════════════
+let _bwVideoEl = null; // back wall video element
+let _bwVideoTex = null;
+const _standeeVideoEls = {}; // {globalIdx: videoEl}
+const _standeeVideoTexs = {}; // {globalIdx: videoTexture}
+// Track all active video sources for proximity audio ducking
+const _videoSources = []; // [{videoEl, mesh, worldPos:THREE.Vector3, type:'backwall'|'standee'}]
+
+function _resolveVideoUrl(url){
+  if(!url) return null;
+  // YouTube
+  let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?#]+)/);
+  if(m) return `https://www.youtube.com/embed/${m[1]}?autoplay=1&loop=1&mute=0&controls=1&playlist=${m[1]}`;
+  // Google Drive video — use /preview (already works as embed)
+  m = url.match(/drive\.google\.com\/file\/d\/([^\/\?#]+)/);
+  if(!m) m = url.match(/drive\.google\.com\/[^?]*[?&]id=([^&#]+)/);
+  if(m) return `https://drive.google.com/file/d/${m[1]}/preview`;
+  // Dropbox video — make direct link
+  if(url.includes('dropbox.com')){
+    const direct = url.replace('dl=0','dl=1').replace('www.dropbox.com','dl.dropboxusercontent.com');
+    return direct; // direct mp4 link
+  }
+  // Instagram, Figma, Behance — return as iframe embed src
+  if(url.includes('instagram.com')) return url;
+  if(url.includes('figma.com')) return url.includes('/embed') ? url : `https://www.figma.com/embed?embed_host=gallery&url=${encodeURIComponent(url)}`;
+  if(url.includes('behance.net')) return url;
+  // Direct mp4/webm/mov — use directly in <video>
+  return url;
+}
+
+function _isEmbedLink(url){
+  return url && (
+    url.includes('youtube.com/embed') || url.includes('youtu.be') ||
+    url.includes('youtube.com/watch') ||
+    url.includes('drive.google.com/file') || url.includes('drive.google.com/uc') ||
+    url.includes('instagram.com') || url.includes('figma.com') || url.includes('behance.net')
+  );
+}
+
+// Create video element for direct video files
+function _createVideoElement(src){
+  const v = document.createElement('video');
+  v.src = src;
+  v.crossOrigin = 'anonymous';
+  v.loop = true;
+  v.muted = false;
+  v.autoplay = true;
+  v.playsInline = true;
+  v.style.display = 'none';
+  document.body.appendChild(v);
+  v.play().catch(()=>{
+    v.muted = true;
+    v.play().catch(()=>{});
+  });
+  return v;
+}
+
+// Apply video to back wall mesh using VideoTexture
+function applyVideoToBackWall(url){
+  // Clean up existing video
+  if(_bwVideoEl){ _bwVideoEl.pause(); _bwVideoEl.remove(); _bwVideoEl=null; }
+  if(_bwVideoTex){ _bwVideoTex.dispose(); _bwVideoTex=null; }
+  // Remove from sources list
+  const idx = _videoSources.findIndex(s=>s.type==='backwall');
+  if(idx>=0) _videoSources.splice(idx,1);
+
+  const resolved = _resolveVideoUrl(url);
+  if(!resolved) return;
+
+  if(_isEmbedLink(url)){
+    // For YouTube/Drive/embed: create overlay iframe in 3D space
+    _showBackWallIframe(resolved);
+    return;
+  }
+
+  // Direct video file: VideoTexture approach
+  _bwVideoEl = _createVideoElement(resolved);
+  _bwVideoTex = new THREE.VideoTexture(_bwVideoEl);
+  _bwVideoTex.encoding = THREE.sRGBEncoding;
+  if(backWallCanvasMesh){
+    backWallCanvasMesh.material = new THREE.MeshStandardMaterial({
+      map: _bwVideoTex, roughness:0.05,
+      emissive: new THREE.Color(0xffffff), emissiveIntensity: 0.5
+    });
+    backWallCanvasMesh.material.needsUpdate = true;
+  }
+  // Register for proximity ducking
+  const bwPos = new THREE.Vector3(0, window._bwCenterY||4, 0);
+  _videoSources.push({videoEl: _bwVideoEl, mesh: backWallCanvasMesh, worldPos: bwPos, type:'backwall'});
+}
+
+// Iframe overlay for embed videos (YouTube etc) positioned over back wall
+let _bwIframeEl = null;
+function _showBackWallIframe(embedUrl){
+  if(_bwIframeEl){ _bwIframeEl.remove(); _bwIframeEl=null; }
+  const wrap = document.createElement('div');
+  wrap.id = 'bw-iframe-wrap';
+  wrap.style.cssText = 'position:fixed;top:56px;left:50%;transform:translateX(-50%);width:min(90vw,880px);aspect-ratio:16/9;z-index:400;pointer-events:none;border:2px solid rgba(255,255,255,0.15);border-radius:4px;overflow:hidden;display:none;';
+  const iframe = document.createElement('iframe');
+  iframe.src = embedUrl;
+  iframe.style.cssText = 'width:100%;height:100%;border:none;';
+  iframe.allow = 'autoplay; fullscreen';
+  iframe.allowFullscreen = true;
+  wrap.appendChild(iframe);
+  document.body.appendChild(wrap);
+  _bwIframeEl = wrap;
+  // Show when camera is near back wall
+  window._bwIframeUrl = embedUrl;
+}
+
+function _removeBwIframe(){
+  if(_bwIframeEl){ _bwIframeEl.remove(); _bwIframeEl=null; }
+  window._bwIframeUrl = null;
+}
+
+// Apply video to standee
+function applyVideoToStandee(globalIdx, url){
+  if(_standeeVideoEls[globalIdx]){ _standeeVideoEls[globalIdx].pause(); _standeeVideoEls[globalIdx].remove(); delete _standeeVideoEls[globalIdx]; }
+  if(_standeeVideoTexs[globalIdx]){ _standeeVideoTexs[globalIdx].dispose(); delete _standeeVideoTexs[globalIdx]; }
+  // Remove from sources
+  const idx = _videoSources.findIndex(s=>s.type==='standee' && s.globalIdx===globalIdx);
+  if(idx>=0) _videoSources.splice(idx,1);
+
+  const resolved = _resolveVideoUrl(url);
+  if(!resolved || !standeeCanvases[globalIdx]) return;
+
+  if(_isEmbedLink(url)){
+    // For embed links on standee: show as overlay iframe
+    _showStandeeIframe(globalIdx, resolved);
+    return;
+  }
+
+  const v = _createVideoElement(resolved);
+  _standeeVideoEls[globalIdx] = v;
+  const tex = new THREE.VideoTexture(v);
+  tex.encoding = THREE.sRGBEncoding;
+  _standeeVideoTexs[globalIdx] = tex;
+  if(standeeCanvases[globalIdx]){
+    standeeCanvases[globalIdx].canvasMesh.material = new THREE.MeshStandardMaterial({
+      map: tex, roughness:0.04,
+      emissive: new THREE.Color(0xffffff), emissiveIntensity: 0.5
+    });
+    standeeCanvases[globalIdx].canvasMesh.material.needsUpdate = true;
+  }
+  // Get world position of standee for proximity
+  const sm = standeeMeshes[globalIdx];
+  const wPos = sm ? sm.group.position.clone() : new THREE.Vector3(0,3,0);
+  _videoSources.push({videoEl: v, mesh: standeeCanvases[globalIdx].canvasMesh, worldPos: wPos, type:'standee', globalIdx});
+}
+
+// ═══════════════════════════════════════════════
+//  CAMERA ANGLE MENU
+// ═══════════════════════════════════════════════
+function toggleCameraMenu(e){
+  if(e) e.stopPropagation();
+  const menu = document.getElementById('cam-angle-menu');
+  if(!menu) return;
+  const isOpen = menu.style.display !== 'none';
+  if(isOpen){
+    menu.style.display = 'none';
+  } else {
+    // Position menu above the button
+    const btn = document.getElementById('cam-angle-btn');
+    if(btn){
+      const rect = btn.getBoundingClientRect();
+      menu.style.left = rect.left + 'px';
+    }
+    // Exit pointer lock so menu items are clickable
+    if(locked){ document.exitPointerLock(); }
+    menu.style.display = 'block';
+  }
+}
+// Close camera menu on mousedown outside (fires before click, no conflict)
+document.addEventListener('mousedown', function(e){
+  const menu = document.getElementById('cam-angle-menu');
+  const btn = document.getElementById('cam-angle-btn');
+  if(menu && menu.style.display !== 'none' && !menu.contains(e.target) && !btn.contains(e.target)){
+    menu.style.display = 'none';
+  }
+});
+
+function setCameraAngle(type){
+  document.getElementById('cam-angle-menu').style.display = 'none';
+  _aerialMode = false;
+  started = true;
+  if(locked) document.exitPointerLock();
+
+  switch(type){
+    case 'overview':
+      targetPos.set(GAL_W/2 - 1, 6, -GAL_L + 5);
+      camera.position.copy(targetPos);
+      targetYaw = -Math.PI * 0.75; yaw = targetYaw;
+      targetPitch = -0.3; pitch = targetPitch;
+      break;
+    case 'gallery':
+      targetPos.set(-GAL_W/2 + 1.5, 3.5, -GAL_L * 0.5);
+      camera.position.copy(targetPos);
+      targetYaw = 0.4; yaw = targetYaw;
+      targetPitch = 0.0; pitch = targetPitch;
+      break;
+    case 'installation':
+      targetPos.set(0, 3.5, ROOM_Z + 8);
+      camera.position.copy(targetPos);
+      targetYaw = Math.PI; yaw = targetYaw;
+      targetPitch = 0.1; pitch = targetPitch;
+      break;
+    case 'backwall':
+      targetPos.set(0, window._bwCenterY||4, -7);
+      camera.position.copy(targetPos);
+      targetYaw = Math.PI; yaw = targetYaw;
+      targetPitch = 0; pitch = targetPitch;
+      break;
+    case 'panorama':
+      // Center of circular room, looking around
+      targetPos.set(0, 2.5, ROOM_Z);
+      camera.position.copy(targetPos);
+      targetYaw = 0; yaw = 0;
+      targetPitch = 0; pitch = 0;
+      // Start slow auto-rotate panorama
+      _panoramaMode = true;
+      break;
+    case 'free':
+      _panoramaMode = false;
+      canvas.requestPointerLock();
+      break;
+  }
+  const euler2 = new THREE.Euler(pitch, yaw, 0, 'YXZ');
+  camera.quaternion.setFromEuler(euler2);
+}
+
+// ═══════════════════════════════════════════════
+//  VIDEO TEXTURE UPDATE (called every frame)
+// ═══════════════════════════════════════════════
+function _updateVideoTextures(){
+  // Update VideoTexture for back wall video
+  if(_bwVideoTex && _bwVideoEl && !_bwVideoEl.paused && _bwVideoEl.readyState >= 2){
+    _bwVideoTex.needsUpdate = true;
+  }
+  // Update VideoTexture for standee videos
+  Object.keys(_standeeVideoTexs).forEach(k=>{
+    const tex = _standeeVideoTexs[k];
+    const vel = _standeeVideoEls[k];
+    if(tex && vel && !vel.paused && vel.readyState >= 2){
+      tex.needsUpdate = true;
+    }
+  });
+  // Update painting video textures
+  Object.keys(_paintingVideoEls||{}).forEach(k=>{
+    const {tex, el} = _paintingVideoEls[k]||{};
+    if(tex && el && !el.paused && el.readyState >= 2) tex.needsUpdate = true;
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  PROXIMITY AUDIO DUCKING (BG music mutes near video)
+// ═══════════════════════════════════════════════
+let _isDucking = false;
+const DUCK_DIST = 6.0; // distance in world units to start ducking
+const DUCK_FULL_DIST = 2.5; // fully muted within this distance
+
+function _updateProximityAudio(){
+  if(!_bgAudio || _musicPaused) return;
+  if(!_videoSources.length){ 
+    if(_isDucking){ _bgAudio.volume=_musicVolume; _isDucking=false; }
+    return;
+  }
+
+  let minDist = Infinity;
+  _videoSources.forEach(src=>{
+    const d = camera.position.distanceTo(src.worldPos);
+    if(d < minDist) minDist = d;
+    // Resume video if paused
+    if(src.videoEl && src.videoEl.paused && !src.videoEl.ended){
+      src.videoEl.play().catch(()=>{});
+    }
+  });
+
+  if(minDist < DUCK_DIST){
+    _isDucking = true;
+    const t = Math.max(0, (minDist - DUCK_FULL_DIST) / (DUCK_DIST - DUCK_FULL_DIST));
+    _bgAudio.volume = _musicVolume * t;
+    // Unmute video near it
+    _videoSources.forEach(src=>{
+      const d = camera.position.distanceTo(src.worldPos);
+      if(src.videoEl && d < DUCK_DIST){
+        src.videoEl.muted = false;
+        src.videoEl.volume = Math.min(1, 1 - (d / DUCK_DIST));
+      }
+    });
+  } else {
+    if(_isDucking){
+      _bgAudio.volume = _musicVolume;
+      _isDucking = false;
+      // Mute videos when far
+      _videoSources.forEach(src=>{ if(src.videoEl) src.videoEl.muted=true; });
+    }
+  }
+}
+
+animate();
+
+window.addEventListener('resize',()=>{
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+
+setTimeout(doneLoading,5000);
+

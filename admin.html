@@ -1,0 +1,2402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS Admin | Sandeep Patel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Note: style.css intentionally NOT loaded here to prevent site-global CSS from breaking admin layout -->
+    <style>
+        :root {
+            --font-heading: 'Cormorant Garamond', 'Playfair Display', serif;
+            --font-sans: 'Inter', 'Space Grotesk', sans-serif;
+            --font-mono: 'Inter', sans-serif;
+            --color-accent: #D98A29;
+            --color-dark-bg: #0B0B0B;
+            --color-dark-border: rgba(255, 255, 255, 0.08);
+            --color-dark-text: #F8F9FA;
+            --color-dark-muted: #8F929D;
+        }
+
+        /* ── Reset / Base ── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* Override global custom cursor hide rule to show mouse pointer on CMS */
+        * {
+            cursor: auto !important;
+        }
+
+        /* ── Logo classes (copied from style.css so we don't need it) ── */
+        .logo-icon {
+            width: 32px; height: 32px;
+            border: 1px solid rgba(248,249,250,0.6);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-heading); font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .logo-text {
+            font-family: var(--font-sans); font-weight: 500;
+            letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.8rem;
+        }
+
+        /* ── CMS Shell Layout ── */
+        body {
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-family: var(--font-sans);
+            background-color: var(--color-dark-bg);
+            color: var(--color-dark-text);
+        }
+        .cms-sidebar {
+            width: 240px; min-height: 100vh; background: #050507;
+            border-right: 1px solid var(--color-dark-border);
+            display: flex; flex-direction: column;
+            position: fixed; top: 0; left: 0; z-index: 200;
+            overflow-y: auto;
+        }
+        .cms-sidebar-logo {
+            padding: 2rem 1.5rem; border-bottom: 1px solid var(--color-dark-border);
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        .cms-sidebar-logo .logo-icon { width: 28px; height: 28px; font-size: 1rem; }
+        .cms-sidebar-logo .logo-text { font-size: 0.8rem; }
+        .cms-nav { padding: 1rem 0; flex: 1; }
+        .cms-nav-group { padding: 1.5rem 1.5rem 0.5rem; font-family: var(--font-mono); font-size: 0.6rem; color: var(--color-dark-muted); letter-spacing: 0.15em; text-transform: uppercase; }
+        .cms-nav-item {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem 1.5rem; cursor: pointer;
+            font-family: var(--font-sans); font-size: 0.85rem;
+            color: var(--color-dark-muted); transition: color 0.2s, background 0.2s;
+            border: none; background: none; width: 100%; text-align: left;
+        }
+        .cms-nav-item:hover { color: var(--color-dark-text); background: rgba(255,255,255,0.02); }
+        .cms-nav-item.active { color: var(--color-accent); background: rgba(255,255,255,0.03); border-left: 2px solid var(--color-accent); }
+        .cms-nav-item .nav-icon { font-size: 1rem; opacity: 0.7; width: 20px; text-align: center; }
+        .cms-sidebar-bottom { padding: 1.5rem; border-top: 1px solid var(--color-dark-border); }
+        .cms-storage-bar { background: var(--color-dark-border); border-radius: 2px; height: 3px; margin: 0.5rem 0; overflow: hidden; }
+        .cms-storage-fill { height: 100%; background: var(--color-accent); border-radius: 2px; transition: width 0.5s; }
+
+        /* ── Main Content ── */
+        .cms-main {
+            margin-left: 240px;
+            flex: 1;
+            min-height: 100vh;
+            max-width: calc(100vw - 240px);
+            overflow-x: hidden;
+            background: var(--color-dark-bg);
+        }
+        .cms-topbar {
+            height: 64px;
+            border-bottom: 1px solid var(--color-dark-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2.5rem;
+            position: sticky;
+            top: 0;
+            background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            box-sizing: border-box;
+        }
+        .cms-topbar-title { font-family: var(--font-heading); font-size: 1.3rem; font-weight: 300; }
+        .cms-topbar-actions { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        .cms-content {
+            padding: 2.5rem;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* ── Tab Panels ── */
+        .cms-panel {
+            display: none !important;
+            width: 100%;
+        }
+        .cms-panel.active {
+            display: block !important;
+            width: 100%;
+        }
+
+        /* ── Forms ── */
+        .cms-field { margin-bottom: 1.75rem; }
+        .cms-label { display: block; margin-bottom: 0.5rem; font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-dark-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+        .cms-input, .cms-textarea, .cms-select {
+            width: 100%; background: rgba(255,255,255,0.02);
+            border: 1px solid var(--color-dark-border);
+            color: var(--color-dark-text); font-family: var(--font-sans); font-size: 0.95rem;
+            padding: 0.85rem 1rem; border-radius: 4px; outline: none; transition: border-color 0.25s, box-shadow 0.25s;
+        }
+        .cms-input:focus, .cms-textarea:focus, .cms-select:focus { border-color: var(--color-accent); box-shadow: 0 0 8px rgba(217, 138, 41, 0.15); }
+        .cms-textarea { resize: vertical; min-height: 90px; }
+        .cms-select { -webkit-appearance: none; appearance: none; cursor: pointer; }
+        .cms-select option { background-color: #1A1A1A !important; color: #FFFFFF !important; }
+        .cms-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; min-width: 0; }
+        .cms-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; min-width: 0; }
+        .cms-grid-2 > *, .cms-grid-3 > * { min-width: 0; overflow: hidden; }
+        .cms-section-divider { border: none; border-top: 1px solid var(--color-dark-border); margin: 2.5rem 0; }
+        .cms-section-heading { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-dark-muted); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-dark-border); }
+
+        /* ── Buttons ── */
+        .btn-cms-primary { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(217,138,41,0.1); backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); color: var(--color-accent); border: 1px solid rgba(217,138,41,0.4); padding: 0.7rem 1.75rem; border-radius: 30px; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(217,138,41,0.1); }
+        .btn-cms-primary:hover { background: rgba(217,138,41,0.2); border-color: var(--color-accent); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(217,138,41,0.2); }
+        .btn-cms-secondary { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.05); backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); color: var(--color-dark-text); border: 1px solid rgba(255, 255, 255, 0.15); padding: 0.7rem 1.75rem; border-radius: 30px; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+        .btn-cms-secondary:hover { border-color: rgba(255, 255, 255, 0.3); background: rgba(255,255,255,0.15); color: #fff; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1); }
+        .btn-cms-danger { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(255,90,90,0.1); backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); color: #ff5a5a; border: 1px solid rgba(255,90,90,0.4); padding: 0.5rem 1rem; border-radius: 30px; font-family: var(--font-mono); font-size: 0.7rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255,90,90,0.1); }
+        .btn-cms-danger:hover { background: rgba(255,90,90,0.2); border-color: #ff5a5a; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255,90,90,0.2); }
+        .btn-cms-sm { padding: 0.45rem 1rem; font-size: 0.7rem; }
+
+        /* ── Upload Box ── */
+        .cms-upload-box {
+            border: 1px dashed var(--color-dark-border); padding: 2rem; text-align: center;
+            border-radius: 4px; cursor: pointer; transition: border-color 0.25s, background 0.25s;
+            font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-dark-muted);
+        }
+        .cms-upload-box:hover { border-color: var(--color-accent); background: rgba(255,255,255,0.015); }
+        .cms-upload-box input[type="file"] { display: none; }
+
+        /* ── WebP Conversion Info Badge ── */
+        .webp-info-badge {
+            display: none;
+            margin-top: 0.6rem;
+            padding: 0.55rem 0.85rem;
+            background: rgba(30, 160, 90, 0.1);
+            border: 1px solid rgba(30, 160, 90, 0.35);
+            border-radius: 5px;
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            color: #4ecb82;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        .webp-info-badge.webp-warn {
+            background: rgba(201,169,110,0.09);
+            border-color: rgba(201,169,110,0.3);
+            color: #C9A96E;
+        }
+
+        /* ── Resume Upload Zone ── */
+        .cms-resume-upload-zone {
+            border: 2px dashed rgba(255,255,255,0.15);
+            border-radius: 6px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.25s, background 0.25s;
+            background: rgba(255,255,255,0.012);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--color-dark-muted);
+        }
+        .cms-resume-upload-zone:hover { border-color: var(--color-accent); background: rgba(217,138,41,0.04); }
+        .cms-resume-preview {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 0.85rem 1rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--color-dark-border);
+            border-radius: 5px; margin-top: 0.75rem;
+        }
+        .cms-resume-icon { font-size: 2rem; flex-shrink: 0; }
+        .cms-resume-meta { flex: 1; text-align: left; }
+        .cms-resume-name { font-family: var(--font-mono); font-size: 0.72rem; color: var(--color-accent); margin-bottom: 0.2rem; }
+        .cms-resume-size { font-family: var(--font-mono); font-size: 0.62rem; color: var(--color-dark-muted); }
+
+        /* ── Project List ── */
+        .project-row {
+            display: grid; grid-template-columns: 70px 1fr auto;
+            gap: 1.5rem; align-items: center;
+            padding: 1.25rem 1.5rem; border: 1px solid var(--color-dark-border);
+            border-radius: 4px; margin-bottom: 1rem; background: rgba(255,255,255,0.01);
+            transition: border-color 0.25s, background 0.25s;
+        }
+        .project-row:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.02); }
+        .proj-thumb { width: 70px; height: 44px; border-radius: 3px; overflow: hidden; background: #111; border: 1px solid var(--color-dark-border); }
+        .proj-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .proj-thumb-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.55rem; font-family: var(--font-mono); color: var(--color-dark-muted); }
+        .proj-meta h4 { font-size: 1rem; font-weight: 300; margin: 0 0 0.2rem; }
+        .proj-meta span { font-size: 0.7rem; font-family: var(--font-mono); color: var(--color-dark-muted); }
+        .proj-actions { display: flex; gap: 0.5rem; }
+
+        /* ── Preview Grid ── */
+        .preview-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-top: 0.75rem; }
+        .preview-item { position: relative; aspect-ratio: 16/10; border: 1px solid var(--color-dark-border); border-radius: 4px; overflow: hidden; background: #000; }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-remove { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,0.85); border: none; color: #000; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        /* ── Media Library ── */
+        .media-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); gap: 1rem; }
+        .media-item { position: relative; aspect-ratio: 16/10; border: 1px solid var(--color-dark-border); border-radius: 4px; overflow: hidden; background: #0a0a0a; cursor: pointer; transition: border-color 0.25s; }
+        .media-item:hover { border-color: var(--color-dark-text); }
+        .media-item img { width: 100%; height: 100%; object-fit: cover; }
+        .media-item-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.8); padding: 0.3rem 0.5rem; font-size: 0.6rem; font-family: var(--font-mono); color: var(--color-dark-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .media-item-del { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: rgba(255,90,90,0.9); border: none; color: #fff; font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+        .media-item:hover .media-item-del { display: flex; }
+        .media-empty { grid-column: 1/-1; padding: 4rem; text-align: center; border: 1px dashed var(--color-dark-border); border-radius: 4px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-dark-muted); }
+
+        /* ── Version History ── */
+        .version-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border: 1px solid var(--color-dark-border); border-radius: 4px; margin-bottom: 0.75rem; background: rgba(255,255,255,0.01); }
+        .version-time { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-dark-muted); }
+
+        /* ── Dashboard Cards ── */
+        .dash-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+        .dash-card {
+            position: relative;
+            padding: 1.75rem 1.5rem 1.5rem;
+            border: 1px solid var(--color-dark-border);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.018);
+            overflow: hidden;
+            transition: border-color 0.25s, background 0.25s, transform 0.2s;
+        }
+        .dash-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--color-accent);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        .dash-card:hover {
+            border-color: rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.03);
+            transform: translateY(-2px);
+        }
+        .dash-card:hover::before { opacity: 1; }
+        .dash-card-icon {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.65;
+        }
+        .dash-card-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .dash-num {
+            font-family: var(--font-heading);
+            font-size: 2.8rem;
+            font-weight: 300;
+            line-height: 1;
+            color: var(--color-dark-text);
+            letter-spacing: -0.02em;
+        }
+        .dash-trend {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            color: #6ecf89;
+            background: rgba(110, 207, 137, 0.08);
+            border: 1px solid rgba(110, 207, 137, 0.2);
+            border-radius: 20px;
+            padding: 0.2rem 0.55rem;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+        }
+        .dash-label {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--color-dark-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-top: 0.6rem;
+        }
+
+        /* ── Page Builder ── */
+        .pb-section-row { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border: 1px solid var(--color-dark-border); border-radius: 4px; margin-bottom: 0.75rem; background: rgba(255,255,255,0.01); transition: border-color 0.25s; }
+        .pb-drag-handle { color: var(--color-dark-muted); cursor: grab; font-size: 1rem; }
+        .pb-section-name { flex: 1; font-size: 0.9rem; }
+        .pb-visibility-toggle { font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.75rem; border: 1px solid var(--color-dark-border); border-radius: 20px; cursor: pointer; transition: all 0.25s; background: transparent; color: var(--color-dark-muted); }
+        .pb-visibility-toggle.visible { border-color: rgba(248,249,250,0.4); color: var(--color-dark-text); }
+
+        /* ── Color Swatch ── */
+        .color-field { display: flex; gap: 0.75rem; align-items: center; }
+        .color-field input[type="color"] { width: 44px; height: 44px; border: 1px solid var(--color-dark-border); border-radius: 4px; cursor: pointer; padding: 2px; background: rgba(255,255,255,0.03); }
+        .color-field input[type="text"] { flex: 1; }
+
+        /* ── Toast ── */
+        #cmsToast { position: fixed; bottom: 2rem; right: 2rem; background: rgba(10,10,10,0.95); color: var(--color-dark-text); font-family: var(--font-mono); font-size: 0.75rem; padding: 0.75rem 1.5rem; border-radius: 4px; border: 1px solid var(--color-dark-border); z-index: 99999; transition: opacity 0.3s, transform 0.3s; opacity: 0; transform: translateY(10px); pointer-events: none; }
+        #cmsToast.show { opacity: 1; transform: translateY(0); }
+        #cmsToast.success { border-color: rgba(100,220,100,0.4); color: #7dda7d; }
+        #cmsToast.error { border-color: rgba(255,90,90,0.4); color: #ff7a7a; }
+
+        /* ── Draft Badge ── */
+        .draft-badge { display: inline-block; font-family: var(--font-mono); font-size: 0.6rem; background: rgba(201,169,110,0.15); color: #c9a96e; border: 1px solid rgba(201,169,110,0.3); padding: 0.2rem 0.6rem; border-radius: 20px; letter-spacing: 0.05em; margin-left: 0.75rem; }
+        .cms-field-wide { grid-column: span 2; }
+
+        /* ── Hamburger button (mobile only) ── */
+        .cms-hamburger {
+            display: none; background: none; border: 1px solid var(--color-dark-border);
+            color: var(--color-dark-text); font-size: 1.2rem; padding: 0.4rem 0.65rem;
+            border-radius: 4px; cursor: pointer; line-height: 1; flex-shrink: 0;
+        }
+        /* ── Mobile Sidebar Overlay ── */
+        .cms-sidebar-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+            z-index: 199; backdrop-filter: blur(2px);
+        }
+        .cms-sidebar-overlay.open { display: block; }
+
+        @media (max-width: 900px) {
+            /* Sidebar slides off-screen, overlay handles close */
+            .cms-sidebar {
+                width: 240px;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 300;
+            }
+            .cms-sidebar.open { transform: translateX(0); }
+            .cms-main { margin-left: 0 !important; }
+            .cms-hamburger { display: flex; align-items: center; }
+            /* Topbar — wrap gracefully */
+            .cms-topbar {
+                height: auto !important;
+                min-height: 56px;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                padding: 0.85rem 1rem !important;
+            }
+            .cms-topbar-title { font-size: 1rem !important; }
+            .cms-topbar-actions { gap: 0.5rem !important; flex-wrap: wrap; }
+            /* Grids stack to single column */
+            .cms-grid-2, .cms-grid-3 { grid-template-columns: 1fr !important; }
+            .cms-field-wide { grid-column: span 1 !important; }
+            .cms-field[style*="padding-top"] { padding-top: 0 !important; height: auto !important; margin-top: -0.5rem; }
+            .dash-grid { grid-template-columns: 1fr 1fr !important; }
+            /* Project row — stack on phone */
+            .project-row {
+                grid-template-columns: 60px 1fr !important;
+                gap: 0.75rem !important;
+            }
+            .project-row .proj-actions {
+                grid-column: 1 / -1;
+                flex-wrap: wrap;
+            }
+            /* Preview grid — 2 columns on mobile */
+            .preview-grid { grid-template-columns: repeat(2,1fr) !important; }
+            /* Color field — ensure inline display is maintained */
+            .color-field { flex-wrap: nowrap; }
+            .color-field input[type="text"] { min-width: 0; }
+            /* Content padding */
+            .cms-content { padding: 1.25rem !important; }
+        }
+        @media (max-width: 480px) {
+            .dash-grid { grid-template-columns: 1fr !important; }
+            .preview-grid { grid-template-columns: 1fr !important; }
+            .cms-topbar-actions .btn-cms-secondary:not([id]) { display: none; }
+            .proj-actions .btn-cms-secondary:nth-child(n+3) { display: none; }
+        }
+    </style>
+</head>
+<body class="theme-dark">
+
+<!-- ════ Mobile Overlay ════ -->
+<div class="cms-sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ════ SIDEBAR ════ -->
+<aside class="cms-sidebar" id="cmsSidebar">
+    <div class="cms-sidebar-logo">
+        <div class="logo-icon" style="width:28px;height:28px;font-size:1rem;">S</div>
+        <div class="logo-text" style="font-size:0.8rem;">CMS Admin</div>
+    </div>
+    <nav class="cms-nav">
+        <div class="cms-nav-group">Main</div>
+        <button class="cms-nav-item active" onclick="switchPanel('dashboard')"><span class="nav-icon">◈</span><span>Dashboard</span></button>
+        <button class="cms-nav-item" onclick="switchPanel('projects')"><span class="nav-icon">◽</span><span>Projects</span></button>
+        <button class="cms-nav-item" onclick="switchPanel('media')"><span class="nav-icon">⬫</span><span>Media Library</span></button>
+        <div class="cms-nav-group">Content</div>
+        <button class="cms-nav-item" onclick="switchPanel('site-content')"><span class="nav-icon">✎</span><span>Site Content</span></button>
+        <button class="cms-nav-item" onclick="switchPanel('page-builder')"><span class="nav-icon">⊞</span><span>Page Builder</span></button>
+        <div class="cms-nav-group">Settings</div>
+        <button class="cms-nav-item" onclick="switchPanel('global-settings')"><span class="nav-icon">⚙</span><span>Global Settings</span></button>
+        <button class="cms-nav-item" onclick="switchPanel('versions')"><span class="nav-icon">⟲</span><span>Version History</span></button>
+        <div class="cms-nav-group">Site</div>
+        <button class="cms-nav-item" onclick="window.open('index.html','_blank')"><span class="nav-icon">↗</span><span>View Site</span></button>
+    </nav>
+    <div class="cms-sidebar-bottom">
+        <div class="cms-label">Storage Used</div>
+        <div class="cms-storage-bar"><div class="cms-storage-fill" id="storageBar" style="width:0%"></div></div>
+        <div class="cms-label" id="storageLabel">0 MB / 5 MB</div>
+        <div style="margin-top:1.25rem;display:flex;flex-direction:column;gap:0.5rem;">
+            <button class="btn-cms-secondary btn-cms-sm" style="width:100%;text-align:left;padding:0.5rem 0.75rem;" onclick="switchPanel('change-credentials')">&#128273; Change ID/Password</button>
+            <button class="btn-cms-secondary btn-cms-sm" style="width:100%;text-align:left;padding:0.5rem 0.75rem;border-color:rgba(224,92,92,0.3);color:#E05C5C;" onclick="cmsLogout()">&#9211; Logout</button>
+        </div>
+        <div style="margin-top:1rem;font-family:var(--font-mono);font-size:0.62rem;color:var(--color-dark-muted);opacity:0.6;" id="cmsSessionInfo"></div>
+    </div>
+</aside>
+
+<!-- ════ MAIN ════ -->
+<div class="cms-main">
+
+    <!-- Topbar -->
+    <div class="cms-topbar">
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+            <button class="cms-hamburger" onclick="openSidebar()" aria-label="Open menu">☰</button>
+            <div class="cms-topbar-title" id="topbarTitle">Dashboard</div>
+        </div>
+        <div class="cms-topbar-actions">
+            <span class="draft-badge" id="draftBadge" style="display:none;">DRAFT SAVED</span>
+            <button class="btn-cms-secondary btn-cms-sm" onclick="exportAllData()" title="Export all CMS data as a JSON backup file">⬇ Export</button>
+            <button class="btn-cms-secondary btn-cms-sm" onclick="document.getElementById('importFileInput').click()" title="Import a previously exported JSON backup">⬆ Import</button>
+            <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importAllData(event)">
+            <button class="btn-cms-secondary btn-cms-sm" onclick="saveDraftAll()">Save Draft</button>
+            <button class="btn-cms-primary btn-cms-sm" onclick="publishAll()">↑ Publish</button>
+        </div>
+    </div>
+
+    <!-- ════ PANEL: Dashboard ════ -->
+    <div class="cms-content cms-panel active" id="panel-dashboard">
+
+        <!-- ── Welcome Banner ── -->
+        <div style="margin-bottom:2rem;">
+            <h2 style="font-family:var(--font-heading);font-size:clamp(1.6rem,2.5vw,2.2rem);font-weight:300;margin:0 0 0.3rem;color:var(--color-dark-text);">Welcome back, <em style="color:var(--color-accent);font-style:italic;">Sandeep</em></h2>
+            <p style="font-family:var(--font-mono);font-size:0.72rem;color:var(--color-dark-muted);letter-spacing:0.06em;margin:0;">CMS ADMIN — SANDEEP PATEL PORTFOLIO</p>
+        </div>
+
+        <!-- ── Stats Cards ── -->
+        <div class="dash-grid">
+            <div class="dash-card">
+                <span class="dash-card-icon">◽</span>
+                <div class="dash-card-row">
+                    <div class="dash-num" id="dashProjects">0</div>
+                    <span class="dash-trend">TOTAL</span>
+                </div>
+                <div class="dash-label">Projects</div>
+            </div>
+            <div class="dash-card">
+                <span class="dash-card-icon">⬫</span>
+                <div class="dash-card-row">
+                    <div class="dash-num" id="dashMedia">0</div>
+                    <span class="dash-trend">FILES</span>
+                </div>
+                <div class="dash-label">Media Library</div>
+            </div>
+            <div class="dash-card">
+                <span class="dash-card-icon">⟲</span>
+                <div class="dash-card-row">
+                    <div class="dash-num" id="dashVersions">0</div>
+                    <span class="dash-trend">SAVED</span>
+                </div>
+                <div class="dash-label">Saved Versions</div>
+            </div>
+            <div class="dash-card">
+                <span class="dash-card-icon">◈</span>
+                <div class="dash-card-row">
+                    <div class="dash-num" id="dashStorage">0%</div>
+                    <span class="dash-trend">/ 5MB</span>
+                </div>
+                <div class="dash-label">Storage Used</div>
+            </div>
+        </div>
+
+        <!-- ── Cross-device notice ── -->
+        <div style="background:rgba(217,138,41,0.07);border:1px solid rgba(217,138,41,0.25);border-radius:6px;padding:1rem 1.25rem;margin-bottom:2rem;display:flex;gap:1rem;align-items:flex-start;">
+            <span style="font-size:1.1rem;flex-shrink:0;opacity:0.85;">⚠ï¸</span>
+            <div>
+                <div style="font-family:var(--font-mono);font-size:0.65rem;color:#C9A96E;letter-spacing:0.1em;margin-bottom:0.4rem;text-transform:uppercase;">Cross-Device Images Notice</div>
+                <div style="font-size:0.82rem;color:rgba(248,249,250,0.65);line-height:1.65;">
+                    CMS images are stored in <strong style="color:rgba(255,255,255,0.8);">this browser only</strong> — they won't appear on other devices automatically.
+                    Use <strong style="color:#C9A96E;">⬇ Export</strong> to backup, then <strong style="color:#C9A96E;">⬆ Import</strong> on the other device.
+                    Or paste <em>external image URLs</em> in the project form for cross-device access.
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Quick Actions ── -->
+        <div style="margin-bottom:2rem;">
+            <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--color-dark-muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--color-dark-border);">Quick Actions</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem;">
+                <button class="btn-cms-primary" style="width:100%;justify-content:center;" onclick="switchPanel('projects')">+ Add Project</button>
+                <button class="btn-cms-secondary" style="width:100%;" onclick="switchPanel('site-content')">✎ Edit Content</button>
+                <button class="btn-cms-secondary" style="width:100%;" onclick="switchPanel('media')">⬫ Upload Media</button>
+                <button class="btn-cms-secondary" style="width:100%;" onclick="switchPanel('global-settings')">⚙ Settings</button>
+                <button class="btn-cms-secondary" style="width:100%;" onclick="exportAllData()">⬇ Export Backup</button>
+            </div>
+        </div>
+
+        <hr class="cms-section-divider">
+        <h3 style="font-family:var(--font-heading);font-size:1.4rem;font-weight:300;margin-bottom:1.25rem;color:var(--color-dark-text);">Recent Projects</h3>
+        <div id="dashRecentProjects"></div>
+    </div>
+
+    <!-- ════ PANEL: Projects ════ -->
+    <div class="cms-content cms-panel" id="panel-projects">
+        <!-- Sub-tabs -->
+        <div style="display:flex;gap:0;margin-bottom:2rem;border-bottom:1px solid var(--color-dark-border);">
+            <button class="cms-nav-item active" id="projTabList" onclick="switchProjTab('list')" style="border-radius:0;">All Projects</button>
+            <button class="cms-nav-item" id="projTabForm" onclick="switchProjTab('form')" style="border-radius:0;">+ Add / Edit</button>
+        </div>
+        <!-- List -->
+        <div id="projListView">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                <h2 style="font-family:var(--font-heading);font-size:1.6rem;font-weight:300;">All Projects <span id="projCount" class="draft-badge">0</span></h2>
+                <button class="btn-cms-primary" onclick="switchProjTab('form');resetProjectForm();">+ Add Project</button>
+            </div>
+            <div id="projectListContainer"></div>
+        </div>
+        <!-- Form -->
+        <div id="projFormView" style="display:none;max-width:860px;">
+            <h2 id="projFormTitle" style="font-family:var(--font-heading);font-size:1.6rem;font-weight:300;margin-bottom:2rem;">Add New Project</h2>
+            <div class="cms-grid-2">
+                <div class="cms-field"><label class="cms-label">Project Title *</label><input id="pTitle" class="cms-input" placeholder="e.g. Sant Ravidas Museum"></div>
+                <div class="cms-field"><label class="cms-label">Category / Subtitle *</label><input id="pSubtitle" class="cms-input" placeholder="e.g. MUSEUM & PROJECTION"></div>
+            </div>
+            <div class="cms-grid-2">
+                <div class="cms-field"><label class="cms-label">Tags (comma-separated)</label><input id="pTags" class="cms-input" placeholder="museum, projection, AI, branding"></div>
+                <div class="cms-field"><label class="cms-label">Short Description (homepage card)</label><input id="pShortDesc" class="cms-input" placeholder="1”“2 sentence teaser for homepage card"></div>
+            </div>
+            <div class="cms-field"><label class="cms-label">Cover / Banner Image</label>
+                <div class="cms-upload-box" onclick="document.getElementById('pBannerFile').click()">
+                    <span id="pBannerStatus">Click to upload banner image (recommended 21:9)</span>
+                    <input type="file" id="pBannerFile" accept="image/*">
+                </div>
+                <div class="webp-info-badge" id="pBannerWebpInfo"></div>
+                <div id="pBannerPreview" class="preview-grid" style="display:none;grid-template-columns:1fr;"></div>
+            </div>
+            <!-- Video Showcase Section -->
+            <div class="cms-grid-2">
+                <div class="cms-field">
+                    <label class="cms-label">Video URL (direct link or local path e.g. videos/project.mp4)</label>
+                    <input id="pVideoUrl" class="cms-input" placeholder="e.g. https://assets.mixkit.co/... or videos/project.mp4">
+                </div>
+                <div class="cms-field">
+                    <label class="cms-label">Upload Video File (warning: base64 can use lots of storage)</label>
+                    <div class="cms-upload-box" onclick="document.getElementById('pVideoFile').click()">
+                        <span id="pVideoStatus">Click to upload video file</span>
+                        <input type="file" id="pVideoFile" accept="video/*">
+                    </div>
+                </div>
+            </div>
+            <div id="pVideoPreview" class="preview-grid" style="display:none;grid-template-columns:1fr;margin-bottom:1.5rem;"></div>
+
+            <div class="cms-field"><label class="cms-label">Challenge / About</label><textarea id="pAbout" class="cms-textarea" rows="4" placeholder="Explain the project challenge and context..."></textarea></div>
+            <div class="cms-field"><label class="cms-label">Approach</label><textarea id="pApproach" class="cms-textarea" rows="4" placeholder="How did you approach the project?"></textarea></div>
+            <div class="cms-field"><label class="cms-label">Conclusion / Outcome</label><textarea id="pConclusion" class="cms-textarea" rows="4" placeholder="What was the final result?"></textarea></div>
+            <div class="cms-field"><label class="cms-label">Roles & Responsibilities (comma-separated)</label><input id="pRoles" class="cms-input" placeholder="Creative Director, AI Visual Designer, Story Developer"></div>
+            <div class="cms-grid-2">
+                <div class="cms-field"><label class="cms-label">CTA Button Label</label><input id="pCtaLabel" class="cms-input" placeholder="e.g. View Case Study"></div>
+                <div class="cms-field"><label class="cms-label">CTA Button Link</label><input id="pCtaHref" class="cms-input" placeholder="e.g. project-detail.html?id=my-project"></div>
+            </div>
+
+            <!-- External Links Section -->
+            <div class="cms-section-heading" style="margin-top:1.5rem;">External Links</div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid var(--color-dark-border);border-radius:6px;padding:1.25rem;margin-bottom:1.5rem;">
+                <p style="font-size:0.8rem;color:var(--color-dark-muted);margin-bottom:1.25rem;line-height:1.6;">Paste full URLs for external platforms. These will open in a new tab and are stored as text (not affected by the 5MB storage limit).</p>
+                <div class="cms-grid-2">
+                    <div class="cms-field"><label class="cms-label">Instagram Post / Profile URL</label><input id="pLinkInstagram" class="cms-input" placeholder="https://instagram.com/p/..."></div>
+                    <div class="cms-field"><label class="cms-label">Behance Project URL</label><input id="pLinkBehance" class="cms-input" placeholder="https://behance.net/gallery/..."></div>
+                    <div class="cms-field"><label class="cms-label">YouTube / Vimeo Video URL</label><input id="pLinkVideo" class="cms-input" placeholder="https://youtube.com/watch?v=..."></div>
+                    <div class="cms-field"><label class="cms-label">Live Website / Framer URL</label><input id="pLinkLive" class="cms-input" placeholder="https://myproject.framer.website"></div>
+                    <div class="cms-field"><label class="cms-label">Figma File URL</label><input id="pLinkFigma" class="cms-input" placeholder="https://figma.com/file/..."></div>
+                    <div class="cms-field"><label class="cms-label">PDF / Case Study URL</label><input id="pLinkPdf" class="cms-input" placeholder="https://drive.google.com/file/..."><div class="webp-info-badge" id="pLinkPdfInfo" style="margin-top:0.4rem;"></div></div>
+                </div>
+                <div class="cms-field" style="margin-bottom:0;">
+                    <label class="cms-label">Banner / Cover Image URL (alternative to uploading)</label>
+                    <input id="pBannerUrl" class="cms-input" placeholder="https://images.unsplash.com/... or any hosted image URL">
+                    <p style="font-size:0.72rem;color:var(--color-dark-muted);margin-top:0.4rem;">If filled, this URL overrides any uploaded banner image — and will work on all devices.</p>
+                </div>
+            </div>
+
+            <!-- Museum Experience Frame Settings -->
+            <div class="cms-section-heading" style="margin-top:1.5rem;">Museum Experience Corridor Frame Customization</div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid var(--color-dark-border);border-radius:6px;padding:1.25rem;margin-bottom:1.5rem;">
+                <p style="font-size:0.8rem;color:var(--color-dark-muted);margin-bottom:1.25rem;line-height:1.6;">These options customize how this project's frame, lighting, and detail data will display inside the 3D Museum Experience corridor.</p>
+                <div class="cms-grid-3">
+                    <div class="cms-field"><label class="cms-label">Frame Width (px)</label><input id="pFrameWidth" type="number" class="cms-input" placeholder="e.g. 360"></div>
+                    <div class="cms-field"><label class="cms-label">Frame Height (px)</label><input id="pFrameHeight" type="number" class="cms-input" placeholder="e.g. 260"></div>
+                    <div class="cms-field"><label class="cms-label">Frame Glass reflection (0 to 1)</label><input id="pFrameGlassEffect" type="number" step="0.05" min="0" max="1" class="cms-input" placeholder="e.g. 0.45"></div>
+                </div>
+                <div class="cms-grid-3">
+                    <div class="cms-field"><label class="cms-label">Frame Color (Hex)</label><div class="color-field"><input type="color" id="pFrameColorPicker" value="#D7B16A"><input id="pFrameColor" class="cms-input" placeholder="#D7B16A"></div></div>
+                    <div class="cms-field"><label class="cms-label">Spotlight Color (Hex)</label><div class="color-field"><input type="color" id="pSpotlightColorPicker" value="#D7B16A"><input id="pSpotlightColor" class="cms-input" placeholder="#D7B16A"></div></div>
+                    <div class="cms-field"><label class="cms-label">Spotlight Intensity (0 to 1)</label><input id="pSpotlightIntensity" type="number" step="0.05" min="0" max="1" class="cms-input" placeholder="e.g. 0.9"></div>
+                </div>
+                <div class="cms-grid-2">
+                    <div class="cms-field"><label class="cms-label">Frame Border Style</label><input id="pFrameBorder" class="cms-input" placeholder="e.g. 2px solid #D7B16A"></div>
+                    <div class="cms-field"><label class="cms-label">Frame Box Shadow</label><input id="pFrameShadow" class="cms-input" placeholder="e.g. 0 20px 40px rgba(0,0,0,0.8)"></div>
+                </div>
+                <div class="cms-grid-3">
+                    <div class="cms-field"><label class="cms-label">Project Client</label><input id="pClient" class="cms-input" placeholder="e.g. Ministry of Culture"></div>
+                    <div class="cms-field"><label class="cms-label">Project Role</label><input id="pRole" class="cms-input" placeholder="e.g. Exhibition Designer"></div>
+                    <div class="cms-field"><label class="cms-label">Project Year</label><input id="pYear" class="cms-input" placeholder="e.g. 2026"></div>
+                </div>
+                <div class="cms-grid-3">
+                    <div class="cms-field"><label class="cms-label">Project Location</label><input id="pLocation" class="cms-input" placeholder="e.g. New Delhi,&mdash; India"></div>
+                    <div class="cms-field"><label class="cms-label">Software Used / Tech</label><input id="pSoftwareUsed" class="cms-input" placeholder="e.g. Unreal Engine, Figma"></div>
+                    <div class="cms-field"><label class="cms-label">Awards / Recognition</label><input id="pAwards" class="cms-input" placeholder="e.g. Awwwards Developer Award"></div>
+                </div>
+            </div>
+
+            <!-- Project Ordering & Visibility -->
+            <div class="cms-grid-3">
+                <div class="cms-field">
+                    <label class="cms-label">Project Order (Ascending order, e.g. 1, 2, 3)</label>
+                    <input type="number" id="pOrder" class="cms-input" value="0" min="0">
+                </div>
+                <div class="cms-field" style="display:flex; align-items:center; height:100%; padding-top:1.2rem;">
+                    <label class="cms-label" style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none;">
+                        <input type="checkbox" id="pHideProject" style="width:18px; height:18px; accent-color:#FF6B00;">
+                        <span>Hide Project (Draft/Archive)</span>
+                    </label>
+                </div>
+                <div class="cms-field" style="display:flex; align-items:center; height:100%; padding-top:1.2rem;">
+                    <label class="cms-label" style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none;">
+                        <input type="checkbox" id="pFeaturedProject" style="width:18px; height:18px; accent-color:#FF6B00;">
+                        <span>Feature on Homepage</span>
+                    </label>
+                </div>
+            </div>
+            <div class="cms-field"><label class="cms-label">Gallery Images (multiple)</label>
+                <div class="cms-upload-box" onclick="document.getElementById('pGalleryFiles').click()">
+                    <span id="pGalleryStatus">Click to upload gallery images</span>
+                    <input type="file" id="pGalleryFiles" accept="image/*" multiple>
+                </div>
+                <div class="webp-info-badge" id="pGalleryWebpInfo"></div>
+                <div id="pGalleryPreview" class="preview-grid"></div>
+            </div>
+            <div class="cms-field" style="margin-top:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                    <label class="cms-label">Gallery Image URLs (One URL per line)</label>
+                    <a href="javascript:void(0)" onclick="clearAllMedia()" style="color:var(--color-text); font-size:0.75rem; font-weight:500; text-decoration:none; display:flex; align-items:center; gap:0.25rem;">Clear All</a>
+                </div>
+                <textarea id="pGalleryUrls" class="cms-input" style="height:100px;font-family:var(--font-mono);font-size:0.75rem;resize:vertical;margin-top:0.5rem;" placeholder="https://images.unsplash.com/photo-1...&#10;https://images.unsplash.com/photo-2..." oninput="renderGalleryPreviews()"></textarea>
+                <p style="font-size:0.7rem;color:var(--color-dark-muted);margin-top:0.3rem;">Paste external image links here. These will be merged with any uploaded files above for the project details gallery. Separated by spaces, commas, or newlines.</p>
+            </div>
+            <div style="display:flex;gap:1rem;margin-top:1rem;flex-wrap:wrap;">
+                <button class="btn-cms-primary" id="btnSaveProject" onclick="saveProject()">Publish Project</button>
+                <button class="btn-cms-secondary" id="btnCancelProj" onclick="switchProjTab('list');resetProjectForm();" style="display:none;">Cancel Edit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════ PANEL: Media Library ════ -->
+    <div class="cms-content cms-panel" id="panel-media">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+            <h2 style="font-family:var(--font-heading);font-size:1.6rem;font-weight:300;">Media Library</h2>
+            <button class="btn-cms-primary" onclick="document.getElementById('mediaUploadInput').click()">+ Upload Files</button>
+        </div>
+        <input type="file" id="mediaUploadInput" accept="image/*,video/*,.pdf" multiple style="display:none;">
+        <div class="webp-info-badge" id="mediaWebpInfo" style="margin-bottom:1rem;"></div>
+        <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1.5rem;">
+            <select class="cms-select" id="mediaFolderFilter" style="width:200px;" onchange="renderMediaLibrary()">
+                <option value="">All Files</option>
+            </select>
+            <input class="cms-input" id="mediaSearch" placeholder="Search files”¦" style="width:260px;" oninput="renderMediaLibrary()">
+        </div>
+        <div class="media-grid" id="mediaGrid"><div class="media-empty">No media uploaded yet. Click Upload to add images, videos, or PDFs.</div></div>
+    </div>
+
+    <!-- ════ PANEL: Site Content ════ -->
+    <div class="cms-content cms-panel" id="panel-site-content">
+        <div style="display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <h2 style="font-family:var(--font-heading);font-size:1.6rem;font-weight:300;">Site Content</h2>
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                <select class="cms-select" id="pageSelector" style="min-width:160px;" onchange="renderSiteContentForPage()">
+                    <option value="home">Homepage</option>
+                    <option value="museum">Museum Experience</option>
+                    <option value="about">About</option>
+                    <option value="what">What I Do</option>
+                    <option value="story">My Story</option>
+                    <option value="contact">Contact</option>
+                    <option value="work">Work</option>
+                </select>
+                <button class="btn-cms-primary btn-cms-sm" onclick="saveSiteContent()">Save & Publish</button>
+            </div>
+        </div>
+        <!-- Storage limit notice -->
+        <div style="background:rgba(201,169,110,0.06);border:1px solid rgba(201,169,110,0.2);border-radius:5px;padding:0.75rem 1rem;margin-bottom:1.5rem;font-size:0.8rem;color:rgba(248,249,250,0.6);line-height:1.55;">
+            <strong style="color:#C9A96E;">ðŸ’¾ Storage Tip:</strong> Images uploaded here are stored in this browser only (5 MB limit). To display images on all devices, use <em>external image URLs</em> in the project form, or export & import the CMS backup on each device.
+        </div>
+        <div id="siteContentFields"></div>
+    </div>
+
+    <!-- ════ PANEL: Page Builder ════ -->
+    <div class="cms-content cms-panel" id="panel-page-builder">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <h2 style="font-family:var(--font-heading);font-size:1.6rem;font-weight:300;">Page Builder</h2>
+            <select class="cms-select" id="pbPageSelector" style="width:200px;" onchange="renderPageBuilder()">
+                <option value="home">Homepage</option>
+                <option value="about">About</option>
+                <option value="what">What I Do</option>
+                <option value="story">My Story</option>
+                <option value="contact">Contact</option>
+            </select>
+        </div>
+        <p class="cms-label" style="margin-bottom:1.5rem;">Toggle sections visible/hidden. Changes publish instantly.</p>
+        <div id="pbSectionList"></div>
+    </div>
+
+    <!-- ════ PANEL: Global Settings ════ -->
+    <div class="cms-content cms-panel" id="panel-global-settings">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
+            <h2 style="font-family:var(--font-heading);font-size:1.6rem;font-weight:300;">Global Settings</h2>
+            <button class="btn-cms-primary btn-cms-sm" onclick="saveGlobalSettings()">Save & Apply</button>
+        </div>
+
+        <div class="cms-section-heading">Logo & Branding</div>
+        <div class="cms-grid-2">
+            <div class="cms-field"><label class="cms-label">Logo Text</label><input id="gs_logo_text" class="cms-input" placeholder="Sandeep Patel"></div>
+            <div class="cms-field"><label class="cms-label">Logo Icon (single character)</label><input id="gs_logo_icon" class="cms-input" placeholder="S" maxlength="3"></div>
+        </div>
+
+        <hr class="cms-section-divider">
+        <div class="cms-section-heading">Colors</div>
+        <div class="cms-grid-3">
+            <div class="cms-field"><label class="cms-label">Text / Primary</label><div class="color-field"><input type="color" id="gs_primary_color" value="#F8F9FA"><input type="text" id="gs_primary_color_hex" class="cms-input" value="#F8F9FA"></div></div>
+            <div class="cms-field"><label class="cms-label">Accent</label><div class="color-field"><input type="color" id="gs_accent_color" value="#C9A96E"><input type="text" id="gs_accent_color_hex" class="cms-input" value="#C9A96E"></div></div>
+            <div class="cms-field"><label class="cms-label">Dark Background</label><div class="color-field"><input type="color" id="gs_bg_dark" value="#000000"><input type="text" id="gs_bg_dark_hex" class="cms-input" value="#000000"></div></div>
+        </div>
+
+        <hr class="cms-section-divider">
+        <div class="cms-section-heading">Navigation</div>
+        <div class="cms-field"><label class="cms-label">Nav Links (Label|href, comma-separated)</label><input id="gs_nav_links" class="cms-input" placeholder="Work|work.html, About|about.html"></div>
+
+        <hr class="cms-section-divider">
+        <div class="cms-section-heading">Footer</div>
+        <div class="cms-grid-2">
+            <div class="cms-field"><label class="cms-label">Footer Tagline</label><input id="gs_footer_tagline" class="cms-input"></div>
+            <div class="cms-field"><label class="cms-label">Footer Brand Text</label><input id="gs_footer_brand" class="cms-input"></div>
+        </div>
+
+        <hr class="cms-section-divider">
+        <div class="cms-section-heading">Social Links</div>
+        <div class="cms-grid-2">
+            <div class="cms-field"><label class="cms-label">Instagram URL</label><input id="gs_social_instagram" class="cms-input" placeholder="https://instagram.com/..."></div>
+            <div class="cms-field"><label class="cms-label">LinkedIn URL</label><input id="gs_social_linkedin" class="cms-input" placeholder="https://linkedin.com/in/..."></div>
+            <div class="cms-field"><label class="cms-label">Behance URL</label><input id="gs_social_behance" class="cms-input" placeholder="https://behance.net/..."></div>
+            <div class="cms-field"><label class="cms-label">Email</label><input id="gs_social_email" class="cms-input" placeholder="hello@example.com"></div>
+        </div>
+
+        <hr class="cms-section-divider">
+        <div class="cms-section-heading">SEO</div>
+        <div class="cms-grid-2">
+            <div class="cms-field"><label class="cms-label">Homepage Title</label><input id="gs_seo_home_title" class="cms-input"></div>
+            <div class="cms-field"><label class="cms-label">Homepage Meta Description</label><input id="gs_seo_home_desc" class="cms-input"></div>
+            <div class="cms-field"><label class="cms-label">Work Page Title</label><input id="gs_seo_work_title" class="cms-input"></div>
+            <div class="cms-field"><label class="cms-label">About Page Title</label><input id="gs_seo_about_title" class="cms-input"></div>
+        </div>
+    </div>
+
+    <!-- ════ PANEL: Version History ════ -->
+    <div class="cms-content cms-panel" id="panel-versions">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
+            <h2 style="font-family:var(--font-heading);font-size:1.6rem;font-weight:300;">Version History</h2>
+            <span class="cms-label">Last 10 published versions. Restore any snapshot.</span>
+        </div>
+        <div id="versionList"></div>
+    </div>
+
+    <!-- ══ CHANGE CREDENTIALS PANEL ══ -->
+    <div class="cms-content cms-panel" id="panel-change-credentials">
+        <h2 style="font-family:var(--font-heading);font-size:1.6rem;font-weight:300;margin-bottom:0.5rem;">Change Login ID & Password</h2>
+        <p style="color:var(--color-dark-muted);font-size:0.85rem;margin-bottom:2rem;">Yahan se apna CMS username aur password set karein. Bina current password ke change nahi hoga.</p>
+
+        <div style="max-width:420px;display:flex;flex-direction:column;gap:1.25rem;">
+            <div class="cms-field">
+                <label class="cms-label">Current Password (verification ke liye)</label>
+                <input type="password" id="cc_current" class="cms-input" placeholder="Current password daalen" autocomplete="current-password">
+            </div>
+            <div class="cms-field">
+                <label class="cms-label">New Username</label>
+                <input type="text" id="cc_newuser" class="cms-input" placeholder="Naya username (min 3 characters)" autocomplete="username" spellcheck="false">
+            </div>
+            <div class="cms-field">
+                <label class="cms-label">New Password</label>
+                <input type="password" id="cc_newpass" class="cms-input" placeholder="Naya password (min 6 characters)" autocomplete="new-password">
+            </div>
+            <div class="cms-field">
+                <label class="cms-label">Confirm New Password</label>
+                <input type="password" id="cc_confirm" class="cms-input" placeholder="Password dobara daalen" autocomplete="new-password">
+            </div>
+            <div id="cc_msg" style="display:none;padding:0.75rem 1rem;border-radius:4px;font-size:0.82rem;"></div>
+            <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+                <button class="btn-cms-primary" onclick="doChangeCredentials()">Save New Login</button>
+                <button class="btn-cms-secondary" onclick="clearCredentialForm()">Clear</button>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /cms-main -->
+
+<!-- Toast -->
+<div id="cmsToast">Saved!</div>
+
+<!-- ══════════════════════════════════════════════
+     CMS ADMIN JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script src="js/projects-data.js?v=24"></script>
+<script src="js/cms-auth.js"></script>
+<script src="js/cms-core.js"></script>
+
+<!-- site-loader.js is NOT loaded in admin (it's for public pages only).
+     getSiteData is defined here so admin panel functions can read CMS data. -->
+<script>
+function getSiteData() {
+    if (typeof CMS !== 'undefined' && typeof CMS.getLiveData === 'function') {
+        return CMS.getLiveData();
+    }
+    try {
+        var raw = localStorage.getItem('sandeep_site_data_v2');
+        return raw ? JSON.parse(raw) : {};
+    } catch(e) { return {}; }
+}
+</script>
+<script>
+
+/* ── Toast notification ── */
+function toast(msg, type='success', duration=3000) {
+    const t = document.getElementById('cmsToast');
+    t.textContent = msg; t.className = `show ${type}`;
+    setTimeout(() => { t.className = ''; }, duration);
+}
+
+/* ── Storage bar update ── */
+function updateStorageBar() {
+    const u = CMS.getStorageUsage();
+    document.getElementById('storageBar').style.width = u.percent + '%';
+    document.getElementById('storageLabel').textContent = `${u.mb} MB / 5 MB`;
+}
+
+/* ── Panel switching ── */
+const panelTitles = { dashboard:'Dashboard', projects:'Projects', media:'Media Library', 'site-content':'Site Content', 'page-builder':'Page Builder', 'global-settings':'Global Settings', versions:'Version History', 'change-credentials':'Change ID / Password' };
+function switchPanel(id) {
+    document.querySelectorAll('.cms-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.cms-nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById(`panel-${id}`).classList.add('active');
+    document.querySelector(`.cms-nav-item[onclick="switchPanel('${id}')"]`)?.classList.add('active');
+    document.getElementById('topbarTitle').textContent = panelTitles[id] || id;
+    // Init panel-specific renders
+    if (id === 'dashboard')        renderDashboard();
+    if (id === 'projects')         renderProjectList();
+    if (id === 'media')            renderMediaLibrary();
+    if (id === 'site-content')     renderSiteContentForPage();
+    if (id === 'page-builder')     renderPageBuilder();
+    if (id === 'global-settings')  loadGlobalSettingsForm();
+    if (id === 'versions')         renderVersions();
+    updateStorageBar();
+}
+
+/* ══ DASHBOARD ══ */
+function renderDashboard() {
+    const projs = CMS.getProjects();
+    const media = CMS.getMedia();
+    const vers  = CMS.getVersions();
+    const usage = CMS.getStorageUsage();
+    document.getElementById('dashProjects').textContent = projs.length;
+    document.getElementById('dashMedia').textContent    = media.length;
+    document.getElementById('dashVersions').textContent = vers.length;
+    document.getElementById('dashStorage').textContent  = usage.percent + '%';
+    // Recent projects
+    const el = document.getElementById('dashRecentProjects');
+    if (!projs.length) { el.innerHTML = '<p class="cms-label" style="padding:1rem 0;">No projects yet.</p>'; return; }
+    el.innerHTML = projs.slice(0,3).map(p => `
+        <div class="project-row">
+            <div class="proj-thumb">${p.bannerImage ? `<img src="${p.bannerImage}" alt="">` : `<div class="proj-thumb-placeholder">IMG</div>`}</div>
+            <div class="proj-meta"><h4>${p.title}</h4><span>${p.subtitle||''}</span></div>
+            <div class="proj-actions"><button class="btn-cms-secondary btn-cms-sm" onclick="switchPanel('projects');editProject('${p.id}')">Edit</button></div>
+        </div>`).join('');
+}
+
+/* ══ PROJECTS ══ */
+let editingProjId = null;
+let pBannerDataUrl = '';
+let pGalleryDataUrls = [];
+
+function resolveDirectMediaUrl(url, type = 'image') {
+    if (!url) return '';
+    url = url.trim();
+    
+    // Google Drive share link matching and conversion
+    const gdMatch = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([^/?#\s]+)/);
+    if (gdMatch && gdMatch[1]) {
+        if (type === 'video') return `https://drive.google.com/file/d/${gdMatch[1]}/preview`;
+        return `https://lh3.googleusercontent.com/d/${gdMatch[1]}`;
+    }
+    
+    const gdDocsMatch = url.match(/docs\.google\.com\/file\/d\/([^/?#\s]+)/);
+    if (gdDocsMatch && gdDocsMatch[1]) {
+        if (type === 'video') return `https://drive.google.com/file/d/${gdDocsMatch[1]}/preview`;
+        return `https://lh3.googleusercontent.com/d/${gdDocsMatch[1]}`;
+    }
+    
+    // Dropbox direct link raw parameter conversion
+    if (url.includes('dropbox.com') && url.includes('dl=0')) {
+        return url.replace('dl=0', 'raw=1');
+    }
+
+    // YouTube matching
+    const ytMatch = url.match(/(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/);
+    if (ytMatch && ytMatch[1]) {
+        return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1&loop=1&playlist=${ytMatch[1]}&controls=0&showinfo=0&autohide=1&modestbranding=1`;
+    }
+
+    // Vimeo matching
+    const vimeoMatch = url.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/);
+    if (vimeoMatch && vimeoMatch[1]) {
+        return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1&loop=1&muted=1&background=1`;
+    }
+    
+    return url;
+}
+
+function getMediaEmbedHtml(url, styleStr = "width:100%;height:100%;object-fit:cover;") {
+    if (!url) return '';
+    if (url.includes('youtube.com/embed') || url.includes('player.vimeo.com') || url.includes('drive.google.com/file/d/')) {
+        return `<iframe src="${url}" style="${styleStr}; pointer-events:none; border:none;" allow="autoplay; fullscreen" frameborder="0"></iframe>`;
+    }
+    return `<video src="${url}" autoplay loop muted playsinline controlsList="nodownload" style="${styleStr}"></video>`;
+}
+
+function switchProjTab(tab) {
+    document.getElementById('projListView').style.display = tab === 'list' ? 'block' : 'none';
+    document.getElementById('projFormView').style.display = tab === 'form' ? 'block' : 'none';
+    document.getElementById('projTabList').classList.toggle('active', tab === 'list');
+    document.getElementById('projTabForm').classList.toggle('active', tab === 'form');
+    if (tab === 'list') renderProjectList();
+}
+
+function renderProjectList() {
+    const projs = CMS.getProjects();
+    document.getElementById('projCount').textContent = projs.length;
+    const el = document.getElementById('projectListContainer');
+    if (!projs.length) {
+        el.innerHTML = `<p class="cms-label" style="padding:2rem 0;">No projects yet. Click "+ Add Project" to create your first case study.</p>`;
+        return;
+    }
+    
+    // Sort projects by order ascending (lower is first, missing order is put at the end)
+    const sortedProjs = [...projs].sort((a, b) => {
+        const orderA = a.order !== undefined ? parseInt(a.order) : 999;
+        const orderB = b.order !== undefined ? parseInt(b.order) : 999;
+        return orderA - orderB;
+    });
+
+    el.innerHTML = sortedProjs.map(p => {
+        const orderVal = p.order !== undefined ? p.order : 0;
+        const featuredBadge = p.isFeatured ? `<span class="draft-badge" style="background:rgba(255,107,0,0.15);color:#FF6B00;border-color:rgba(255,107,0,0.3);margin-left:0.5rem;">Featured</span>` : '';
+        const hiddenBadge = p.ishidden ? `<span class="draft-badge" style="background:rgba(120,120,120,0.15);color:#aaa;border-color:rgba(120,120,120,0.3);margin-left:0.5rem;">hidden</span>` : '';
+        const orderBadge = `<span class="draft-badge" style="margin-left:0.5rem;">Order: ${orderVal}</span>`;
+        const hasVideoBadge = p.videoUrl ? `<span class="draft-badge" style="background:rgba(0,180,255,0.15);color:#00b4ff;border-color:rgba(0,180,255,0.3);margin-left:0.5rem;">Video</span>` : '';
+        
+        return `
+        <div class="project-row">
+            <div class="proj-thumb">${p.bannerImage ? `<img src="${p.bannerImage}" alt="${p.title}">` : `<div class="proj-thumb-placeholder">NO IMG</div>`}</div>
+            <div class="proj-meta">
+                <h4>${p.title} ${featuredBadge} ${hiddenBadge} ${orderBadge} ${hasVideoBadge}</h4>
+                <span>${p.subtitle||''} ${p.tags ? 'Â· ' + p.tags : ''}</span>
+            </div>
+            <div class="proj-actions">
+                <button class="btn-cms-secondary btn-cms-sm" onclick="editProject('${p.id}')">Edit</button>
+                <button class="btn-cms-danger btn-cms-sm" onclick="deleteProject('${p.id}')">Delete</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function resetProjectForm() {
+    editingProjId = null; pBannerDataUrl = ''; pGalleryDataUrls = [];
+    ['pTitle','pSubtitle','pTags','pShortDesc','pAbout','pApproach','pConclusion','pRoles','pCtaLabel','pCtaHref','pVideoUrl','pLinkInstagram','pLinkBehance','pLinkVideo','pLinkLive','pLinkFigma','pLinkPdf','pBannerUrl','pGalleryUrls',
+     'pFrameWidth','pFrameHeight','pFrameGlassEffect','pFrameColor','pSpotlightColor','pSpotlightIntensity','pFrameBorder','pFrameShadow','pClient','pRole','pYear','pLocation','pSoftwareUsed','pAwards'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('pOrder').value = '0';
+    document.getElementById('pHideProject').checked = false;
+    document.getElementById('pFeaturedProject').checked = true;
+    document.getElementById('pFrameColorPicker').value = '#D7B16A';
+    document.getElementById('pSpotlightColorPicker').value = '#D7B16A';
+    document.getElementById('pBannerPreview').style.display = 'none';
+    document.getElementById('pBannerPreview').innerHTML = '';
+    document.getElementById('pGalleryPreview').innerHTML = '';
+    document.getElementById('pVideoPreview').style.display = 'none';
+    document.getElementById('pVideoPreview').innerHTML = '';
+    document.getElementById('pBannerStatus').textContent = 'Click to upload banner image (recommended 21:9)';
+    document.getElementById('pVideoStatus').textContent = 'Click to upload video file';
+    document.getElementById('projFormTitle').textContent = 'Add New Project';
+    document.getElementById('btnSaveProject').textContent = 'Publish Project';
+    document.getElementById('btnCancelProj').style.display = 'none';
+}
+
+function editProject(id) {
+    const p = CMS.getProjects().find(x => x.id === id);
+    if (!p) return;
+    resetProjectForm();
+    editingProjId = p.id;
+    document.getElementById('pTitle').value     = p.title||'';
+    document.getElementById('pSubtitle').value  = p.subtitle||'';
+    document.getElementById('pTags').value       = p.tags||'';
+    document.getElementById('pShortDesc').value  = p.shortDescription||'';
+    document.getElementById('pAbout').value      = p.about||'';
+    document.getElementById('pApproach').value   = p.approach||'';
+    document.getElementById('pConclusion').value = p.conclusion||'';
+    document.getElementById('pRoles').value      = (p.roles||[]).join(', ');
+    document.getElementById('pCtaLabel').value   = p.ctaLabel||'';
+    document.getElementById('pCtaHref').value    = p.ctaHref||'';
+    
+    // Populate new fields
+    document.getElementById('pVideoUrl').value   = p.videoUrl||'';
+    document.getElementById('pOrder').value      = p.order !== undefined ? p.order : 0;
+    document.getElementById('pHideProject').checked = !!p.ishidden;
+    document.getElementById('pFeaturedProject').checked = p.isFeatured !== undefined ? !!p.isFeatured : true;
+    
+    // Populate Museum Frame Customization fields
+    document.getElementById('pFrameWidth').value = p.frameWidth||'';
+    document.getElementById('pFrameHeight').value = p.frameHeight||'';
+    document.getElementById('pFrameGlassEffect').value = p.frameGlassEffect||'';
+    document.getElementById('pFrameColor').value = p.frameColor||'';
+    document.getElementById('pFrameColorPicker').value = (p.frameColor && p.frameColor.startsWith('#') && p.frameColor.length===7) ? p.frameColor : '#D7B16A';
+    document.getElementById('pSpotlightColor').value = p.spotlightColor||'';
+    document.getElementById('pSpotlightColorPicker').value = (p.spotlightColor && p.spotlightColor.startsWith('#') && p.spotlightColor.length===7) ? p.spotlightColor : '#D7B16A';
+    document.getElementById('pSpotlightIntensity').value = p.spotlightIntensity||'';
+    document.getElementById('pFrameBorder').value = p.frameBorder||'';
+    document.getElementById('pFrameShadow').value = p.frameShadow||'';
+    document.getElementById('pClient').value = p.client||'';
+    document.getElementById('pRole').value = p.role||'';
+    document.getElementById('pYear').value = p.year||'';
+    document.getElementById('pLocation').value = p.location||'';
+    document.getElementById('pSoftwareUsed').value = p.softwareUsed||'';
+    document.getElementById('pAwards').value = p.awards||'';
+    
+    // Populate external links
+    document.getElementById('pLinkInstagram').value = p.linkInstagram||'';
+    document.getElementById('pLinkBehance').value   = p.linkBehance||'';
+    document.getElementById('pLinkVideo').value     = p.linkVideo||'';
+    document.getElementById('pLinkLive').value      = p.linkLive||'';
+    document.getElementById('pLinkFigma').value     = p.linkFigma||'';
+    document.getElementById('pLinkPdf').value       = p.linkPdf||'';
+    document.getElementById('pBannerUrl').value     = p.bannerUrl||'';
+    
+    if (p.bannerImage) {
+        pBannerDataUrl = p.bannerImage;
+        const prev = document.getElementById('pBannerPreview');
+        prev.innerHTML = `<div class="preview-item" style="aspect-ratio:21/9;grid-column:span 4;"><img src="${p.bannerImage}" alt=""><button class="preview-remove" onclick="pBannerDataUrl='';this.parentNode.parentNode.innerHTML='';this.parentNode.parentNode.style.display='none';">×</button></div>`;
+        prev.style.display = 'grid';
+        document.getElementById('pBannerStatus').textContent = 'Banner loaded.';
+    }
+    
+    if (p.videoUrl) {
+        const prev = document.getElementById('pVideoPreview');
+        prev.innerHTML = `<div class="preview-item" style="aspect-ratio:16/9;grid-column:span 4;">${getMediaEmbedHtml(p.videoUrl)}<button class="preview-remove" onclick="document.getElementById('pVideoUrl').value='';document.getElementById('pVideoPreview').innerHTML='';document.getElementById('pVideoPreview').style.display='none';document.getElementById('pVideoStatus').textContent='Click to upload video file';">×</button></div>`;
+        prev.style.display = 'grid';
+        document.getElementById('pVideoStatus').textContent = 'Video loaded.';
+    }
+    
+    // Separate uploaded and pasted gallery images
+    const allImages = p.images || [];
+    const extGalleryUrls = allImages.filter(url => !url.startsWith('data:'));
+    pGalleryDataUrls = allImages.filter(url => url.startsWith('data:'));
+    
+    document.getElementById('pGalleryUrls').value = extGalleryUrls.join('\n');
+    renderGalleryPreviews();
+    
+    document.getElementById('projFormTitle').textContent = `Edit: ${p.title}`;
+    document.getElementById('btnSaveProject').textContent = 'Save Changes';
+    document.getElementById('btnCancelProj').style.display = 'inline-block';
+    switchProjTab('form');
+}
+
+function deleteProject(id) {
+    if (!confirm('Delete this project? This cannot be undone.')) return;
+    CMS.deleteProject(id);
+    renderProjectList();
+    toast('Project deleted.', 'success');
+    updateStorageBar();
+}
+
+function renderGalleryPreviews() {
+    const el = document.getElementById('pGalleryPreview');
+    if (!el) return;
+    const txtArea = document.getElementById('pGalleryUrls');
+    const extUrls = txtArea ? txtArea.value.split(/[\s,]+/).map(u=>u.trim()).filter(Boolean) : [];
+    const allUrls = [...pGalleryDataUrls, ...extUrls];
+    
+    if (allUrls.length === 0) {
+        el.innerHTML = '';
+        return;
+    }
+    
+    el.innerHTML = allUrls.map((url, i) => {
+        const isUploaded = i < pGalleryDataUrls.length;
+        const removeCall = isUploaded 
+            ? `pGalleryDataUrls.splice(${i},1);renderGalleryPreviews();`
+            : `removeExternalGalleryUrl(${i - pGalleryDataUrls.length});`;
+        const resolvedUrl = resolveDirectMediaUrl(url, 'image') || url;
+        return `
+            <div class="preview-item">
+                <img src="${resolvedUrl}" alt="">
+                <button class="preview-remove" onclick="${removeCall}">×</button>
+            </div>`;
+    }).join('');
+}
+
+function removeExternalGalleryUrl(idx) {
+    const el = document.getElementById('pGalleryUrls');
+    if (!el) return;
+    const urls = el.value.split(/[\s,]+/).map(u=>u.trim()).filter(Boolean);
+    urls.splice(idx, 1);
+    el.value = urls.join('\n');
+    renderGalleryPreviews();
+}
+
+function clearAllMedia() {
+    // 1. Clear Gallery
+    const galleryEl = document.getElementById('pGalleryUrls');
+    if (galleryEl) galleryEl.value = '';
+    pGalleryDataUrls = [];
+    renderGalleryPreviews();
+
+    // 2. Clear Banner URL & File
+    const bannerUrlEl = document.getElementById('pBannerUrl');
+    if (bannerUrlEl) bannerUrlEl.value = '';
+    pBannerDataUrl = '';
+    const bannerPrev = document.getElementById('pBannerPreview');
+    if (bannerPrev) {
+        bannerPrev.innerHTML = '';
+        bannerPrev.style.display = 'none';
+    }
+    const bannerStatus = document.getElementById('pBannerStatus');
+    if (bannerStatus) bannerStatus.textContent = 'Click to upload banner image';
+
+    // 3. Clear Video URL
+    const videoUrlEl = document.getElementById('pVideoUrl');
+    if (videoUrlEl) videoUrlEl.value = '';
+    const videoStatus = document.getElementById('pVideoStatus');
+    if (videoStatus) videoStatus.textContent = 'Click to upload video file';
+
+    toast('All existing media cleared! You can now paste your Drive links.', 'success');
+}
+
+document.getElementById('pBannerFile').addEventListener('change', async e => {
+    const file = e.target.files[0]; if (!file) return;
+    document.getElementById('pBannerStatus').textContent = 'Converting to WebP”¦';
+    const result = await cmsCompressImage(file);
+    pBannerDataUrl = result.dataUrl;
+    const prev = document.getElementById('pBannerPreview');
+    const saved = result.originalSize - result.convertedSize;
+    const pct = result.originalSize > 0 ? Math.round((saved / result.originalSize) * 100) : 0;
+    prev.innerHTML = `<div class="preview-item" style="aspect-ratio:21/9;grid-column:span 4;"><img src="${pBannerDataUrl}" alt=""><button class="preview-remove" onclick="pBannerDataUrl='';this.parentNode.parentNode.innerHTML='';this.parentNode.parentNode.style.display='none';document.getElementById('pBannerStatus').textContent='Click to upload banner image';document.getElementById('pBannerWebpInfo').style.display='none';">×</button></div>`;
+    prev.style.display = 'grid';
+    document.getElementById('pBannerStatus').textContent = `Banner uploaded ✓`;
+    const infoBadge = document.getElementById('pBannerWebpInfo');
+    if (infoBadge) cmsShowConversionInfo(result.originalSize, result.convertedSize, result.format, infoBadge);
+});
+
+// Event listener for video file upload
+document.getElementById('pVideoFile').addEventListener('change', async e => {
+    const file = e.target.files[0]; if (!file) return;
+    if (file.size > 2.0 * 1024 * 1024) {
+        if (!confirm(`Warning: This video is ${(file.size / 1024 / 1024).toFixed(2)} MB, which is very large for LocalStorage. It might cause storage quota errors. It's recommended to host the video and use the Video URL instead. Do you want to upload anyway?`)) {
+            e.target.value = '';
+            return;
+        }
+    }
+    document.getElementById('pVideoStatus').textContent = 'Uploading video”¦';
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const dataUrl = ev.target.result;
+        document.getElementById('pVideoUrl').value = dataUrl;
+        const prev = document.getElementById('pVideoPreview');
+        prev.innerHTML = `<div class="preview-item" style="aspect-ratio:16/9;grid-column:span 4;">${getMediaEmbedHtml(dataUrl)}<button class="preview-remove" onclick="document.getElementById('pVideoUrl').value='';document.getElementById('pVideoPreview').innerHTML='';document.getElementById('pVideoPreview').style.display='none';document.getElementById('pVideoStatus').textContent='Click to upload video file';">×</button></div>`;
+        prev.style.display = 'grid';
+        document.getElementById('pVideoStatus').textContent = 'Video uploaded ✓';
+    };
+    reader.readAsDataURL(file);
+});
+
+// Event listener for video URL input field to show dynamic preview
+document.getElementById('pVideoUrl').addEventListener('input', e => {
+    const url = resolveDirectMediaUrl(e.target.value.trim(), 'video') || e.target.value.trim();
+    const prev = document.getElementById('pVideoPreview');
+    if (url) {
+        prev.innerHTML = `<div class="preview-item" style="aspect-ratio:16/9;grid-column:span 4;">${getMediaEmbedHtml(url)}<button class="preview-remove" onclick="document.getElementById('pVideoUrl').value='';document.getElementById('pVideoPreview').innerHTML='';document.getElementById('pVideoPreview').style.display='none';document.getElementById('pVideoStatus').textContent='Click to upload video file';">×</button></div>`;
+        prev.style.display = 'grid';
+    } else {
+        prev.innerHTML = '';
+        prev.style.display = 'none';
+    }
+});
+
+// Event listener for banner URL input field to show dynamic preview
+document.getElementById('pBannerUrl').addEventListener('input', e => {
+    pBannerDataUrl = '';
+    const url = resolveDirectMediaUrl(e.target.value.trim());
+    const prev = document.getElementById('pBannerPreview');
+    if (url) {
+        prev.innerHTML = `<div class="preview-item" style="aspect-ratio:21/9;grid-column:span 4;"><img src="${url}" alt=""><button class="preview-remove" onclick="document.getElementById('pBannerUrl').value='';document.getElementById('pBannerPreview').innerHTML='';document.getElementById('pBannerPreview').style.display='none';">×</button></div>`;
+        prev.style.display = 'grid';
+    } else {
+        prev.innerHTML = '';
+        prev.style.display = 'none';
+    }
+});
+
+// Event listener for gallery URLs textarea to show dynamic previews
+document.getElementById('pGalleryUrls').addEventListener('input', () => {
+    renderGalleryPreviews();
+});
+
+/* ── Auto-convert share links to direct links on blur ── */
+document.getElementById('pLinkPdf').addEventListener('blur', () => {
+    const input = document.getElementById('pLinkPdf');
+    const infoEl = document.getElementById('pLinkPdfInfo');
+    const raw = input.value.trim();
+    if (!raw) { if (infoEl) infoEl.style.display = 'none'; return; }
+    if (typeof cmsIsShareLink === 'function' && cmsIsShareLink(raw)) {
+        const direct = cmsToDirectLink(raw);
+        input.value = direct;
+        if (infoEl) {
+            infoEl.textContent = '✅ Converted to direct download link';
+            infoEl.style.display = 'block';
+        }
+    } else if (infoEl) {
+        infoEl.style.display = 'none';
+    }
+});
+
+document.getElementById('pGalleryFiles').addEventListener('change', async e => {
+    const files = Array.from(e.target.files);
+    let totalOriginal = 0, totalConverted = 0;
+    for (const file of files) {
+        const result = await cmsCompressImage(file);
+        pGalleryDataUrls.push(result.dataUrl);
+        totalOriginal += result.originalSize;
+        totalConverted += result.convertedSize;
+    }
+    renderGalleryPreviews();
+    if (files.length > 0) {
+        const infoBadge = document.getElementById('pGalleryWebpInfo');
+        if (infoBadge) cmsShowConversionInfo(totalOriginal, totalConverted, 'WebP', infoBadge);
+        document.getElementById('pGalleryStatus').textContent = `${files.length} image(s) converted ✓`;
+    }
+});
+
+async function saveProject() {
+    const title = document.getElementById('pTitle').value.trim();
+    const subtitle = document.getElementById('pSubtitle').value.trim();
+    if (!title || !subtitle) { toast('Title and Category are required.', 'error'); return; }
+    const id = editingProjId || title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    
+    // Parse up to 25 external gallery links
+    const extUrls = document.getElementById('pGalleryUrls').value
+        .split(/[\s,]+/)
+        .map(u => resolveDirectMediaUrl(u.trim()))
+        .filter(Boolean)
+        .slice(0, 25);
+
+    // Banner image priority:
+    //   1. Uploaded file (pBannerDataUrl — base64 WebP set by file input handler)
+    //   2. URL field (pBannerUrl — manually typed/pasted URL)
+    // Never let a stale URL field override a freshly uploaded file.
+    const bannerUrlFieldVal = resolveDirectMediaUrl(document.getElementById('pBannerUrl').value.trim());
+    const bannerImage = pBannerDataUrl || bannerUrlFieldVal;
+
+    // Video URL: the field holds either a user-typed URL or a blob: URL from file upload
+    const videoUrlRaw = document.getElementById('pVideoUrl').value.trim();
+    const videoUrl = resolveDirectMediaUrl(videoUrlRaw, 'video') || videoUrlRaw; // keep blob: URLs as-is
+        
+    const project = {
+        id, title, subtitle,
+        tags:             document.getElementById('pTags').value.trim(),
+        shortDescription: document.getElementById('pShortDesc').value.trim(),
+        about:            document.getElementById('pAbout').value.trim(),
+        approach:         document.getElementById('pApproach').value.trim(),
+        conclusion:       document.getElementById('pConclusion').value.trim(),
+        roles:            document.getElementById('pRoles').value.split(',').map(r=>r.trim()).filter(Boolean),
+        ctaLabel:         document.getElementById('pCtaLabel').value.trim(),
+        ctaHref:          document.getElementById('pCtaHref').value.trim(),
+        bannerImage,
+        images:           [...pGalleryDataUrls, ...extUrls],
+        videoUrl,
+        order:            parseInt(document.getElementById('pOrder').value) || 0,
+        ishidden:         document.getElementById('pHideProject').checked,
+        isFeatured:       document.getElementById('pFeaturedProject').checked,
+        frameWidth:       document.getElementById('pFrameWidth').value.trim(),
+        frameHeight:      document.getElementById('pFrameHeight').value.trim(),
+        frameGlassEffect: document.getElementById('pFrameGlassEffect').value.trim(),
+        frameColor:       document.getElementById('pFrameColor').value.trim(),
+        spotlightColor:   document.getElementById('pSpotlightColor').value.trim(),
+        spotlightIntensity: document.getElementById('pSpotlightIntensity').value.trim(),
+        frameBorder:      document.getElementById('pFrameBorder').value.trim(),
+        frameShadow:      document.getElementById('pFrameShadow').value.trim(),
+        client:           document.getElementById('pClient').value.trim(),
+        role:             document.getElementById('pRole').value.trim(),
+        year:             document.getElementById('pYear').value.trim(),
+        location:         document.getElementById('pLocation').value.trim(),
+        softwareUsed:     document.getElementById('pSoftwareUsed').value.trim(),
+        awards:           document.getElementById('pAwards').value.trim(),
+        linkInstagram:    document.getElementById('pLinkInstagram').value.trim(),
+        linkBehance:      document.getElementById('pLinkBehance').value.trim(),
+        linkVideo:        document.getElementById('pLinkVideo').value.trim(),
+        linkLive:         document.getElementById('pLinkLive').value.trim(),
+        linkFigma:        document.getElementById('pLinkFigma').value.trim(),
+        linkPdf:          document.getElementById('pLinkPdf').value.trim(),
+        bannerUrl:        bannerUrlFieldVal,
+    };
+    CMS.upsertProject(project);
+    toast(editingProjId ? 'Project updated!' : 'Project published!', 'success');
+    resetProjectForm(); switchProjTab('list');
+    updateStorageBar();
+}
+
+/* ══ MEDIA LIBRARY ══ */
+document.getElementById('mediaUploadInput').addEventListener('change', async e => {
+    const files = Array.from(e.target.files);
+    let totalOriginal = 0, totalConverted = 0, imgCount = 0;
+    for (const file of files) {
+        let dataUrl, storedSize = file.size;
+        if (file.type.startsWith('image/')) {
+            const result = await cmsCompressImage(file, 1400, 0.82);
+            dataUrl = result.dataUrl;
+            totalOriginal += result.originalSize;
+            totalConverted += result.convertedSize;
+            storedSize = result.convertedSize;
+            imgCount++;
+            CMS.addMedia({ id: cmsGenerateId(), name: file.name.replace(/\.[^.]+$/, '') + '.' + result.format.toLowerCase(), type: 'image/' + result.format.toLowerCase(), folder: 'General', dataUrl, size: storedSize, addedAt: Date.now() });
+        } else {
+            dataUrl = await new Promise(res => { const r=new FileReader(); r.onload=ev=>res(ev.target.result); r.readAsDataURL(file); });
+            CMS.addMedia({ id: cmsGenerateId(), name: file.name, type: file.type, folder: 'General', dataUrl, size: file.size, addedAt: Date.now() });
+        }
+    }
+    renderMediaLibrary();
+    populateMediaFolders();
+    updateStorageBar();
+    const infoBadge = document.getElementById('mediaWebpInfo');
+    if (imgCount > 0 && infoBadge) {
+        cmsShowConversionInfo(totalOriginal, totalConverted, 'WebP', infoBadge);
+        toast(`${files.length} file(s) uploaded — images converted to WebP`, 'success');
+    } else {
+        if (infoBadge) infoBadge.style.display = 'none';
+        toast(`${files.length} file(s) uploaded`, 'success');
+    }
+});
+
+function populateMediaFolders() {
+    const sel = document.getElementById('mediaFolderFilter');
+    const folders = CMS.getMediaFolders();
+    sel.innerHTML = '<option value="">All Files</option>' + folders.map(f=>`<option value="${f}">${f}</option>`).join('');
+}
+
+function renderMediaLibrary() {
+    const q      = (document.getElementById('mediaSearch').value||'').toLowerCase();
+    const folder = document.getElementById('mediaFolderFilter').value;
+    let media    = CMS.getMedia();
+    if (folder) media = media.filter(m => (m.folder||'General') === folder);
+    if (q)      media = media.filter(m => m.name.toLowerCase().includes(q));
+    const grid = document.getElementById('mediaGrid');
+    if (!media.length) { grid.innerHTML = '<div class="media-empty">No media found.</div>'; return; }
+    grid.innerHTML = media.map(m => `
+        <div class="media-item" title="${m.name}">
+            ${m.type&&m.type.startsWith('image/') ? `<img src="${m.dataUrl}" alt="${m.name}">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:var(--color-dark-muted);font-family:var(--font-mono);">${m.type&&m.type.includes('pdf')?'PDF':'FILE'}</div>`}
+            <div class="media-item-label">${m.name}</div>
+            <button class="media-item-del" onclick="CMS.deleteMedia('${m.id}');renderMediaLibrary();updateStorageBar();">×</button>
+        </div>`).join('');
+}
+
+/* ══ SITE CONTENT ══ */
+const PAGE_FIELD_GROUPS = {
+    home: [
+        { section:'Selected Work (Home Page Projects)', keys:['home_featured_projects'] },
+          { section:'Hero Section Styles & Details', keys:['home_hero_pretitle','home_hero_title','home_hero_subtitle','home_hero_scroll_label','home_hero_bg_color','home_hero_bg_image','home_hero_text_color','home_hero_font_family','home_hero_gallery_btn_visibility','home_hero_particles_visibility'] },
+        { section:'Hero Right Column (Monolith)', keys:['home_hero_monolith_name','home_hero_monolith_tagline'] },
+        { section:'About Section Details & Styles', keys:['home_about_text','home_about_profile_image','home_about_profile_badge','home_about_bio_p1','home_about_bio_p2','home_about_bg_color','home_about_bg_image','home_about_text_color','home_about_font_family'] },
+        { section:'Resume Download (About Section Button)', keys:['home_about_resume_file'] },
+        { section:'What I Do Section Styles', keys:[
+            'home_what_i_do_bg_color','home_what_i_do_bg_image','home_what_i_do_text_color','home_what_i_do_font_family',
+            'home_what_i_do_card1_bg_color','home_what_i_do_card1_text_color',
+            'home_what_i_do_card2_bg_color','home_what_i_do_card2_text_color',
+            'home_what_i_do_card3_bg_color','home_what_i_do_card3_text_color',
+            'home_what_i_do_card4_bg_color','home_what_i_do_card4_text_color'
+        ] },
+        { section:'Business Partners Logo Wall', keys:['home_partners_list'] },
+        { section:'Journey Section Details & Styles', keys:['home_journey_title','home_journey_bg_color','home_journey_bg_image','home_journey_text_color','home_journey_font_family'] },
+        { section:'Selected Work Section Details & Styles', keys:['home_selected_work_label','home_selected_work_title','home_selected_work_bg_color','home_selected_work_bg_image','home_selected_work_text_color','home_selected_work_font_family'] },
+        { section:'Light & Sound Comparison Details & Styles', keys:['home_light_sound_label','home_light_sound_title','light_sound_reveal_img1','light_sound_reveal_img2','home_light_sound_scroll_text','home_light_sound_bg_color','home_light_sound_bg_image','home_light_sound_text_color','home_light_sound_font_family'] },
+        { section:'Education Section Styles', keys:['home_education_bg_color','home_education_bg_image','home_education_text_color','home_education_font_family'] },
+        { section:'Education Column 1', keys:['home_edu_col1_date','home_edu_col1_title','home_edu_col1_subtitle','home_edu_col1_desc'] },
+        { section:'Education Column 2', keys:['home_edu_col2_date','home_edu_col2_title','home_edu_col2_subtitle','home_edu_col2_desc'] },
+        { section:'Education Column 3', keys:['home_edu_col3_date','home_edu_col3_title','home_edu_col3_subtitle','home_edu_col3_desc'] },
+        { section:'Client Stories Styles', keys:['home_testimonials_bg_color','home_testimonials_bg_image','home_testimonials_text_color','home_testimonials_font_family'] },
+        { section:'Client Stories (Testimonial 1)', keys:['home_testimonial1_quote','home_testimonial1_author','home_testimonial1_company','home_testimonial1_project'] },
+        { section:'Client Stories (Testimonial 2)', keys:['home_testimonial2_quote','home_testimonial2_author','home_testimonial2_company','home_testimonial2_project'] },
+        { section:'Client Stories (Testimonial 3)', keys:['home_testimonial3_quote','home_testimonial3_author','home_testimonial3_company','home_testimonial3_project'] },
+        { section:'The Archive Section Styles', keys:['home_archive_bg_color','home_archive_bg_image','home_archive_text_color','home_archive_font_family'] },
+        { section:'Statistics Bar', keys:['home_stat1_num','home_stat1_label','home_stat2_num','home_stat2_label','home_stat3_num','home_stat3_label','home_stat4_num','home_stat4_label'] },
+        { section:'Mission Statement', keys:['home_mission_label','home_mission_title'] },
+    ],
+    about: [
+        { section:'Intro', keys:['about_label','about_title','about_bio_p1','about_bio_p2','about_path_title','about_path_items'] },
+        { section:'Values', keys:['about_values_subtitle','about_value1_title','about_value1_text','about_value2_title','about_value2_text','about_value3_title','about_value3_text'] },
+        { section:'Testimonial', keys:['about_testimonial_label','about_testimonial_quote','about_testimonial_author','about_testimonial_role'] },
+    ],
+    what: [
+        { section:'Header', keys:['what_label','what_title'] },
+        { section:'Services', keys:['what_main_service1_title','what_main_service1_items','what_main_service2_title','what_main_service2_items','what_main_service3_title','what_main_service3_items','what_main_service4_title','what_main_service4_items'] },
+        { section:'Philosophy', keys:['what_philosophy_title','what_philosophy_desc'] },
+        { section:'Tools', keys:['what_service1_title','what_service1_items','what_service2_title','what_service2_items','what_service3_title','what_service3_items'] },
+    ],
+    story: [
+        { section:'Brand Story', keys:['story_label','story_title','story_main_title','story_p1','story_p2','story_mascot_title'] },
+        { section:'Quote', keys:['story_quote','story_quote_desc'] },
+    ],
+    contact: [
+        { section:'Header', keys:['contact_label','contact_title','contact_email','contact_phone','contact_loc_title','contact_loc_val','contact_rate_title','contact_rate_val'] },
+        { section:'FAQ', keys:['contact_faq_subtitle','contact_faq1_q','contact_faq1_a','contact_faq2_q','contact_faq2_a','contact_faq3_q','contact_faq3_a','contact_faq4_q','contact_faq4_a','contact_faq5_q','contact_faq5_a'] },
+    ],
+    work: [
+        { section:'Project Details Settings', keys:['project_gallery_gap'] },
+        { section:'Hero Section', keys:['work_hero_pretitle','work_hero_title','work_hero_subtitle'] },
+        { section:'Showcase Section', keys:['work_label','work_title'] },
+    ],
+    museum: [
+        { section:'Museum Experience → General Settings', keys:['museum_title','museum_subtitle','museum_desc','museum_text_color','museum_accent_color','museum_primary_font','museum_secondary_font'] },
+        { section:'Museum Experience → Corridor Settings', keys:['museum_corridor_width','museum_corridor_length','museum_wall_style','museum_wall_color','museum_wall_texture','museum_ceiling_style','museum_floor_style','museum_spotlight_count','museum_spotlight_position','museum_fog_density','museum_perspective_strength'] },
+        { section:'Museum Experience → Lighting Settings', keys:['museum_lighting_intensity','museum_lighting_color','museum_ambient_overlay'] },
+        { section:'Museum Experience → Background Settings', keys:['museum_bg_color','museum_bg_image','museum_bg_video','museum_bg_gradient','museum_bg_animation'] },
+        { section:'Museum Experience → Animation Settings', keys:['museum_animation_speed','museum_hover_scale','museum_hover_glow','museum_camera_speed','museum_motion_blur'] },
+        { section:'Museum Experience → SEO Settings', keys:['museum_seo_title','museum_seo_desc','museum_og_image','museum_slug'] }
+    ],
+};
+
+const KEY_LABELS = {
+    museum_title: 'Museum Page Title',
+    museum_subtitle: 'Museum Page Subtitle',
+    museum_desc: 'Museum Corridor Description Teaser',
+    museum_text_color: 'Museum General Text Color (Hex)',
+    museum_accent_color: 'Museum Accent Color (Hex, e.g. #D7B16A)',
+    museum_primary_font: 'Heading Font Family',
+    museum_secondary_font: 'Body Font Family',
+    
+    museum_corridor_width: 'Corridor Perspective Width (e.g. 1200px)',
+    museum_corridor_length: 'Corridor Total Length (e.g. 4000px)',
+    museum_wall_style: 'Wall Architecture Style (e.g. concrete, marble)',
+    museum_wall_color: 'Wall Color (Hex)',
+    museum_wall_texture: 'Wall Texture (smooth, rough)',
+    museum_ceiling_style: 'Ceiling Design (minimalist, modern, grid)',
+    museum_floor_style: 'Floor Design (polished, stone, reflective)',
+    museum_spotlight_count: 'Ceiling Spotlight Count (e.g. 6)',
+    museum_spotlight_position: 'Spotlight Positioning Pattern (center, staggered)',
+    museum_fog_density: 'Ambient Fog / Depth Mist Density (0 to 1)',
+    museum_perspective_strength: '3D CSS Perspective Strength (e.g. 800px)',
+    
+    museum_lighting_intensity: 'General Spotlight Intensity Multiplier (0 to 2)',
+    museum_lighting_color: 'Spotlight Beam Color (Hex)',
+    museum_ambient_overlay: 'Ambient Overlay Tint Color (Hex/RGBA, e.g. rgba(0,0,0,0.65))',
+    
+    museum_bg_color: 'Environment Fallback Color (Hex)',
+    museum_bg_image: 'Environment Background Image (drop zone)',
+    museum_bg_video: 'Environment Background Video URL (MP4)',
+    museum_bg_gradient: 'Environment Background Gradient CSS',
+    museum_bg_animation: 'Environment Drifting Particles Style (subtle-drift, floating, none)',
+    
+    museum_animation_speed: 'Corridor Transition Easing Speed (Multiplier)',
+    museum_hover_scale: 'Frame Hover Scale (e.g. 1.05)',
+    museum_hover_glow: 'Frame Hover Glow Color (Hex/RGBA)',
+    museum_camera_speed: 'Z-Scroll Camera Speed Multiplier',
+    museum_motion_blur: 'Camera Motion Blur Effect (enabled, disabled)',
+    
+    museum_seo_title: 'SEO Page Title',
+    museum_seo_desc: 'SEO Meta Description',
+    museum_og_image: 'SEO Social OG Image (drop zone)',
+    museum_slug: 'SEO Page URL Slug (museum)',
+
+    home_hero_pretitle:'Left Label (e.g. WORK)',
+    home_hero_title:'Large Title (e.g. DESIGNED TO CREATE)',
+    home_hero_subtitle:'Left Description Paragraph (hidden in rotating layout)',
+    home_hero_scroll_label:'Scroll Indicator Label (SCROLL TO EXPLORE)',
+    home_hero_bg_color:'Hero Background Color (Hex)',
+    home_hero_bg_image:'Hero Background Image (drop zone)',
+    home_hero_text_color:'Hero Text Color (Hex)',
+    home_hero_font_family:'Hero Font Family', home_hero_particles_visibility:'Background Particles Visibility', home_hero_gallery_btn_visibility:'Hero Gallery Button Visibility',
+    home_hero_monolith_name:'Monolith Name (SANDEEP PATEL)',
+    home_hero_monolith_tagline:'Monolith Subtitle Tagline',
+    home_about_text:'About Section Main Heading',
+    home_about_profile_image:'About Section Profile Image (3:4 aspect ratio)',
+    home_about_profile_badge:'About Section Profile Badge Text',
+    home_about_bio_p1:'About Section Paragraph 1',
+    home_about_bio_p2:'About Section Paragraph 2',
+    home_about_bg_color:'About Background Color (Hex)',
+    home_about_bg_image:'About Background Image (drop zone)',
+    home_about_text_color:'About Text Color (Hex)',
+    home_about_font_family:'About Font Family',
+    home_about_resume_file:'Resume File Upload (PDF or JPEG — shown as Download Resume button on homepage)',
+    home_what_i_do_bg_color:'What I Do Background Color (Hex)',
+    home_what_i_do_bg_image:'What I Do Background Image (drop zone)',
+    home_what_i_do_text_color:'What I Do Text Color (Hex)',
+    home_what_i_do_font_family:'What I Do Font Family',
+    home_what_i_do_card1_bg_color:'Card 1 (Museum) Background (Hex)',
+    home_what_i_do_card1_text_color:'Card 1 (Museum) Text Color (Hex)',
+    home_what_i_do_card2_bg_color:'Card 2 (Projection) Background (Hex)',
+    home_what_i_do_card2_text_color:'Card 2 (Projection) Text Color (Hex)',
+    home_what_i_do_card3_bg_color:'Card 3 (AI Visuals) Background (Hex)',
+    home_what_i_do_card3_text_color:'Card 3 (AI Visuals) Text Color (Hex)',
+    home_what_i_do_card4_bg_color:'Card 4 (Brand) Background (Hex)',
+    home_what_i_do_card4_text_color:'Card 4 (Brand) Text Color (Hex)',
+    home_partners_list:'Partners Mock Names (comma-separated)',
+    home_journey_title:'Journey Section Title Heading',
+    home_journey_bg_color:'Journey Background Color (Hex)',
+    home_journey_bg_image:'Journey Background Image (drop zone)',
+    home_journey_text_color:'Journey Text Color (Hex)',
+    home_journey_font_family:'Journey Font Family',
+    home_selected_work_label:'Selected Work Section Label',
+    home_selected_work_title:'Selected Work Section Title',
+    home_selected_work_bg_color:'Selected Work Background Color (Hex)',
+    home_selected_work_bg_image:'Selected Work Background Image (drop zone)',
+    home_selected_work_text_color:'Selected Work Text Color (Hex)',
+    home_selected_work_font_family:'Selected Work Font Family',
+    home_light_sound_label:'Light & Sound Section Label',
+    home_light_sound_title:'Light & Sound Section Title',
+    light_sound_reveal_img1:'Comparison Image 1 (Base - drop zone)',
+    light_sound_reveal_img2:'Comparison Image 2 (Masked - drop zone)',
+    home_light_sound_scroll_text:'Light & Sound Scrolling overlay text',
+    home_light_sound_bg_color:'Light & Sound Background Color (Hex)',
+    home_light_sound_bg_image:'Light & Sound Background Image (drop zone)',
+    home_light_sound_text_color:'Light & Sound Text Color (Hex)',
+    home_light_sound_font_family:'Light & Sound Font Family',
+    home_education_bg_color:'Education Background Color (Hex)',
+    home_education_bg_image:'Education Background Image (drop zone)',
+    home_education_text_color:'Education Text Color (Hex)',
+    home_education_font_family:'Education Font Family',
+    home_edu_col1_date:'Education Col 1 Date Range',
+    home_edu_col1_title:'Education Col 1 Degree Title',
+    home_edu_col1_subtitle:'Education Col 1 Institution details',
+    home_edu_col1_desc:'Education Col 1 Bullet/Text details',
+    home_edu_col2_date:'Education Col 2 Date Range',
+    home_edu_col2_title:'Education Col 2 Degree Title',
+    home_edu_col2_subtitle:'Education Col 2 Institution details',
+    home_edu_col2_desc:'Education Col 2 Bullet/Text details',
+    home_edu_col3_date:'Education Col 3 Date Range',
+    home_edu_col3_title:'Education Col 3 Degree Title',
+    home_edu_col3_subtitle:'Education Col 3 Institution details',
+    home_edu_col3_desc:'Education Col 3 Bullet/Text details',
+    home_testimonials_bg_color:'Testimonials Background Color (Hex)',
+    home_testimonials_bg_image:'Testimonials Background Image (drop zone)',
+    home_testimonials_text_color:'Testimonials Text Color (Hex)',
+    home_testimonials_font_family:'Testimonials Font Family',
+    home_testimonial1_quote:'Testimonial 1 Quote',
+    home_testimonial1_author:'Testimonial 1 Client Name',
+    home_testimonial1_company:'Testimonial 1 Client Company',
+    home_testimonial1_project:'Testimonial 1 Client Project',
+    home_testimonial2_quote:'Testimonial 2 Quote',
+    home_testimonial2_author:'Testimonial 2 Client Name',
+    home_testimonial2_company:'Testimonial 2 Client Company',
+    home_testimonial2_project:'Testimonial 2 Client Project',
+    home_testimonial3_quote:'Testimonial 3 Quote',
+    home_testimonial3_author:'Testimonial 3 Client Name',
+    home_testimonial3_company:'Testimonial 3 Client Company',
+    home_testimonial3_project:'Testimonial 3 Client Project',
+    home_archive_bg_color:'The Archive Background Color (Hex)',
+    home_archive_bg_image:'The Archive Background Image (drop zone)',
+    home_archive_text_color:'The Archive Text Color (Hex)',
+    home_archive_font_family:'The Archive Font Family',
+    home_hero_btn1:'CTA Button 1 Label',home_hero_btn2:'CTA Button 2 Label',home_hero_canvas_label:'Canvas Label',home_hero_canvas_sub:'Canvas Sub-heading',
+    home_stat1_num:'Stat 1 Number',home_stat1_label:'Stat 1 Label',home_stat2_num:'Stat 2 Number',home_stat2_label:'Stat 2 Label',
+    home_stat3_num:'Stat 3 Number',home_stat3_label:'Stat 3 Label',home_stat4_num:'Stat 4 Number',home_stat4_label:'Stat 4 Label',
+    home_mission_label:'Section Label',home_mission_title:'Mission Statement',
+    home_featured_label:'Featured Section Label',home_featured_title:'Featured Section Title',
+    work_hero_pretitle:'Work Hero Pre-title (e.g. WORK)',
+    work_hero_title:'Work Hero Title (Selected Work & Explorations)',
+    work_hero_subtitle:'Work Hero Subtitle Description',
+    work_label:'Showcase Pre-title (e.g. SELECTED WORK)',
+    work_title:'Showcase Heading (All Work & Explorations)',
+};
+
+function renderSiteContentForPage() {
+    const page = document.getElementById('pageSelector').value;
+    const groups = PAGE_FIELD_GROUPS[page] || [];
+    const data = getSiteData();
+    const el = document.getElementById('siteContentFields');
+    el.innerHTML = groups.map(g => `
+        <div style="margin-bottom:2.5rem;">
+            <div class="cms-section-heading">${g.section}</div>
+            <div class="cms-grid-2">
+                ${g.keys.map(k => {
+                    const val = data[k]||'';
+                    const label = KEY_LABELS[k] || k.split('_').slice(1).join(' ').replace(/\b\w/g,l=>l.toUpperCase());
+
+                                        if (k === 'home_featured_projects') {
+                        const allProjs = (typeof getAllProjects === 'function') ? getAllProjects() : [];
+                        const selectedIds = val ? val.split(',').map(s=>s.trim()) : [];
+                        const checksHtml = allProjs.map(p => {
+                            const isChecked = selectedIds.includes(p.id) ? 'checked' : '';
+                            return `<label style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;padding:0.4rem;background:rgba(255,255,255,0.05);border-radius:4px;"><input type="checkbox" value="${p.id}" class="featured-proj-chk" ${isChecked}> ${p.title}</label>`;
+                        }).join('');
+
+                        return `<div class="cms-field cms-field-wide">
+                            <label class="cms-label">Selected Work (Choose up to 10 projects for Homepage)</label>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;max-height:300px;overflow-y:auto;border:1px solid rgba(255,255,255,0.1);padding:0.5rem;border-radius:6px;" id="featuredProjectsContainer">
+                                 ${checksHtml} 
+                            </div>
+                            <input type="hidden" data-key="home_featured_projects" id="homeFeaturedhidden" value="${val}">
+                            <script>
+                                setTimeout(() => {
+                                    document.querySelectorAll('.featured-proj-chk').forEach(chk => {
+                                        chk.addEventListener('change', () => {
+                                            const selected = Array.from(document.querySelectorAll('.featured-proj-chk:checked')).map(c => c.value);
+                                            document.getElementById('homeFeaturedhidden').value = selected.join(',');
+                                            document.getElementById('homeFeaturedhidden').dispatchEvent(new Event('input', {bubbles:true}));
+                                            
+                                            // Optional: visual indication
+                                            document.getElementById('draftBadge').style.display = 'inline-block';
+                                        });
+                                    });
+                                }, 100);
+                            <\/script>
+                        </div>`;
+                    }
+                    // ── Resume file upload field ──
+                    if (k === 'home_about_resume_file') {
+                        const hasResume = val && val.length > 10;
+                        const resumeName = data['home_about_resume_filename'] || '';
+                        // Note: resume_file is NOT stored in a data-key hidden input to avoid
+                        // collectSiteContentData overwriting it. It's saved directly via CMS.publish().
+                        return `<div class="cms-field cms-field-wide">
+                            <label class="cms-label">${label}</label>
+                            <div class="cms-resume-upload-zone" id="resume-zone" onclick="document.getElementById('resumeFileInput').click()" style="${hasResume?'border-color:rgba(78,203,130,0.4);':''}">
+                                <input type="file" id="resumeFileInput" accept=".pdf,image/jpeg,image/jpg" style="display:none;">
+                                <span style="font-size:1.5rem;display:block;margin-bottom:0.5rem;">&#128228;</span>
+                                Click to upload Resume (PDF or JPEG)
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.75rem;">
+                                <input type="text" id="resumeLinkInput" class="cms-input" placeholder="Or paste a Google Drive / Dropbox / OneDrive resume link..." style="flex:1;">
+                                <button type="button" class="btn-cms-secondary btn-cms-sm" onclick="useResumeLink()" style="flex-shrink:0;">Use Link</button>
+                            </div>
+                            ${hasResume ? `<div class="cms-resume-preview" id="resume-preview-bar">
+                                <div class="cms-resume-icon">&#128196;</div>
+                                <div class="cms-resume-meta">
+                                    <div class="cms-resume-name">${resumeName || 'Resume uploaded'}</div>
+                                    <div class="cms-resume-size">Active &mdash; shows as Download button on homepage</div>
+                                </div>
+                                <button type="button" class="btn-cms-secondary btn-cms-sm" onclick="clearResume(event)" style="font-size:0.65rem;flex-shrink:0;">Remove</button>
+                            </div>` : `<div class="cms-resume-preview" id="resume-preview-bar" style="display:none;">
+                                <div class="cms-resume-icon">&#128196;</div>
+                                <div class="cms-resume-meta">
+                                    <div class="cms-resume-name" id="resume-preview-name"></div>
+                                    <div class="cms-resume-size" id="resume-preview-size"></div>
+                                </div>
+                                <button type="button" class="btn-cms-secondary btn-cms-sm" onclick="clearResume(event)" style="font-size:0.65rem;flex-shrink:0;">Remove</button>
+                            </div>`}
+                            <div class="webp-info-badge" id="resume-webp-info"></div>
+                        </div>`;
+                    }
+                    
+                    const isImg = k.toLowerCase().includes('image') || k.toLowerCase().includes('img') || k.toLowerCase().includes('reveal_img');
+                    if (isImg) {
+                        // Never put the actual base64/URL in an HTML attribute (gets truncated by innerHTML parser for large values).
+                        // Instead render with a flag indicating whether an image exists, and read the real value from live data in JS.
+                        const hasImage = !!(val && val.length > 10);
+                        return `<div class="cms-field cms-field-wide">
+                            <label class="cms-label">${label}</label>
+                            <input type="hidden" id="hidden_val_${k}" data-key="${k}" ${hasImage ? 'data-has-cached-image="1"' : ''} value="">
+                            <div class="cms-image-upload-zone" id="zone_${k}" data-key="${k}" style="border: 2px dashed rgba(255,255,255,0.12); padding: 2rem 1.25rem; text-align: center; border-radius: 6px; cursor: pointer; background: rgba(255,255,255,0.015); transition: border-color 0.3s, background 0.3s; position: relative;">
+                                <input type="file" id="file_${k}" style="display:none;" accept="image/*">
+                                <div class="upload-preview-container" style="display:${hasImage ? 'flex' : 'none'}; align-items: center; justify-content: center; gap: 1.5rem;">
+                                    <img src="${hasImage ? val : ''}" id="img_preview_${k}" style="max-height: 100px; border-radius: 4px; border: 1px solid var(--color-dark-border);">
+                                    <div style="text-align: left;">
+                                        <span class="font-mono" style="font-size: 0.65rem; color: var(--color-dark-muted); display: block; margin-bottom: 0.25rem;">Active Image</span>
+                                        <button type="button" class="btn-cms-danger btn-cms-sm btn-cms-sm-clear" onclick="clearCmsImage('${k}', event)" style="padding: 0.35rem 0.75rem; font-size: 0.65rem;">Clear Image</button>
+                                    </div>
+                                </div>
+                                <div class="upload-instructions" style="display:${hasImage ? 'none' : 'block'};">
+                                    <span style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; opacity: 0.7;">⬫</span>
+                                    Drag & drop an image here, or <span style="text-decoration: underline; color: var(--color-accent);">browse files</span>
+                                    <div style="margin-top:0.5rem;font-size:0.62rem;opacity:0.6;">Auto-converted to WebP for optimal size</div>
+                                </div>
+                            </div>
+                            <div class="webp-info-badge" id="webp_info_${k}"></div>
+                        </div>`;
+                    }
+                    
+                    const isColor = k.endsWith('_color') || k.endsWith('_colour');
+                    if (isColor) {
+                        return `<div class="cms-field">
+                            <label class="cms-label">${label}</label>
+                            <div class="color-field">
+                                <input type="color" value="${val.startsWith('#') && val.length===7 ? val : '#000000'}">
+                                <input class="cms-input" data-key="${k}" value="${val}">
+                            </div>
+                        </div>`;
+                    }
+
+                    const isFont = k.endsWith('_font_family');
+                    if (isFont) {
+                        return `<div class="cms-field">
+                            <label class="cms-label">${label}</label>
+                            <select class="cms-select" data-key="${k}">
+                                <option value="" ${val===''?'selected':''}>Theme Default</option>
+                                <option value="'Inter', sans-serif" ${val==="'Inter', sans-serif"?'selected':''}>Inter (Sans-Serif)</option>
+                                <option value="'Cormorant Garamond', serif" ${val==="'Cormorant Garamond', serif"?'selected':''}>Cormorant Garamond (Serif)</option>
+                                <option value="'Space Mono', monospace" ${val==="'Space Mono', monospace"?'selected':''}>Space Mono (Monospace)</option>
+                            </select>
+                        </div>`;
+                    }
+
+                    const isVisibility = k.endsWith('_visibility');
+                    if (isVisibility) {
+                        return `<div class="cms-field">
+                            <label class="cms-label">${label}</label>
+                            <select class="cms-select" data-key="${k}">
+                                <option value="show" ${val!=='hide'?'selected':''}>Show</option>
+                                <option value="hide" ${val==='hide'?'selected':''}>Hide</option>
+                            </select>
+                        </div>`;
+                    }
+
+                    const longVal = val.length > 120 || val.includes('\n') || k.includes('title') && val.length > 60;
+                    return `<div class="cms-field${longVal?' cms-field-wide':''}">
+                        <label class="cms-label">${label}</label>
+                        ${longVal
+                            ? `<textarea class="cms-textarea" data-key="${k}" rows="3">${val}</textarea>`
+                            : `<input class="cms-input" data-key="${k}" value="${val.replace(/"/g,'&quot;')}">`}
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>`).join('');
+
+    // Setup input change event listeners
+    el.querySelectorAll('[data-key]').forEach(inp => {
+        inp.addEventListener('input', () => {
+            CMS_AUTOSAVE.trigger(() => collectSiteContentData());
+            document.getElementById('draftBadge').style.display = 'inline-block';
+        });
+    });
+
+    // Setup color pickers sync
+    el.querySelectorAll('.color-field').forEach(field => {
+        const picker = field.querySelector('input[type="color"]');
+        const textInput = field.querySelector('input[type="text"], .cms-input');
+        if (picker && textInput) {
+            picker.addEventListener('input', () => {
+                textInput.value = picker.value.toUpperCase();
+                textInput.dispatchEvent(new Event('input'));
+            });
+            textInput.addEventListener('input', () => {
+                if (/^#[0-9a-f]{6}$/i.test(textInput.value)) {
+                    picker.value = textInput.value;
+                }
+            });
+        }
+    });
+
+    // ── In-memory image cache ──────────────────────────────────────────────
+    // Avoids putting large base64 strings into HTML attributes (innerHTML
+    // truncates them). Uploaded images live here during a session; collectSiteContentData()
+    // merges them into getSiteData() at publish time.
+    if (!window._cmsImageCache) window._cmsImageCache = {};
+
+    // Seed the cache with every image that is already saved in live data.
+    // We do this on every panel render (including page-tab switches in Site Content)
+    // so that a Save after a tab switch doesn't lose previously saved images.
+    (function seedImageCache(){
+        const liveData = getSiteData();
+        Object.keys(liveData).forEach(k => {
+            const v = liveData[k];
+            if (!v || typeof v !== 'string') return;
+            const isImageKey = k.includes('image') || k.includes('img') || k.includes('reveal_img');
+            const isImageVal = v.startsWith('data:image')
+                || v.startsWith('https://')
+                || v.startsWith('http://')
+                || v.startsWith('url(');
+            if (isImageKey && isImageVal) {
+                window._cmsImageCache[k] = v;
+            }
+        });
+    })();
+
+    // Initialize drag and drop uploader behavior
+    initImageDropZones();
+    // Initialize resume uploader
+    initResumeUploadZone();
+}
+
+function initImageDropZones() {
+    document.querySelectorAll('.cms-image-upload-zone').forEach(zone => {
+        const key = zone.getAttribute('data-key');
+        const fileInput = document.getElementById(`file_${key}`);
+        const previewImg = document.getElementById(`img_preview_${key}`);
+        const previewContainer = zone.querySelector('.upload-preview-container');
+        const instructions = zone.querySelector('.upload-instructions');
+
+        zone.addEventListener('click', (e) => {
+            if (e.target.closest('button') || e.target === fileInput) return;
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zone.style.borderColor = 'var(--color-accent)';
+            zone.style.background = 'rgba(217, 138, 41, 0.05)';
+        });
+
+        zone.addEventListener('dragleave', () => {
+            zone.style.borderColor = 'rgba(255,255,255,0.12)';
+            zone.style.background = 'rgba(255,255,255,0.015)';
+        });
+
+        zone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            zone.style.borderColor = 'rgba(255,255,255,0.12)';
+            zone.style.background = 'rgba(255,255,255,0.015)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                await processUploadedImage(file, key, previewImg, previewContainer, instructions);
+            }
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                await processUploadedImage(file, key, previewImg, previewContainer, instructions);
+            }
+        });
+    });
+}
+
+/* ── Resume Upload Zone (Site Content - About) ── */
+function initResumeUploadZone() {
+    const fileInput = document.getElementById('resumeFileInput');
+    if (!fileInput) return;
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const infoEl = document.getElementById('resume-webp-info');
+        const previewBar = document.getElementById('resume-preview-bar');
+
+        // For PDF: store as-is (no conversion)
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const dataUrl = ev.target.result;
+                // Save directly to the live store — merges with currently collected draft fields first
+                const siteData = collectSiteContentData();
+                siteData['home_about_resume_file'] = dataUrl;
+                siteData['home_about_resume_filename'] = file.name;
+                CMS.publish(siteData);
+
+                if (previewBar) {
+                    const nameEl = previewBar.querySelector('#resume-preview-name') || previewBar.querySelector('.cms-resume-name');
+                    const sizeEl = previewBar.querySelector('#resume-preview-size') || previewBar.querySelector('.cms-resume-size');
+                    if (nameEl) nameEl.textContent = file.name;
+                    if (sizeEl) sizeEl.textContent = 'Active \u2014 shows as Download button on homepage';
+                    previewBar.style.display = 'flex';
+                }
+                if (infoEl) {
+                    infoEl.textContent = `✅ PDF uploaded ·&mdash; Size: ${cmsFormatBytes(file.size)} ·&mdash; Will download as "${file.name}"`;
+                    infoEl.style.display = 'block';
+                    infoEl.className = 'webp-info-badge';
+                }
+                document.getElementById('resume-zone').style.borderColor = 'rgba(78,203,130,0.4)';
+                document.getElementById('draftBadge').style.display = 'none';
+                toast('Resume uploaded and published!', 'success');
+            };
+            reader.readAsDataURL(file);
+        } else if (file.type.startsWith('image/')) {
+            // JPEG resume → convert to WebP
+            try {
+                const result = await cmsCompressImage(file, 1600, 0.88);
+                const outName = file.name.replace(/\.[^.]+$/, '') + '.webp';
+                const siteData = collectSiteContentData();
+                siteData['home_about_resume_file'] = result.dataUrl;
+                siteData['home_about_resume_filename'] = outName;
+                CMS.publish(siteData);
+
+                if (previewBar) {
+                    const nameEl = previewBar.querySelector('#resume-preview-name') || previewBar.querySelector('.cms-resume-name');
+                    const sizeEl = previewBar.querySelector('#resume-preview-size') || previewBar.querySelector('.cms-resume-size');
+                    if (nameEl) nameEl.textContent = outName;
+                    if (sizeEl) sizeEl.textContent = 'Active \u2014 shows as Download button on homepage';
+                    previewBar.style.display = 'flex';
+                }
+                if (infoEl) {
+                    cmsShowConversionInfo(result.originalSize, result.convertedSize, result.format, infoEl);
+                }
+                document.getElementById('resume-zone').style.borderColor = 'rgba(78,203,130,0.4)';
+                document.getElementById('draftBadge').style.display = 'none';
+                toast('Resume image converted to WebP, uploaded and published!', 'success');
+            } catch(err) {
+                console.error(err);
+                toast('Resume upload failed!', 'error');
+            }
+        }
+    });
+}
+
+function clearResume(event) {
+    if (event) event.stopPropagation();
+    if (!confirm('Remove uploaded resume?')) return;
+    const previewBar = document.getElementById('resume-preview-bar');
+    if (previewBar) previewBar.style.display = 'none';
+    const infoEl = document.getElementById('resume-webp-info');
+    if (infoEl) { infoEl.style.display = 'none'; }
+    const zone = document.getElementById('resume-zone');
+    if (zone) zone.style.borderColor = '';
+    const siteData = collectSiteContentData();
+    siteData['home_about_resume_file'] = '';
+    siteData['home_about_resume_filename'] = '';
+    CMS.publish(siteData);
+    document.getElementById('draftBadge').style.display = 'none';
+    toast('Resume removed.', 'success');
+}
+
+/* ── Use a pasted Drive/Dropbox/OneDrive link as the resume, auto-converted to a direct link ── */
+function useResumeLink() {
+    const input = document.getElementById('resumeLinkInput');
+    const raw = input ? input.value.trim() : '';
+    if (!raw) { toast('Paste a resume link first.', 'error'); return; }
+
+    const directLink = (typeof cmsToDirectLink === 'function') ? cmsToDirectLink(raw) : raw;
+    const wasConverted = (typeof cmsIsShareLink === 'function') && cmsIsShareLink(raw);
+
+    // Derive a sensible filename from the URL
+    let fileName = 'resume.pdf';
+    try {
+        const urlPath = new URL(raw).pathname;
+        const lastSegment = urlPath.split('/').filter(Boolean).pop();
+        if (lastSegment && lastSegment.includes('.')) fileName = lastSegment;
+    } catch(e) { /* keep default */ }
+
+    const siteData = collectSiteContentData();
+    siteData['home_about_resume_file'] = directLink;
+    siteData['home_about_resume_filename'] = fileName;
+    CMS.publish(siteData);
+
+    const previewBar = document.getElementById('resume-preview-bar');
+    if (previewBar) {
+        const nameEl = previewBar.querySelector('#resume-preview-name') || previewBar.querySelector('.cms-resume-name');
+        const sizeEl = previewBar.querySelector('#resume-preview-size') || previewBar.querySelector('.cms-resume-size');
+        if (nameEl) nameEl.textContent = fileName;
+        if (sizeEl) sizeEl.textContent = 'Active — shows as Download button on homepage';
+        previewBar.style.display = 'flex';
+    }
+    const infoEl = document.getElementById('resume-webp-info');
+    if (infoEl) {
+        infoEl.textContent = wasConverted ? '✅ Link converted to a direct download link and saved' : '✅ Link saved as resume';
+        infoEl.style.display = 'block';
+        infoEl.className = 'webp-info-badge';
+    }
+    const zone = document.getElementById('resume-zone');
+    if (zone) zone.style.borderColor = 'rgba(78,203,130,0.4)';
+    document.getElementById('draftBadge').style.display = 'none';
+    toast('Resume link saved and published!', 'success');
+}
+
+async function processUploadedImage(file, key, previewImg, previewContainer, instructions) {
+    instructions.style.display = 'none';
+    previewContainer.style.display = 'flex';
+    previewImg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="%23D98A29" stroke-width="8" fill="none" stroke-dasharray="180 80"><animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="1s" repeatCount="indefinite"/></circle></svg>';
+
+    try {
+        const result = await cmsCompressImage(file, 1200, 0.82);
+        previewImg.src = result.dataUrl;
+
+        // Primary storage: in-memory cache (avoids innerHTML truncation of base64)
+        if (!window._cmsImageCache) window._cmsImageCache = {};
+        window._cmsImageCache[key] = result.dataUrl;
+
+        // Secondary: also set hidden input value (as fallback / for autosave listener)
+        const hiddenInput = document.getElementById(`hidden_val_${key}`);
+        if (hiddenInput) {
+            // Set a sentinel value rather than the full base64 (avoids truncation)
+            // The real value is in _cmsImageCache; collectSiteContentData reads from there.
+            hiddenInput.setAttribute('data-has-cached-image', '1');
+            hiddenInput.dispatchEvent(new Event('input'));
+        }
+
+        // Show WebP conversion info badge
+        const infoEl = document.getElementById(`webp_info_${key}`);
+        if (infoEl) cmsShowConversionInfo(result.originalSize, result.convertedSize, result.format, infoEl);
+
+        CMS_AUTOSAVE.trigger(() => collectSiteContentData());
+        document.getElementById('draftBadge').style.display = 'inline-block';
+        toast(`Image converted to ${result.format} and saved to draft!`, 'success');
+    } catch (err) {
+        console.error(err);
+        toast('Image upload failed!', 'error');
+        instructions.style.display = 'block';
+        previewContainer.style.display = 'none';
+    }
+}
+
+function clearCmsImage(key, event) {
+    if (event) event.stopPropagation();
+    if (!confirm('Clear this image?')) return;
+
+    const zone = document.getElementById(`zone_${key}`);
+    const previewContainer = zone ? zone.querySelector('.upload-preview-container') : null;
+    const instructions = zone ? zone.querySelector('.upload-instructions') : null;
+    const previewImg = document.getElementById(`img_preview_${key}`);
+    const hiddenInput = document.getElementById(`hidden_val_${key}`);
+
+    // Remove from in-memory cache AND mark as explicitly cleared so
+    // collectSiteContentData() will write '' for this key (clearing the saved value).
+    if (!window._cmsImageCache) window._cmsImageCache = {};
+    window._cmsImageCache[key] = ''; // empty string = deliberate clear
+
+    if (previewContainer) previewContainer.style.display = 'none';
+    if (instructions) instructions.style.display = 'block';
+    if (previewImg) previewImg.src = '';
+    if (hiddenInput) {
+        hiddenInput.value = '';
+        hiddenInput.removeAttribute('data-has-cached-image');
+        hiddenInput.dispatchEvent(new Event('input'));
+    }
+
+    CMS_AUTOSAVE.trigger(() => collectSiteContentData());
+    document.getElementById('draftBadge').style.display = 'inline-block';
+    toast('Image cleared from draft!', 'success');
+}
+
+function collectSiteContentData() {
+    const base = getSiteData();
+
+    // 1. Merge in-memory image cache.
+    //    - Non-empty string  = uploaded/set image → apply
+    //    - Empty string ''   = explicitly cleared by clearCmsImage() → apply (wipes it)
+    //    - Key absent        = no change this session → leave base value untouched
+    if (window._cmsImageCache) {
+        Object.keys(window._cmsImageCache).forEach(k => {
+            base[k] = window._cmsImageCache[k]; // '' is intentional clear
+        });
+    }
+
+    // 2. Apply text/select/textarea field changes.
+    //    Skip hidden inputs entirely — images are handled via _cmsImageCache above.
+    document.querySelectorAll('#siteContentFields [data-key]').forEach(inp => {
+        const key = inp.getAttribute('data-key');
+        if (inp.type === 'hidden') {
+            // Skip — handled by _cmsImageCache
+            return;
+        }
+        base[key] = inp.value;
+    });
+
+    return base;
+}
+
+function saveSiteContent() {
+    const data = collectSiteContentData();
+    CMS.publish(data);
+    document.getElementById('draftBadge').style.display = 'none';
+    toast('Site content published! ✅', 'success');
+    updateStorageBar();
+
+    // Re-seed the image cache from what was just published so switching
+    // between page tabs doesn't lose the images on the next Save call.
+    window._cmsImageCache = {};
+    const published = getSiteData();
+    Object.keys(published).forEach(k => {
+        const v = published[k];
+        if (!v || typeof v !== 'string') return;
+        const isImageKey = k.includes('image') || k.includes('img') || k.includes('reveal_img');
+        const isImageVal = v.startsWith('data:image') || v.startsWith('https://') || v.startsWith('http://') || v.startsWith('url(');
+        if (isImageKey && isImageVal) {
+            window._cmsImageCache[k] = v;
+        }
+    });
+}
+
+/* ══ PAGE BUILDER ══ */
+const PAGE_SECTIONS = {
+    home: [
+        { id:'home-hero',     label:'Hero Banner' },
+        { id:'home-stats',    label:'Statistics Bar' },
+        { id:'home-mission',  label:'Mission Statement' },
+        { id:'home-projects', label:'Featured Projects (Horizontal Scroll)' },
+    ],
+    about:   [{ id:'about-intro', label:'About Intro' }, { id:'about-values', label:'Values' }, { id:'about-testimonial', label:'Testimonial' }],
+    what:    [{ id:'what-header', label:'Page Header' }, { id:'what-services', label:'Main Services' }, { id:'what-tools', label:'Tools' }],
+    story:   [{ id:'story-main', label:'Brand Story' }, { id:'story-quote', label:'Quote Section' }],
+    contact: [{ id:'contact-hero', label:'Contact Header' }, { id:'contact-faq', label:'FAQ Accordion' }],
+};
+
+function renderPageBuilder() {
+    const page = document.getElementById('pbPageSelector').value;
+    const sections = PAGE_SECTIONS[page] || [];
+    const data = getSiteData();
+    document.getElementById('pbSectionList').innerHTML = sections.map(s => {
+        const visKey = `section_${s.id.replace(/-/g,'_')}_visible`;
+        const visible = data[visKey] !== 'false';
+        return `
+        <div class="pb-section-row">
+            <span class="pb-drag-handle">&#9776;</span>
+            <span class="pb-section-name">${s.label}</span>
+            <button class="pb-visibility-toggle ${visible?'visible':''}" onclick="pbToggleSection('${s.id}','${visKey}',this)">${visible?'● visible':'○ hidden'}</button>
+        </div>`;
+    }).join('');
+}
+
+function pbToggleSection(sectionId, visKey, btn) {
+    const data = getSiteData();
+    const nowvisible = data[visKey] !== 'false';
+    data[visKey] = nowvisible ? 'false' : 'true';
+    CMS.publish(data);
+    btn.classList.toggle('visible', !nowvisible);
+    btn.textContent = nowvisible ? '○ hidden' : '● visible';
+    toast(`Section ${nowvisible?'hidden':'shown'} and published.`, 'success');
+}
+
+/* ══ GLOBAL SETTINGS ══ */
+function loadGlobalSettingsForm() {
+    const s = CMS.getSettings();
+    const fields = ['logo_text','logo_icon','primary_color','accent_color','bg_dark','nav_links','footer_tagline','footer_brand','social_instagram','social_linkedin','social_behance','social_email','seo_home_title','seo_home_desc','seo_work_title','seo_about_title'];
+    fields.forEach(k => {
+        const el = document.getElementById(`gs_${k}`);
+        if (el) el.value = s[k]||'';
+        const hexEl = document.getElementById(`gs_${k}_hex`);
+        if (hexEl) hexEl.value = s[k]||'';
+    });
+    // Sync color pickers with hex inputs
+    ['primary_color','accent_color','bg_dark'].forEach(k => {
+        const picker = document.getElementById(`gs_${k}`);
+        const hex    = document.getElementById(`gs_${k}_hex`);
+        if (picker && hex) {
+            picker.addEventListener('input', () => { hex.value = picker.value; });
+            hex.addEventListener('input',   () => { if(/^#[0-9a-f]{6}$/i.test(hex.value)) picker.value = hex.value; });
+        }
+    });
+}
+
+function saveGlobalSettings() {
+    const settings = {};
+    ['logo_text','logo_icon','nav_links','footer_tagline','footer_brand','social_instagram','social_linkedin','social_behance','social_email','seo_home_title','seo_home_desc','seo_work_title','seo_about_title'].forEach(k => {
+        const el = document.getElementById(`gs_${k}`); if(el) settings[k] = el.value;
+    });
+    ['primary_color','accent_color','bg_dark'].forEach(k => {
+        const el = document.getElementById(`gs_${k}_hex`); if(el) settings[k] = el.value;
+    });
+    CMS.saveSettings(settings);
+    toast('Global settings saved and applied!', 'success');
+    updateStorageBar();
+}
+
+/* ══ VERSION HISTORY ══ */
+function renderVersions() {
+    const vers = CMS.getVersions();
+    const el = document.getElementById('versionList');
+    if (!vers.length) { el.innerHTML = '<p class="cms-label" style="padding:2rem 0;">No published versions yet. Publish site content to create version snapshots.</p>'; return; }
+    el.innerHTML = vers.map((v,i) => `
+        <div class="version-row">
+            <div><div style="font-size:0.9rem;margin-bottom:0.25rem;">Version ${vers.length - i}</div><div class="version-time">${new Date(v.savedAt).toLocaleString()}</div></div>
+            <button class="btn-cms-secondary btn-cms-sm" onclick="restoreVersion(${i})">Restore</button>
+        </div>`).join('');
+}
+
+function restoreVersion(idx) {
+    if (!confirm('Restore this version? Current live content will be replaced.')) return;
+    CMS.restoreVersion(idx);
+    toast('Version restored and published!', 'success');
+    renderVersions();
+    updateStorageBar();
+}
+
+/* ══ DRAFT & PUBLISH (top bar) ══ */
+function saveDraftAll() {
+    const data = collectSiteContentData();
+    CMS.saveDraft(data);
+    document.getElementById('draftBadge').style.display = 'inline-block';
+    toast('Draft saved.', 'success');
+}
+
+function publishAll() {
+    const data = collectSiteContentData();
+    CMS.publish(data);
+    document.getElementById('draftBadge').style.display = 'none';
+    toast('Published! Changes are live across the site.', 'success');
+    updateStorageBar();
+}
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded', () => {
+    renderDashboard();
+    populateMediaFolders();
+    updateStorageBar();
+    
+    // Sync Museum frame color pickers
+    const pColor = document.getElementById('pFrameColor');
+    const pColorPicker = document.getElementById('pFrameColorPicker');
+    if (pColor && pColorPicker) {
+        pColorPicker.addEventListener('input', () => { pColor.value = pColorPicker.value.toUpperCase(); });
+        pColor.addEventListener('input', () => { if (/^#[0-9a-f]{6}$/i.test(pColor.value)) pColorPicker.value = pColor.value; });
+    }
+    const sColor = document.getElementById('pSpotlightColor');
+    const sColorPicker = document.getElementById('pSpotlightColorPicker');
+    if (sColor && sColorPicker) {
+        sColorPicker.addEventListener('input', () => { sColor.value = sColorPicker.value.toUpperCase(); });
+        sColor.addEventListener('input', () => { if (/^#[0-9a-f]{6}$/i.test(sColor.value)) sColorPicker.value = sColor.value; });
+    }
+
+    // Check for unsaved draft
+    if (CMS.hasDraft()) {
+        document.getElementById('draftBadge').style.display = 'inline-block';
+    }
+});
+
+
+/* ══════════════════════════════════════════════
+   CMS AUTH — Guard, Logout, Credential Change
+   ══════════════════════════════════════════════ */
+
+// ── 1. Guard: block page if not authenticated ──
+(function() {
+    if (typeof CMSAuth === 'undefined' || !CMSAuth.isAuthenticated()) {
+        document.body.innerHTML = '';
+        window.location.replace('cms-login.html');
+    }
+})();
+
+// ── 2. Show session info in sidebar ──
+(function() {
+    const s = CMSAuth.getSession();
+    if (s) {
+        const el = document.getElementById('cmsSessionInfo');
+        if (el) {
+            const exp = new Date(s.expiresAt);
+            el.textContent = 'Logged in: ' + s.username;
+        }
+    }
+})();
+
+// ── 3. Logout ──
+function cmsLogout() {
+    if (confirm('CMS se logout karna chahte hain?')) {
+        CMSAuth.logout();
+    }
+}
+
+// ── 4. Change Credentials ──
+async function doChangeCredentials() {
+    const current  = document.getElementById('cc_current').value;
+    const newUser  = document.getElementById('cc_newuser').value.trim();
+    const newPass  = document.getElementById('cc_newpass').value;
+    const confirm  = document.getElementById('cc_confirm').value;
+    const msgEl    = document.getElementById('cc_msg');
+
+    function showMsg(text, isError) {
+        msgEl.style.display = 'block';
+        msgEl.style.background = isError ? 'rgba(224,92,92,0.12)' : 'rgba(76,175,132,0.12)';
+        msgEl.style.border     = isError ? '1px solid rgba(224,92,92,0.3)' : '1px solid rgba(76,175,132,0.3)';
+        msgEl.style.color      = isError ? '#E05C5C' : '#4CAF84';
+        msgEl.textContent = text;
+    }
+
+    msgEl.style.display = 'none';
+
+    if (!current)           return showMsg('Current password daalein.', true);
+    if (!newUser || newUser.length < 3) return showMsg('Naya username kam se kam 3 characters ka hona chahiye.', true);
+    if (!newPass || newPass.length < 6) return showMsg('Naya password kam se kam 6 characters ka hona chahiye.', true);
+    if (newPass !== confirm)            return showMsg('Dono passwords match nahi kar rahe.', true);
+
+    const result = await CMSAuth.changeCredentials(current, newUser, newPass);
+
+    if (result.ok) {
+        showMsg('Login credentials successfully update ho gaye! Agli baar naye ID/password se login karein.', false);
+        clearCredentialForm();
+    } else if (result.reason === 'wrong_password') {
+        showMsg('Current password galat hai.', true);
+    } else if (result.reason === 'bad_username') {
+        showMsg('Username valid nahi hai (min 3 characters).', true);
+    } else if (result.reason === 'weak_password') {
+        showMsg('Naya password bahut chota hai (min 6 characters).', true);
+    }
+}
+
+function clearCredentialForm() {
+    ['cc_current','cc_newuser','cc_newpass','cc_confirm'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('cc_msg').style.display = 'none';
+}
+
+// ── 5. Export / Import CMS Data ──
+function exportAllData() {
+    const exportData = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('sandeep_') || key.startsWith('lns_')) {
+            // Exclude auth keys so we don't leak passwords or active sessions
+            if (key === 'sandeep_cms_creds' || key === 'sandeep_cms_session') continue;
+            exportData[key] = localStorage.getItem(key);
+        }
+    }
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+    const a = document.createElement('a');
+    a.href = dataStr;
+    a.download = "cms_backup_" + new Date().toISOString().split('T')[0] + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+}
+
+function importAllData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            let count = 0;
+            for (const key in data) {
+                if (key.startsWith('sandeep_') || key.startsWith('lns_')) {
+                    localStorage.setItem(key, data[key]);
+                    count++;
+                }
+            }
+            if (count > 0) {
+                alert('Success! Imported ' + count + ' items. Page will now reload.');
+                window.location.reload();
+            } else {
+                alert('No valid CMS data found in this file.');
+            }
+        } catch (err) {
+            alert('Error reading JSON file.');
+        }
+        event.target.value = '';
+    };
+    reader.readAsText(file);
+}
+</script>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

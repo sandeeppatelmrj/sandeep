@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sandeep Patel — Immersive 3D Museum Experience. Walk through a virtual gallery of AI-powered visual storytelling and creative projects.">
+    <title>Museum Experience | Sandeep Patel</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Museum CSS -->
+    <link rel="stylesheet" href="css/museum.css">
+
+    <style>
+        /* ── Override museum.css font-mono to use Inter ── */
+        :root {
+            --font-mono-museum: 'Inter', sans-serif;
+        }
+
+        /* ── Back link ── */
+        .museum-back-link {
+            position: fixed;
+            top: 1.6rem;
+            left: 2rem;
+            z-index: 9999;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.2s;
+            pointer-events: auto;
+        }
+        .museum-back-link:hover { color: var(--color-accent-museum); }
+
+        /* ── Preloader overlay ── */
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: #050505;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        #preloader.loaded {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .preloader-logo-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 300;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--color-accent-museum);
+        }
+        .preloader-bar-wrap {
+            width: 220px;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            position: relative;
+        }
+        #preloaderProgress {
+            height: 100%;
+            width: 0%;
+            background: var(--color-accent-museum);
+            transition: width 0.05s linear;
+        }
+        #preloaderPercent {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.25em;
+            color: rgba(255,255,255,0.3);
+            margin-top: 0.75rem;
+        }
+
+        /* ── Hero entry overlay (shown after preloader) ── */
+        #heroEntry {
+            position: fixed;
+            inset: 0;
+            z-index: 9000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(5,5,5,0.97) 0%, rgba(20,16,10,0.97) 100%);
+            transition: opacity 1s ease, visibility 1s ease, transform 1s ease;
+        }
+        #heroEntry.entered {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateZ(-200px);
+        }
+        .museum-hero-content {
+            text-align: center;
+            max-width: 680px;
+            padding: 0 2rem;
+        }
+        .museum-hero-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--color-accent-museum);
+            display: block;
+            margin-bottom: 1.5rem;
+            opacity: 0.7;
+        }
+        .museum-hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 7vw, 5rem);
+            font-weight: 300;
+            color: #fff;
+            line-height: 1.05;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        .museum-hero-subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+            font-weight: 300;
+            color: var(--color-accent-museum);
+            font-style: italic;
+            margin-bottom: 1.2rem;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .museum-hero-desc {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            color: rgba(255,255,255,0.45);
+            line-height: 1.8;
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        #enterBtn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2.75rem;
+            border: 1px solid rgba(215,177,106,0.45);
+            background: transparent;
+            color: var(--color-accent-museum);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: background 0.3s, border-color 0.3s, color 0.3s;
+            opacity: 0;
+            transform: scale(0.92);
+        }
+        #enterBtn:hover {
+            background: rgba(215,177,106,0.08);
+            border-color: var(--color-accent-museum);
+        }
+
+        /* ── Custom spotlight cursor ── */
+        #museumCursor {
+            position: fixed;
+            width: 8px; height: 8px;
+            background: var(--color-accent-museum);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s;
+        }
+        #museumCursorLight {
+            position: fixed;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(215,177,106,0.06) 0%, transparent 70%);
+            transition: opacity 0.3s;
+        }
+
+        /* ── Scroll indicator ── */
+        #scrollIndicator {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.62rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+            z-index: 500;
+            opacity: 0;
+            transition: opacity 0.6s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            pointer-events: none;
+        }
+        .scroll-indicator-line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--color-accent-museum), transparent);
+            animation: scrollBob 1.8s ease-in-out infinite;
+        }
+        @keyframes scrollBob {
+            0%, 100% { transform: scaleY(1); opacity: 0.6; }
+            50%       { transform: scaleY(0.6); opacity: 1; }
+        }
+
+        /* ── Project viewer overlay ── */
+        #projectViewer {
+            position: fixed;
+            inset: 0;
+            z-index: 8000;
+            background: rgba(5,5,5,0.96);
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.96);
+            transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.5s ease;
+        }
+        #projectViewer.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+        #viewerDataContainer { padding: 0; }
+        .viewer-close {
+            position: fixed;
+            top: 1.5rem; right: 2rem;
+            background: none;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 44px; height: 44px;
+            color: rgba(255,255,255,0.6);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 8100;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .viewer-close:hover { border-color: var(--color-accent-museum); color: var(--color-accent-museum); }
+
+        /* No-project fallback */
+        .museum-empty {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; padding: 2rem;
+        }
+        .museum-empty h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem; font-weight: 300;
+            color: var(--color-accent-museum);
+            margin-bottom: 1rem;
+        }
+        .museum-empty p {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem; color: rgba(255,255,255,0.4);
+            margin-bottom: 2rem;
+        }
+        .museum-empty a {
+            color: var(--color-accent-museum);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(215,177,106,0.35);
+            padding-bottom: 2px;
+        }
+    </style>
+</head>
+<body class="museum-theme">
+
+    <!-- Back link -->
+    <a href="index.html" class="museum-back-link">← Back to Site</a>
+
+    <!-- Custom cursor -->
+    <div id="museumCursor"></div>
+    <div id="museumCursorLight"></div>
+
+    <!-- ══ PRELOADER ══ -->
+    <div id="preloader">
+        <div class="preloader-logo-text">Sandeep Patel</div>
+        <div class="preloader-bar-wrap">
+            <div id="preloaderProgress"></div>
+        </div>
+        <div id="preloaderPercent">000</div>
+    </div>
+
+    <!-- ══ HERO ENTRY OVERLAY ══ -->
+    <div id="heroEntry">
+        <div class="museum-hero-content">
+            <span class="museum-hero-label">Virtual Exhibition</span>
+            <h1 class="museum-hero-title">The Gallery</h1>
+            <p class="museum-hero-subtitle">A Walk Through Visual Storytelling</p>
+            <p class="museum-hero-desc">An immersive 3D corridor of projects — each frame a window into a world built from imagination, AI, and craft.</p>
+            <button id="enterBtn">Enter Exhibition →</button>
+        </div>
+    </div>
+
+    <!-- ══ MUSEUM VIEWPORT ══ -->
+    <div class="museum-viewport">
+
+        <!-- Scroll track (height drives camera movement) -->
+        <div class="museum-scroll-track"></div>
+
+        <!-- 3D corridor (dynamically populated by museum.js) -->
+        <div class="corridor-3d" id="corridorRoom">
+            <!-- Rendered by museum.js → renderMuseumCorridor() -->
+        </div>
+
+        <!-- Particles container -->
+        <div id="particlesContainer"></div>
+
+        <!-- Scroll indicator -->
+        <div id="scrollIndicator">
+            <span>Scroll to explore</span>
+            <div class="scroll-indicator-line"></div>
+        </div>
+
+    </div>
+
+    <!-- ══ PROJECT DETAIL VIEWER OVERLAY ══ -->
+    <div id="projectViewer">
+        <button class="viewer-close" onclick="closeProjectViewer()">✕</button>
+        <div id="viewerDataContainer"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/cms-auth.js"></script>
+    <script src="js/cms-core.js"></script>
+    <script src="js/site-loader.js?v=42"></script>
+    <script src="js/projects-data.js?v=24"></script>
+    <script src="js/museum.js"></script>
+
+    <script>
+    // Close project viewer
+    function closeProjectViewer() {
+        const viewer = document.getElementById('projectViewer');
+        if (viewer) viewer.classList.remove('active');
+    }
+    // Close on Escape key
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeProjectViewer();
+    });
+
+    // Custom cursor tracking
+    (function(){
+        const dot   = document.getElementById('museumCursor');
+        const light = document.getElementById('museumCursorLight');
+        let mx = 0, my = 0, lx = 0, ly = 0;
+        document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+        (function lerp(){
+            lx += (mx - lx) * 0.12;
+            ly += (my - ly) * 0.12;
+            if(dot)   { dot.style.left = mx+'px';   dot.style.top = my+'px'; }
+            if(light) { light.style.left = lx+'px'; light.style.top = ly+'px'; }
+            requestAnimationFrame(lerp);
+        })();
+    })();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

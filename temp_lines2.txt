@@ -1,0 +1,5 @@
+﻿            <div class="preview-item">
+                <img src="${resolvedUrl}" alt="">
+                <button class="preview-remove" onclick="${removeCall}">Ã—</button>
+            </div>`;
+    }).join('');

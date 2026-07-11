@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — Page Not Found | Sandeep Patel</title>
+    <meta name="robots" content="noindex">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Inter:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            background: #0B0B0B;
+            color: #F8F9FA;
+            font-family: 'Inter', sans-serif;
+            cursor: auto;
+        }
+
+        /* Fix cursor: 404 is a standalone page, restore the default OS cursor */
+        body { cursor: auto !important; }
+        a, button { cursor: pointer !important; }
+
+        .nf-page {
+            min-height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        /* -- Header -- */
+        .nf-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.8rem 4rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .nf-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: #F8F9FA;
+        }
+        .nf-logo-icon {
+            width: 34px; height: 34px;
+            border: 1px solid #D98A29;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            color: #D98A29;
+        }
+        .nf-logo-name {
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            font-weight: 400;
+        }
+        .nf-home-link {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            padding-bottom: 2px;
+            transition: color 0.25s, border-color 0.25s;
+        }
+        .nf-home-link:hover { color: #D98A29; border-color: #D98A29; }
+
+        /* -- Main Body -- */
+        .nf-main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: calc(100vh - 80px - 70px);
+        }
+
+        /* Left: large 404 number column */
+        .nf-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 5rem 4rem 5rem 4rem;
+            border-right: 1px solid rgba(255,255,255,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Faint grid lines in background of left column */
+        .nf-left::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(217,138,41,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(217,138,41,0.04) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+
+        .nf-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(7rem, 16vw, 13rem);
+            font-weight: 300;
+            line-height: 0.9;
+            color: #F8F9FA;
+            letter-spacing: -0.02em;
+            position: relative;
+            z-index: 1;
+        }
+        .nf-number span {
+            color: #D98A29;
+            font-style: italic;
+        }
+
+        .nf-tag {
+            margin-top: 2rem;
+            font-size: 0.72rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+        }
+        .nf-tag::before {
+            content: '—  ';
+        }
+
+        /* Right: content column */
+        .nf-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 5rem 4rem;
+        }
+
+        .nf-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: #D98A29;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .nf-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 300;
+            line-height: 1.25;
+            color: #F8F9FA;
+            margin-bottom: 1.5rem;
+        }
+
+        .nf-body {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.75;
+            max-width: 400px;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        /* Divider line before links */
+        .nf-divider {
+            width: 40px;
+            height: 1px;
+            background: rgba(255,255,255,0.15);
+            margin-bottom: 2.5rem;
+        }
+
+        /* Link list */
+        .nf-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .nf-link-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.1rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            text-decoration: none;
+            color: #F8F9FA;
+            transition: color 0.2s, padding-left 0.25s;
+        }
+        .nf-link-item:first-child { border-top: 1px solid rgba(255,255,255,0.07); }
+        .nf-link-item:hover { color: #D98A29; padding-left: 6px; }
+        .nf-link-label { font-size: 0.9rem; font-weight: 400; letter-spacing: 0.02em; }
+        .nf-link-arrow {
+            font-size: 1rem;
+            opacity: 0.4;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .nf-link-item:hover .nf-link-arrow { opacity: 1; transform: translateX(4px); }
+
+        /* -- Footer -- */
+        .nf-footer {
+            padding: 1.4rem 4rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nf-footer-copy {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.25);
+            letter-spacing: 0.05em;
+        }
+        .nf-footer-hint {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 768px) {
+            .nf-header { padding: 1.4rem 1.5rem; }
+            .nf-main { grid-template-columns: 1fr; }
+            .nf-left {
+                padding: 4rem 1.5rem 3rem;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.08);
+            }
+            .nf-right { padding: 3rem 1.5rem 4rem; }
+            .nf-footer { padding: 1.2rem 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+            .nf-number { font-size: clamp(5.5rem, 22vw, 8rem); }
+        }
+    </style>
+</head>
+<body>
+<div class="nf-page">
+
+    <header class="nf-header">
+        <a href="index.html" class="nf-logo">
+            <div class="nf-logo-icon">S</div>
+            <span class="nf-logo-name">Sandeep Patel</span>
+        </a>
+        <a href="index.html" class="nf-home-link">? Back to site</a>
+    </header>
+
+    <main class="nf-main">
+        <div class="nf-left">
+            <div class="nf-number">4<span>0</span>4</div>
+            <div class="nf-tag">Page not found</div>
+        </div>
+
+        <div class="nf-right">
+            <div class="nf-label">Error 404</div>
+            <h1 class="nf-heading">Looks like this page<br>doesn't exist.</h1>
+            <p class="nf-body">The page you were looking for may have been moved, renamed, or never existed. Try one of the links below to find what you need.</p>
+            <div class="nf-divider"></div>
+            <nav class="nf-links">
+                <a href="index.html" class="nf-link-item">
+                    <span class="nf-link-label">Home</span>
+                    <span class="nf-link-arrow">?</span>
+                </a>
+                <a href="index.html#section-home-selected-work" class="nf-link-item">
+                    <span class="nf-link-label">Work</span>
+                    <span class="nf-link-arrow">?</span>
+                </a>
+                <a href="about.html" class="nf-link-item">
+                    <span class="nf-link-label">About</span>
+                    <span class="nf-link-arrow">?</span>
+                </a>
+                <a href="gallery.html" class="nf-link-item">
+                    <span class="nf-link-label">Gallery</span>
+                    <span class="nf-link-arrow">?</span>
+                </a>
+                <a href="contact.html" class="nf-link-item">
+                    <span class="nf-link-label">Contact</span>
+                    <span class="nf-link-arrow">?</span>
+                </a>
+            </nav>
+        </div>
+    </main>
+
+    <footer class="nf-footer">
+        <span class="nf-footer-copy">© 2026 Sandeep Patel ·&mdash; Creative Studio</span>
+        <span class="nf-footer-hint">Error 404 — Page Not Found</span>
+    </footer>
+
+</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
