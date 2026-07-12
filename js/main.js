@@ -7,7 +7,7 @@ function getMediaEmbedHtml(url, className, styleStr = "", shouldAutoplay = false
         if (url.includes('youtube.com') && !url.includes('playsinline=')) {
             finalUrl += (url.includes('?') ? '&' : '?') + 'playsinline=1';
         }
-        return `<iframe class="${className}" src="${finalUrl}" style="${styleStr}; ${pointerEvents} border:none;" allow="autoplay; fullscreen; picture-in-picture" playsinline frameborder="0"></iframe>`;
+        return `<iframe class="${className}" src="${finalUrl}" style="${styleStr}; ${pointerEvents} border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen playsinline frameborder="0"></iframe>`;
     }
     const autoAttr = shouldAutoplay ? ' autoplay' : '';
     return `<video class="${className}" src="${url}"${autoAttr} loop muted playsinline controlsList="nodownload" disablePictureInPicture style="${styleStr}" onerror="this.style.display='none'"></video>`;

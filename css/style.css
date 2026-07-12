@@ -4657,3 +4657,17 @@ header.on-light-bg .corner-rotating-badge { border-left-color: rgba(0,0,0,0.2) !
     font-family: var(--font-sans) !important;
 }
 
+
+/* Fix Video Opacity on Hover */
+.horizontal-card:hover .horizontal-card-video {
+    opacity: 1;
+}
+
+
+/* Show videos by default on touch/mobile devices */
+@media (max-width: 1024px) {
+    .horizontal-card-video {
+        opacity: 1 !important;
+    }
+}
+
