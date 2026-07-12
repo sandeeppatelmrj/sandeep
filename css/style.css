@@ -4671,3 +4671,10 @@ header.on-light-bg .corner-rotating-badge { border-left-color: rgba(0,0,0,0.2) !
     }
 }
 
+
+@media (max-width: 768px) {
+    .horizontal-card-video {
+        opacity: 1 !important;
+    }
+}
+

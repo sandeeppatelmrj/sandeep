@@ -4,13 +4,31 @@ function getMediaEmbedHtml(url, className, styleStr = "", shouldAutoplay = false
     const pointerEvents = className.includes('horizontal-card-video') ? 'pointer-events:none;' : '';
     if (url.includes('youtube.com/embed') || url.includes('player.vimeo.com') || url.includes('drive.google.com/file/d/')) {
         let finalUrl = url;
-        if (url.includes('youtube.com') && !url.includes('playsinline=')) {
-            finalUrl += (url.includes('?') ? '&' : '?') + 'playsinline=1';
+        
+        // Remove playlist parameter because it breaks Unlisted YouTube videos
+        finalUrl = finalUrl.replace(/&playlist=[^&]*/g, '');
+        finalUrl = finalUrl.replace(/\?playlist=[^&]*&/g, '?');
+
+        // If it's a gallery video (alag se work ke video), we un-mute it, add controls, and disable autoplay
+        if (className === "") {
+            finalUrl = finalUrl.replace(/mute=1/g, 'mute=0');
+            finalUrl = finalUrl.replace(/autoplay=1/g, 'autoplay=0');
+            finalUrl = finalUrl.replace(/controls=0/g, 'controls=1');
+        }
+
+        if (finalUrl.includes('youtube.com') && !finalUrl.includes('playsinline=')) {
+            finalUrl += (finalUrl.includes('?') ? '&' : '?') + 'playsinline=1';
         }
         return `<iframe class="${className}" src="${finalUrl}" style="${styleStr}; ${pointerEvents} border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen playsinline frameborder="0"></iframe>`;
     }
     const autoAttr = shouldAutoplay ? ' autoplay' : '';
-    return `<video class="${className}" src="${url}"${autoAttr} loop muted playsinline controlsList="nodownload" disablePictureInPicture style="${styleStr}" onerror="this.style.display='none'"></video>`;
+    if (className === "") {
+        // Gallery videos: add controls, no autoplay, no mute
+        return `<video class="${className}" src="${url}" controls playsinline controlsList="nodownload" disablePictureInPicture style="${styleStr}" onerror="this.style.display='none'"></video>`;
+    } else {
+        // Banner videos: autoplay, muted, no controls
+        return `<video class="${className}" src="${url}"${autoAttr} loop muted playsinline controlsList="nodownload" disablePictureInPicture style="${styleStr}" onerror="this.style.display='none'"></video>`;
+    }
 }
 /* ============================================================
    MAIN.JS ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Sandeep Patel Portfolio
