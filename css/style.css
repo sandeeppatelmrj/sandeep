@@ -4679,54 +4679,7 @@ header.on-light-bg .corner-rotating-badge { border-left-color: rgba(0,0,0,0.2) !
 }
 
 
-/* ==============================================
-   LATEST FIXES: MOBILE HERO & NAVBAR SCROLL PADDING
-   ============================================== */
 
-@media (max-width: 768px) {
-    /* Mobile Hero Layout Fixes */
-    #section-home-hero {
-        padding: 6rem 0 3rem 0 !important;
-        min-height: auto !important;
-        height: auto !important;
-    }
-    .hero-inner-container {
-        gap: 2rem !important;
-        padding: 0 5vw !important;
-    }
-    .hero-left-column {
-        align-items: center !important;
-        text-align: center !important;
-    }
-    .hero-title {
-        font-size: clamp(2rem, 8vw, 3rem) !important;
-        text-align: center !important;
-        margin-bottom: 1.5rem !important;
-    }
-    .rotating-word {
-        text-align: center !important;
-        transform-origin: center center !important;
-    }
-    .hero-pretitle {
-        justify-content: center !important;
-        margin-bottom: 1rem !important;
-        padding-left: 0 !important;
-    }
-    .hero-pretitle::before {
-        display: none !important;
-    }
-    .monolith-svg {
-        max-width: 220px !important;
-    }
-    .hero-cta-wrap {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-    }
-    .hero-right-column {
-        margin-top: 1rem !important;
-    }
-}
 
 /* Fix Navbar bottom padding when scrolled on desktop */
 @media (min-width: 769px) {
