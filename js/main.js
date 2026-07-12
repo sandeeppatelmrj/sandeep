@@ -2,6 +2,19 @@ function getMediaEmbedHtml(url, className, styleStr = "", shouldAutoplay = false
     if (!url || url.trim() === "") return '';
     url = url.trim();
     const pointerEvents = className.includes('horizontal-card-video') ? 'pointer-events:none;' : '';
+    
+    // Auto-convert youtu.be and watch?v= to embed format
+    if (url.includes('youtu.be/')) {
+        const vidId = url.split('youtu.be/')[1].split('?')[0];
+        url = `https://www.youtube.com/embed/${vidId}?autoplay=1&mute=1&playsinline=1`;
+    } else if (url.includes('youtube.com/watch')) {
+        const urlObj = new URL(url);
+        const vidId = urlObj.searchParams.get('v');
+        if (vidId) {
+            url = `https://www.youtube.com/embed/${vidId}?autoplay=1&mute=1&playsinline=1`;
+        }
+    }
+
     if (url.includes('youtube.com/embed') || url.includes('player.vimeo.com') || url.includes('drive.google.com/file/d/')) {
         let finalUrl = url;
         
