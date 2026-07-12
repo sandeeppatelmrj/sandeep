@@ -1,0 +1,1 @@
+const fs = require('fs'); global.window = {}; eval(fs.readFileSync('./js/projects-data.js', 'utf8')); window.getAllProjects().forEach(p => { if(p.videoUrl) console.log(p.id, p.videoUrl); if(p.images) { p.images.forEach(img => { if(img.includes('youtube')) console.log(p.id, 'gallery', img); }); } });
