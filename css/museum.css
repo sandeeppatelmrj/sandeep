@@ -802,3 +802,28 @@ body.museum-theme {
         background: #070708;
     }
 }
+
+/* MOBILE & TABLET MUSEUM OVERRIDES */
+@media (max-width: 768px) {
+    .museum-viewport {
+        perspective: 800px !important;
+    }
+    .museum-frame-inner {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 16/9 !important;
+    }
+    .museum-artwork-image, .museum-artwork-video {
+        object-fit: contain !important;
+    }
+    .museum-info-panel {
+        width: 90% !important;
+        left: 5% !important;
+        transform: none !important;
+        padding: 1rem !important;
+    }
+    #exit-museum-btn {
+        top: 1rem !important;
+        right: 1rem !important;
+    }
+}

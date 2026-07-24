@@ -1,12 +1,12 @@
 
 // FORCE CACHE CLEAR FOR LATEST PUBLISH
 (function() {
-    if (!localStorage.getItem('site_version_1784932839877')) {
+    if (!localStorage.getItem('site_version_1784936139044')) {
         localStorage.removeItem('sandeep_projects_v26');
         localStorage.removeItem('sandeep_photography_v2');
         localStorage.removeItem('sandeep_site_data_v2');
         localStorage.removeItem('sandeep_global_settings');
-        localStorage.setItem('site_version_1784932839877', '1');
+        localStorage.setItem('site_version_1784936139044', '1');
         console.log('Cleared old local storage to load new published defaults.');
     }
 })();
@@ -148,7 +148,7 @@ function applyGlobalSettings() {
     });
 }
 
-const DEFAULT_SETTINGS_FALLBACK = "\"{\\"logo_text\\":\\"Sandeep Patel\\",\\"logo_icon\\":\\"S\\",\\"nav_links\\":\\"Work|work.html, Museum Experience|museum.html, What I Do|what-i-do.html, About|about.html, Contact|contact.html, My Story|sandeep-story.html, Photography|Photography.html\\",\\"footer_tagline\\":\\"Creating Stories Through Design, Technology & Imagination.\\",\\"footer_brand\\":\\"Inspire · Innovate · Impact\\",\\"social_instagram\\":\\"https://www.instagram.com/sandy_clickzzzz\\",\\"social_linkedin\\":\\"https://www.linkedin.com/in/sandeep-patel-ab5878237\\",\\"social_behance\\":\\"https://www.behance.net/sandeeppat2070\\",\\"social_email\\":\\"design.sandeeppatel@gmail.com\\",\\"seo_home_title\\":\\"Sandeep Patel | Immersive Graphic & AI Visual Designer\\",\\"seo_home_desc\\":\\"Sandeep Patel is a Graphic Designer, AI Visual Designer, and Museum Experience Designer.\\",\\"seo_work_title\\":\\"Work | Sandeep Patel\\",\\"seo_about_title\\":\\"About | Sandeep Patel\\",\\"primary_color\\":\\"#F8F9FA\\",\\"accent_color\\":\\"#D98A29\\",\\"bg_dark\\":\\"#0B0B0B\\"}\"";
+const DEFAULT_SETTINGS_FALLBACK = "{\"logo_text\":\"Sandeep Patel\",\"logo_icon\":\"S\",\"nav_links\":\"Work|work.html, Museum Experience|museum.html, What I Do|what-i-do.html, About|about.html, Contact|contact.html, My Story|sandeep-story.html, Photography|Photography.html\",\"footer_tagline\":\"Creating Stories Through Design, Technology & Imagination.\",\"footer_brand\":\"Inspire · Innovate · Impact\",\"social_instagram\":\"https://www.instagram.com/sandy_clickzzzz\",\"social_linkedin\":\"https://www.linkedin.com/in/sandeep-patel-ab5878237\",\"social_behance\":\"https://www.behance.net/sandeeppat2070\",\"social_email\":\"design.sandeeppatel@gmail.com\",\"seo_home_title\":\"Sandeep Patel | Immersive Graphic & AI Visual Designer\",\"seo_home_desc\":\"Sandeep Patel is a Graphic Designer, AI Visual Designer, and Museum Experience Designer.\",\"seo_work_title\":\"Work | Sandeep Patel\",\"seo_about_title\":\"About | Sandeep Patel\",\"primary_color\":\"#F8F9FA\",\"accent_color\":\"#D98A29\",\"bg_dark\":\"#0B0B0B\"}";
 
 /* ─── Inject CMS data into DOM ─── */
 function updateDOMFromCMS() {

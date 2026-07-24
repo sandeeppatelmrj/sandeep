@@ -4712,3 +4712,109 @@ header.on-light-bg .corner-rotating-badge { border-left-color: rgba(0,0,0,0.2) !
 .hero-gallery-btn-wrap {
     display: none !important;
 }
+
+/* ==========================================================
+   MOBILE & TABLET RESPONSIVENESS OVERRIDES
+   ========================================================== */
+
+/* Prevent cropping of videos and images on mobile */
+@media (max-width: 768px) {
+    /* Hero Videos/Images */
+    #section-home-hero, .pd-banner {
+        height: auto !important;
+        min-height: 40vh !important;
+        aspect-ratio: 16 / 9; /* Default to typical video aspect */
+    }
+    
+    #heroCanvas, .hero-media-wrapper video, .hero-media-wrapper iframe, .hero-media-wrapper img,
+    .pd-banner video, .pd-banner iframe, .pd-banner img {
+        object-fit: contain !important; /* Never crop on mobile */
+        height: 100% !important;
+        width: 100% !important;
+        background-color: #000; /* Letterboxing background */
+    }
+
+    /* Grids to single column */
+    .grid-row .tr-container, 
+    .about-grid, 
+    .testimonials-grid,
+    .project-detail-gallery-grid,
+    .archive-project-grid,
+    .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-1-2 {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+
+    /* Panning/Scrolling sections - remove forced horizontal sizes */
+    .horizontal-scroll-container, .pinned-container, .horizontal-scroll-wrapper {
+        height: auto !important;
+        width: 100% !important;
+        display: block !important;
+        position: static !important;
+    }
+    
+    .horizontal-card {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: auto !important;
+        margin-bottom: 2rem;
+    }
+    
+    .horizontal-card-media {
+        aspect-ratio: 16/9;
+        height: auto !important;
+    }
+
+    .horizontal-card-media img, .horizontal-card-video {
+        object-fit: cover !important; /* For cards, cover is okay as long as aspect-ratio is preserved */
+    }
+
+    /* Adjust massive paddings */
+    .tr-section {
+        padding: 4rem 1rem !important;
+    }
+    .hero-inner-container {
+        padding: 1rem !important;
+    }
+    
+    /* Text resizing to prevent overflow */
+    h1, h2, .hero-title, .hero-pretitle {
+        word-wrap: break-word;
+        hyphens: auto;
+    }
+    
+    .hero-title {
+        font-size: clamp(2rem, 10vw, 4rem) !important;
+    }
+    
+    /* Contact Page Forms & Text */
+    .contact-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Mobile Menu Fixes */
+    .nav-overlay {
+        padding: 2rem !important;
+    }
+    .overlay-link {
+        font-size: 2.5rem !important;
+    }
+    
+    /* Custom Cursor Disabled */
+    .custom-cursor, .custom-cursor-ring, .scroll-nav {
+        display: none !important;
+    }
+}
+
+/* Tablet refinements */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .grid-cols-3, .grid-cols-4, .archive-project-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .tr-section {
+        padding: 6rem 2rem !important;
+    }
+    .custom-cursor, .custom-cursor-ring {
+        display: none !important;
+    }
+}

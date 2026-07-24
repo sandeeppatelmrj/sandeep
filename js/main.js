@@ -564,6 +564,7 @@ window.addEventListener('projectsUpdated', () => {
    1. Custom Magnetic Cursor
    ========================================================== */
 function initCursor() {
+    if (window.innerWidth <= 1024) return;
     const cursor = document.createElement('div');
     const ring   = document.createElement('div');
     const label  = document.createElement('span');
