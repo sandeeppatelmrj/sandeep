@@ -7,12 +7,13 @@
 const CMS_KEYS = {
     LIVE_DATA:      'sandeep_site_data_v2',
     DRAFT_DATA:     'sandeep_draft_data',
-    PROJECTS:       'sandeep_projects_v25',
+    PROJECTS:       'sandeep_projects_v26',
     MEDIA:          'sandeep_media_library',
     VERSIONS:       'sandeep_versions',
-    SETTINGS:       'sandeep_global_settings',
+    SETTINGS:       'sandeep_global_settings_v3',
     UPDATED:        'sandeep_site_data_v2_updated',
     PROJ_UPDATED:   'sandeep_projects_updated',
+    PHOTOGRAPHY:    'sandeep_photography_v2',
 };
 
 const MAX_VERSIONS = 10;
@@ -65,11 +66,12 @@ class CMSStore {
     }
 
     /* ── Site Content (Live) ── */
+    getSiteData() { return this.getLiveData(); }
     getLiveData() {
         try {
             const raw = localStorage.getItem(CMS_KEYS.LIVE_DATA);
             if (!raw) return {};
-            return JSON.parse(raw);
+            let parsed = JSON.parse(raw); if (typeof parsed === 'string') parsed = JSON.parse(parsed); return parsed;
         } catch { return {}; }
     }
 
@@ -85,7 +87,7 @@ class CMSStore {
         try {
             const raw = localStorage.getItem(CMS_KEYS.DRAFT_DATA);
             if (!raw) return null;
-            return JSON.parse(raw);
+            let parsed = JSON.parse(raw); if (typeof parsed === 'string') parsed = JSON.parse(parsed); return parsed;
         } catch { return null; }
     }
 
@@ -126,7 +128,7 @@ class CMSStore {
         try {
             const raw = localStorage.getItem(CMS_KEYS.VERSIONS);
             if (!raw) return [];
-            return JSON.parse(raw);
+            let parsed = JSON.parse(raw); if (typeof parsed === 'string') parsed = JSON.parse(parsed); return parsed;
         } catch { return (typeof DEFAULT_PROJECTS !== 'undefined') ? DEFAULT_PROJECTS : []; }
     }
 
@@ -148,7 +150,7 @@ class CMSStore {
                 }
                 return [];
             }
-            return JSON.parse(raw);
+            let parsed = JSON.parse(raw); if (typeof parsed === 'string') parsed = JSON.parse(parsed); return parsed;
         } catch { return (typeof DEFAULT_PROJECTS !== 'undefined') ? DEFAULT_PROJECTS : []; }
     }
 
@@ -177,6 +179,45 @@ class CMSStore {
         this.saveProjects(projects);
     }
 
+    /* ── Photography ── */
+    getPhotography() {
+        try {
+            const raw = localStorage.getItem(CMS_KEYS.PHOTOGRAPHY);
+            if (raw === null) {
+                if (typeof DEFAULT_PHOTOGRAPHY !== 'undefined') {
+                    try { localStorage.setItem(CMS_KEYS.PHOTOGRAPHY, JSON.stringify(DEFAULT_PHOTOGRAPHY)); } catch(e){}
+                    return DEFAULT_PHOTOGRAPHY;
+                }
+                return [];
+            }
+            let parsed = JSON.parse(raw); if (typeof parsed === 'string') parsed = JSON.parse(parsed); return parsed;
+        } catch { return (typeof DEFAULT_PHOTOGRAPHY !== 'undefined') ? DEFAULT_PHOTOGRAPHY : []; }
+    }
+
+    savePhotography(photography) {
+        if (this._safeSetItem(CMS_KEYS.PHOTOGRAPHY, JSON.stringify(photography))) {
+            window.dispatchEvent(new Event('photographyUpdated'));
+            return true;
+        }
+        return false;
+    }
+
+    upsertPhotographyCategory(category) {
+        const photography = this.getPhotography();
+        const idx = photography.findIndex(c => c.id === category.id);
+        if (idx >= 0) {
+            photography[idx] = category;
+        } else {
+            photography.push(category);
+        }
+        this.savePhotography(photography);
+    }
+
+    deletePhotographyCategory(id) {
+        const photography = this.getPhotography().filter(c => c.id !== id);
+        this.savePhotography(photography);
+    }
+
     /* ── Global Settings ── */
     getSettings() {
         try {
@@ -199,7 +240,7 @@ class CMSStore {
         try {
             const raw = localStorage.getItem(CMS_KEYS.MEDIA);
             if (!raw) return [];
-            return JSON.parse(raw);
+            let parsed = JSON.parse(raw); if (typeof parsed === 'string') parsed = JSON.parse(parsed); return parsed;
         } catch { return (typeof DEFAULT_PROJECTS !== 'undefined') ? DEFAULT_PROJECTS : []; }
     }
 

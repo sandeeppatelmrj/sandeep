@@ -44,7 +44,7 @@ function getMediaEmbedHtml(url, className, styleStr = "", shouldAutoplay = false
     }
 }
 /* ============================================================
-   MAIN.JS ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Sandeep Patel Portfolio
+   MAIN.JS Ãƒ¢Ã¢â€š¬Ã¢â‚¬ Sandeep Patel Portfolio
    Handles: Cursor, Page Transitions, Hero Canvas,
             FAQ, Contact Wizard, Portfolio Grid,
             Horizontal Scroll (Trionn-style), Scroll Animations
@@ -54,7 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initPreloader();
     initInteractiveBg();
     initHeroInteractiveCanvas();
-    initCursor();
+    const sd = typeof getSiteData === 'function' ? getSiteData() : {};
+    if (sd.global_mouse_effect === 'show') {
+        initCursor();
+    }
     initCardSpotlight();
     initMagneticButtons();
     init3DTilt();
@@ -543,7 +546,7 @@ function initLenis() {
     window.lenis = lenis;
 }
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Listen for CMS live updates ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬ Listen for CMS live updates Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬ */
 window.addEventListener('storage', e => {
     if (e.key === 'sandeep_projects_v22' || e.key === 'sandeep_projects_updated') {
         initPortfolioGrid();
@@ -1561,7 +1564,7 @@ function initHomeHero() {
     const words = hero.querySelectorAll('.rotating-word');
     const wordWrap = hero.querySelector('.rotating-word-wrap');
     
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 1. Calculate Word Widths to Prevent CLS ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬ 1. Calculate Word Widths to Prevent CLS Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬
     const wordWidths = [];
     function measureWordWidths() {
         if (!words.length || !wordWrap) return;
@@ -1575,6 +1578,7 @@ function initHomeHero() {
             word.style.display = 'inline-block';
             word.style.position = 'relative';
             word.style.opacity = '0';
+            word.style.transform = 'none';
             
             const rect = word.getBoundingClientRect();
             wordWidths[idx] = rect.width;
@@ -1583,10 +1587,11 @@ function initHomeHero() {
             word.style.display = '';
             word.style.position = '';
             word.style.opacity = '';
+            word.style.transform = '';
         });
         
         // Set initial width to first word
-        wordWrap.style.width = (wordWidths[0] + 30) + 'px';
+        wordWrap.style.width = (wordWidths[0] + 40) + 'px';
     }
     
     if (document.fonts) {
@@ -1596,7 +1601,7 @@ function initHomeHero() {
     }
     window.addEventListener('resize', measureWordWidths);
     
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 2. Entrance Animation Timeline ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬ 2. Entrance Animation Timeline Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬
     const tl = gsap.timeline({
         defaults: { ease: 'power3.out' }
     });
@@ -1665,7 +1670,7 @@ function initHomeHero() {
           startWordRotation();
       }, '-=0.2');
       
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 3. Rotating Word Animation Loop ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬ 3. Rotating Word Animation Loop Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬
     let currentWordIdx = 0;
     let rotationInterval;
     
@@ -1694,7 +1699,7 @@ function initHomeHero() {
             
             // Adjust wrap width to incoming word width
             if (wordWidths[currentWordIdx] !== undefined) {
-                wordWrap.style.width = (wordWidths[currentWordIdx] + 30) + 'px';
+                wordWrap.style.width = (wordWidths[currentWordIdx] + 40) + 'px';
             }
             
             // Incoming animates in
@@ -1711,7 +1716,7 @@ function initHomeHero() {
         }, 2000);
     }
       
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 4. Scroll Trigger Scale & Fade Out ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬ 4. Scroll Trigger Scale & Fade Out Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬
     const innerContainer = hero.querySelector('.hero-inner-container');
     if (innerContainer && typeof ScrollTrigger !== 'undefined') {
         gsap.to(innerContainer, {
@@ -1731,7 +1736,7 @@ function initHomeHero() {
         });
     }
     
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 5. Mousemove Parallax ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬ 5. Mousemove Parallax Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬
     if (window.innerWidth > 768) {
         window.addEventListener('mousemove', (e) => {
             const { clientX, clientY } = e;
@@ -1775,7 +1780,7 @@ function initHomeHero() {
         });
     }
     
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 6. Floating Background Circles ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬ 6. Floating Background Circles Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬
     if (floatingContainer) {
         floatingContainer.innerHTML = '';
         const count = 4;
@@ -1828,7 +1833,7 @@ function initPartnersGrid() {
 }
 
 function initHomeOverhaulAnimations() {
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 1. Frosted navigation on scroll ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬ 1. Frosted navigation on scroll Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬
     const header = document.querySelector('header');
     if (header) {
         const lightSections = document.querySelectorAll('.theme-sand, .theme-light');
@@ -1860,7 +1865,7 @@ function initHomeOverhaulAnimations() {
         checkScroll(); // run on load
     }
     
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 2. Corner rotating badge text animation ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬ 2. Corner rotating badge text animation Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬
     const badgeWords = document.querySelectorAll('.corner-rotating-badge .badge-word');
     if (badgeWords.length > 1) {
         let currentIdx = 0;
@@ -1878,10 +1883,10 @@ function initHomeOverhaulAnimations() {
         }, 3500);
     }
     
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 3. Testimonials 3D Tilt Effect (now handled globally by init3DTilt) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬ 3. Testimonials 3D Tilt Effect (now handled globally by init3DTilt) Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬
     
     
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 4. Section 06 Scrolling Typography Anim ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬ 4. Section 06 Scrolling Typography Anim Ãƒ¢Ã¢â‚¬Ã¢â€š¬Ãƒ¢Ã¢â‚¬Ã¢â€š¬
     const scrollSection = document.getElementById('section-home-scrolling-text');
     const charSpans = document.querySelectorAll('.huge-scrolling-title .char-span');
     if (scrollSection && charSpans.length && typeof ScrollTrigger !== 'undefined') {
@@ -2421,13 +2426,13 @@ function initScrollDotsNav() {
     setTimeout(updateActiveSection, 500);
 }
 
-// ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â
+// Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚
 //  SITE-WIDE CMS VIDEO MUTE TOGGLE
 //  Reads the same 'cms_video_muted' localStorage key set from the
 //  Gallery's CMS panel and applies it to every <video> element on
 //  whichever page is currently loaded (project cards, project detail
 //  banner, etc), so the single CMS switch controls audio everywhere.
-// ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â
+// Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚
 function _getCmsVideoMutePref() {
     try {
         const v = localStorage.getItem('cms_video_muted');
