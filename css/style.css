@@ -4720,7 +4720,7 @@ header.on-light-bg .corner-rotating-badge { border-left-color: rgba(0,0,0,0.2) !
 /* Prevent cropping of videos and images on mobile */
 @media (max-width: 768px) {
     /* Hero Videos/Images */
-    #section-home-hero, .pd-banner {
+    .pd-banner {
         height: auto !important;
         min-height: 40vh !important;
         aspect-ratio: 16 / 9; /* Default to typical video aspect */
@@ -4816,5 +4816,19 @@ header.on-light-bg .corner-rotating-badge { border-left-color: rgba(0,0,0,0.2) !
     }
     .custom-cursor, .custom-cursor-ring {
         display: none !important;
+    }
+}
+
+/* SUB-PAGES GRID FIX FOR MOBILE */
+@media (max-width: 768px) {
+    .grid-cols-2 > div, .grid-cols-3 > div, .grid-cols-4 > div, .grid-cols-1-2 > div {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    .col-border-right {
+        border-right: none !important;
+        border-bottom: 1px solid var(--border-current) !important;
+        padding-bottom: 2rem !important;
+        margin-bottom: 2rem !important;
     }
 }

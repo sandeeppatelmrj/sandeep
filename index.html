@@ -15,7 +15,7 @@
     <!-- Lenis Smooth Scroll -->
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=1784936974767">
+    <link rel="stylesheet" href="css/style.css?v=1784938249314">
     <style>
     /* ── Visit My Gallery Hero Button ── */
     .hero-gallery-btn-wrap {
@@ -168,6 +168,7 @@
                 <li><a href="index.html#section-home-archive" class="nav-link nav-scroll-link"><span>Archive</span></a></li>
                 <li><a href="Photography.html" class="nav-link"><span>Photography</span></a></li>
                 <li><a href="contact.html" class="nav-link"><span>Contact</span></a></li>
+            </ul>
             <!-- Hamburger Button (mobile only) -->
             <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
                 <span class="hamburger-line line-top"></span>
@@ -762,10 +763,10 @@
     </footer>
 
     <!-- Scripts: CMS core first, then loader, then data, then main -->
-    <script src="js/cms-core.js?v=1784936974767"></script>
-    <script src="js/site-loader.js?v=1784936974767"></script>
-    <script src="js/projects-data.js?v=1784936974767"></script>
-    <script src="js/main.js?v=1784936974767"></script>
+    <script src="js/cms-core.js?v=1784938249314"></script>
+    <script src="js/site-loader.js?v=1784938249314"></script>
+    <script src="js/projects-data.js?v=1784938249314"></script>
+    <script src="js/main.js?v=1784938249314"></script>
 
     <!-- Resume Download Button: Load from CMS data -->
     <script>
@@ -774,8 +775,7 @@
             var btn = document.getElementById('resumeDownloadBtn');
             if (!btn) return;
             try {
-                var raw = localStorage.getItem('sandeep_site_data_v2');
-                var data = raw ? JSON.parse(raw) : {};
+                var data = (typeof getSiteData === 'function') ? getSiteData() : (typeof DEFAULT_SITE_DATA !== 'undefined' ? DEFAULT_SITE_DATA : {});
                 var resumeData = data['home_about_resume_file'] || '';
                 var resumeName = data['home_about_resume_filename'] || 'resume.pdf';
                 if (resumeData) {

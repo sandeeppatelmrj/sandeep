@@ -1,0 +1,14 @@
+
+/* SUB-PAGES GRID FIX FOR MOBILE */
+@media (max-width: 768px) {
+    .grid-cols-2 > div, .grid-cols-3 > div, .grid-cols-4 > div, .grid-cols-1-2 > div {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    .col-border-right {
+        border-right: none !important;
+        border-bottom: 1px solid var(--border-current) !important;
+        padding-bottom: 2rem !important;
+        margin-bottom: 2rem !important;
+    }
+}
