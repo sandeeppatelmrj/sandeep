@@ -300,6 +300,18 @@ function updateDOMFromCMS() {
         if (particleCanvas2) particleCanvas2.style.display = 'block';
     }
 
+    /* Resume Download Button */
+    const resumeBtn = document.getElementById('resumeDownloadBtn');
+    if (resumeBtn) {
+        if (data.home_about_resume_file && data.home_about_resume_file.length > 10) {
+            resumeBtn.href = data.home_about_resume_file;
+            resumeBtn.download = data.home_about_resume_filename || 'resume.pdf';
+            resumeBtn.style.display = 'inline-flex';
+        } else {
+            resumeBtn.style.display = 'none';
+        }
+    }
+
     /* Element visibility */
     document.querySelectorAll('[data-cms-visibility]').forEach(el => {
         const key = el.getAttribute('data-cms-visibility');

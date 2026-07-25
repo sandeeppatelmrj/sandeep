@@ -2232,7 +2232,7 @@ function init3DTilt() {
     });
 }
 
-function initPreloader() { setTimeout(() => { const p = document.getElementById(\'preloader\'); if (p) { p.style.display = \'none\'; document.body.style.overflow = \'\'; if (window.lenis) window.lenis.start(); console.log(\'preloaderFailsafe triggered\'); } }, 3000);
+function initPreloader() { setTimeout(() => { const p = document.getElementById('preloader'); if (p) { p.style.display = 'none'; document.body.style.overflow = ''; if (window.lenis) window.lenis.start(); console.log('preloaderFailsafe triggered'); } }, 3000);
 
     const preloader = document.getElementById('preloader');
     if (!preloader) return;

@@ -169,30 +169,11 @@
                 <li><a href="Photography.html" class="nav-link"><span>Photography</span></a></li>
                 <li><a href="contact.html" class="nav-link"><span>Contact</span></a></li>
             </ul>
-            <!-- Hamburger Button (mobile only) -->
-            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
-                <span class="hamburger-line line-top"></span>
-                <span class="hamburger-line line-mid"></span>
-                <span class="hamburger-line line-bottom"></span>
-            </button>
+            
         </div>
     </header>
 
-    <!-- Mobile Navigation Drawer -->
-    <div class="mobile-menu-drawer" id="mobileMenuDrawer">
-        <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close menu" style="position: absolute; top: 25px; right: 5vw; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 30px; font-size: 14px; cursor: pointer; z-index: 1000;">&#x2715; Close</button>
-        <nav>
-            <ul class="mobile-nav-links">
-                <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="about.html" class="nav-link">About</a></li>
-                <li><a href="what-i-do.html" class="nav-link">What I Do</a></li>
-                <li><a href="index.html#section-home-selected-work" class="nav-link">Work</a></li>
-                <li><a href="Photography.html" class="nav-link">Photography</a></li>
-                <li><a href="contact.html" class="nav-link">Contact</a></li>
-                </ul>
-        </nav>
-    </div>
-    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+    
 
     <main>
 
@@ -770,139 +751,7 @@
     <script src="js/main.js?v=1784940570546"></script>
 
     <!-- Resume Download Button: Load from CMS data -->
-    <script>
-    (function() {
-        function initResumeBtn() {
-            var btn = document.getElementById('resumeDownloadBtn');
-            if (!btn) return;
-            try {
-                var data = (typeof getSiteData === 'function') ? getSiteData() : (typeof DEFAULT_SITE_DATA !== 'undefined' ? DEFAULT_SITE_DATA : {});
-                var resumeData = data['home_about_resume_file'] || '';
-                var resumeName = data['home_about_resume_filename'] || 'resume.pdf';
-                if (resumeData) {
-                    btn.href = resumeData;
-                    btn.setAttribute('download', resumeName);
-                    btn.style.display = 'inline-flex';
-                } else {
-                    btn.style.display = 'none';
-                }
-            } catch(e) {}
-        }
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initResumeBtn);
-        } else {
-            initResumeBtn();
-        }
-        window.addEventListener('load', function() { setTimeout(initResumeBtn, 400); });
-    })();
-    </script>
-
-    <!-- ── Section Scroll Navigator JS ── -->
-    <script>
-    (function() {
-        // Complete ordered list of all sections on the page + footer
-        var SECTIONS = [
-            'section-home-hero',
-            'section-home-about',
-            'section-home-what-i-do',
-            'section-home-tools',
-            'section-home-journey',
-            'section-home-education',
-            'section-home-selected-work',
-            'section-home-archive',
-            'section-home-testimonials',
-            'section-home-scrolling-text'
-        ];
-
-        var nav     = document.getElementById('scrollNav');
-        var upBtn   = document.getElementById('scrollNavUp');
-        var downBtn = document.getElementById('scrollNavDown');
-
-        // Show nav once user scrolls past hero
-        window.addEventListener('scroll', function() {
-            nav.classList.toggle('visible', window.scrollY > 120);
-            updateButtons();
-        }, { passive: true });
-
-        function getActiveIdx() {
-            var winH = window.innerHeight;
-            var best = 0, bestScore = -Infinity;
-            SECTIONS.forEach(function(id, i) {
-                var el = document.getElementById(id);
-                if (!el) return;
-                var rect = el.getBoundingClientRect();
-                var midpoint = rect.top + rect.height / 2;
-                var score = -Math.abs(midpoint - winH / 2);
-                if (score > bestScore) { bestScore = score; best = i; }
-            });
-            return best;
-        }
-
-        function updateButtons() {
-            var idx = getActiveIdx();
-            // Up button: disabled only when already at the very top (hero)
-            upBtn.disabled = (window.scrollY < 10);
-            // Down button: disabled when at last section or near bottom of page
-            var nearBottom = (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 80);
-            downBtn.disabled = nearBottom;
-        }
-
-        window.scrollNavStep = function(dir) {
-            if (dir === -1) {
-                // UP → always jump straight to the top / hero section
-                var hero = document.getElementById('section-home-hero');
-                if (hero) {
-                    hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                } else {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-                setTimeout(updateButtons, 700);
-                return;
-            }
-            // DOWN → move to next section, or footer if at last section
-            var idx = getActiveIdx();
-            if (idx < SECTIONS.length - 1) {
-                var next = document.getElementById(SECTIONS[idx + 1]);
-                if (next) next.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-                // Already at last section — scroll to footer
-                var footer = document.querySelector('footer');
-                if (footer) footer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-            setTimeout(updateButtons, 700);
-        };
-
-        // Init
-        setTimeout(updateButtons, 600);
-    })();
-    </script>
-    <script>
-    (function(){
-        var btn = document.getElementById('hamburgerBtn');
-        var drawer = document.getElementById('mobileMenuDrawer');
-        var overlay = document.getElementById('mobileMenuOverlay');
-        if (!btn || !drawer) return;
-        function openMenu(){
-            drawer.classList.add('open');
-            btn.classList.add('open');
-            btn.setAttribute('aria-expanded','true');
-            if(overlay) overlay.classList.add('active');
-            document.body.style.overflow='hidden';
-        }
-        function closeMenu(){
-            drawer.classList.remove('open');
-            btn.classList.remove('open');
-              overlay.classList.remove('open');
-              document.body.style.overflow = '';
-          }
-          if (document.getElementById('drawerCloseBtn')) {
-              document.getElementById('drawerCloseBtn').addEventListener('click', closeMenu);
-          }
-          overlay.addEventListener('click', closeMenu);;
-        if(overlay) overlay.addEventListener('click', closeMenu);
-        drawer.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
-    })();
-    </script>
+    
 </body>
 </html>
 

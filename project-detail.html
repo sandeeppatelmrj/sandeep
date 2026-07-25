@@ -79,30 +79,11 @@
                 <li><a href="Photography.html" class="nav-link"><span>Photography</span></a></li>
                 <li><a href="contact.html" class="nav-link"><span>Contact</span></a></li>
             </ul>
-            <!-- Hamburger Button (mobile only) -->
-            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
-                <span class="hamburger-line line-top"></span>
-                <span class="hamburger-line line-mid"></span>
-                <span class="hamburger-line line-bottom"></span>
-            </button>
+            
         </div>
     </header>
 
-    <!-- Mobile Navigation Drawer -->
-    <div class="mobile-menu-drawer" id="mobileMenuDrawer">
-        <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close menu" style="position: absolute; top: 25px; right: 5vw; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 30px; font-size: 14px; cursor: pointer; z-index: 1000;">&#x2715; Close</button>
-        <nav>
-            <ul class="mobile-nav-links">
-                <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="about.html" class="nav-link">About</a></li>
-                <li><a href="what-i-do.html" class="nav-link">What I Do</a></li>
-                <li><a href="index.html#section-home-selected-work" class="nav-link">Work</a></li>
-                <li><a href="Photography.html" class="nav-link">Photography</a></li>
-                <li><a href="contact.html" class="nav-link">Contact</a></li>
-                </ul>
-        </nav>
-    </div>
-    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+    
 
     <!-- Dynamic Main Root Container -->
     <main id="projectDetailRoot" class="theme-dark">
@@ -144,33 +125,7 @@
     <script src="js/site-loader.js?v=1784940570546"></script>
     <script src="js/projects-data.js?v=1784940570546"></script>
     <script src="js/main.js?v=1784940570546"></script>
-    <script>
-    (function(){
-        var btn = document.getElementById('hamburgerBtn');
-        var drawer = document.getElementById('mobileMenuDrawer');
-        var overlay = document.getElementById('mobileMenuOverlay');
-        if (!btn || !drawer) return;
-        function openMenu(){
-            drawer.classList.add('open');
-            btn.classList.add('open');
-            btn.setAttribute('aria-expanded','true');
-            if(overlay) overlay.classList.add('active');
-            document.body.style.overflow='hidden';
-        }
-        function closeMenu(){
-            drawer.classList.remove('open');
-            btn.classList.remove('open');
-              overlay.classList.remove('open');
-              document.body.style.overflow = '';
-          }
-          if (document.getElementById('drawerCloseBtn')) {
-              document.getElementById('drawerCloseBtn').addEventListener('click', closeMenu);
-          }
-          overlay.addEventListener('click', closeMenu);;
-        if(overlay) overlay.addEventListener('click', closeMenu);
-        drawer.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
-    })();
-    </script>
+    
 </body>
 </html>
 
