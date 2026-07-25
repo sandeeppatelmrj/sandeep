@@ -51,7 +51,7 @@ class CMSStore {
 
     _safeSetItem(key, val) {
         try {
-            localStorage.setItem(key, val);
+            (function(k,v){try{localStorage.setItem(k,v);}catch(e){}})(key, val);
             return true;
         } catch (e) {
             console.error(`Failed to set item for key "${key}" in localStorage:`, e);
@@ -69,7 +69,7 @@ class CMSStore {
     getSiteData() { return this.getLiveData(); }
     getLiveData() {
         try {
-            const raw = localStorage.getItem(CMS_KEYS.LIVE_DATA);
+            const raw = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})(CMS_KEYS.LIVE_DATA);
             if (!raw) return {};
             let parsed = JSON.parse(raw); if (typeof parsed === 'string') parsed = JSON.parse(parsed); return parsed;
         } catch { return {}; }
@@ -85,7 +85,7 @@ class CMSStore {
     /* ── Draft ── */
     getDraft() {
         try {
-            const raw = localStorage.getItem(CMS_KEYS.DRAFT_DATA);
+            const raw = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})(CMS_KEYS.DRAFT_DATA);
             if (!raw) return null;
             let parsed = JSON.parse(raw); if (typeof parsed === 'string') parsed = JSON.parse(parsed); return parsed;
         } catch { return null; }
@@ -97,11 +97,11 @@ class CMSStore {
     }
 
     clearDraft() {
-        localStorage.removeItem(CMS_KEYS.DRAFT_DATA);
+        (function(k){try{localStorage.removeItem(k);}catch(e){}})(CMS_KEYS.DRAFT_DATA);
     }
 
     hasDraft() {
-        return !!localStorage.getItem(CMS_KEYS.DRAFT_DATA);
+        return !!(function(k){try{return localStorage.getItem(k);}catch(e){return null;}})(CMS_KEYS.DRAFT_DATA);
     }
 
     /* ── Publish ── */
@@ -126,7 +126,7 @@ class CMSStore {
 
     getVersions() {
         try {
-            const raw = localStorage.getItem(CMS_KEYS.VERSIONS);
+            const raw = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})(CMS_KEYS.VERSIONS);
             if (!raw) return [];
             let parsed = JSON.parse(raw); if (typeof parsed === 'string') parsed = JSON.parse(parsed); return parsed;
         } catch { return (typeof DEFAULT_PROJECTS !== 'undefined') ? DEFAULT_PROJECTS : []; }
@@ -142,10 +142,10 @@ class CMSStore {
     /* ── Projects ── */
     getProjects() {
         try {
-            const raw = localStorage.getItem(CMS_KEYS.PROJECTS);
+            const raw = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})(CMS_KEYS.PROJECTS);
             if (raw === null) {
                 if (typeof DEFAULT_PROJECTS !== 'undefined') {
-                    try { localStorage.setItem(CMS_KEYS.PROJECTS, JSON.stringify(DEFAULT_PROJECTS)); } catch(e){}
+                    try { (function(k,v){try{localStorage.setItem(k,v);}catch(e){}})(CMS_KEYS.PROJECTS, JSON.stringify(DEFAULT_PROJECTS)); } catch(e){}
                     return DEFAULT_PROJECTS;
                 }
                 return [];
@@ -182,10 +182,10 @@ class CMSStore {
     /* ── Photography ── */
     getPhotography() {
         try {
-            const raw = localStorage.getItem(CMS_KEYS.PHOTOGRAPHY);
+            const raw = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})(CMS_KEYS.PHOTOGRAPHY);
             if (raw === null) {
                 if (typeof DEFAULT_PHOTOGRAPHY !== 'undefined') {
-                    try { localStorage.setItem(CMS_KEYS.PHOTOGRAPHY, JSON.stringify(DEFAULT_PHOTOGRAPHY)); } catch(e){}
+                    try { (function(k,v){try{localStorage.setItem(k,v);}catch(e){}})(CMS_KEYS.PHOTOGRAPHY, JSON.stringify(DEFAULT_PHOTOGRAPHY)); } catch(e){}
                     return DEFAULT_PHOTOGRAPHY;
                 }
                 return [];
@@ -221,7 +221,7 @@ class CMSStore {
     /* ── Global Settings ── */
     getSettings() {
         try {
-            const raw = localStorage.getItem(CMS_KEYS.SETTINGS);
+            const raw = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})(CMS_KEYS.SETTINGS);
             if (!raw) return { ...DEFAULT_SETTINGS };
             return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
         } catch { return { ...DEFAULT_SETTINGS }; }
@@ -238,7 +238,7 @@ class CMSStore {
     /* ── Media Library ── */
     getMedia() {
         try {
-            const raw = localStorage.getItem(CMS_KEYS.MEDIA);
+            const raw = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})(CMS_KEYS.MEDIA);
             if (!raw) return [];
             let parsed = JSON.parse(raw); if (typeof parsed === 'string') parsed = JSON.parse(parsed); return parsed;
         } catch { return (typeof DEFAULT_PROJECTS !== 'undefined') ? DEFAULT_PROJECTS : []; }
@@ -269,7 +269,7 @@ class CMSStore {
     getStorageUsage() {
         let total = 0;
         for (const key of Object.values(CMS_KEYS)) {
-            const val = localStorage.getItem(key);
+            const val = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})(key);
             if (val) total += val.length * 2; // UTF-16
         }
         return {

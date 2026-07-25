@@ -15,11 +15,11 @@
     <!-- Lenis Smooth Scroll -->
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=1784938025617">
+    <link rel="stylesheet" href="css/style.css?v=1784940570546">
 </head>
 <body class="theme-light">
     <!-- Preloader Overlay -->
-    <div id="preloader" class="preloader-overlay">
+    <div id="preloader" class="preloader-overlay" style="display: none !important;">
         <div class="preloader-corner tl"></div>
         <div class="preloader-corner tr"></div>
         <div class="preloader-corner bl"></div>
@@ -91,6 +91,7 @@
 
     <!-- Mobile Navigation Drawer -->
     <div class="mobile-menu-drawer" id="mobileMenuDrawer">
+        <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close menu" style="position: absolute; top: 25px; right: 5vw; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 30px; font-size: 14px; cursor: pointer; z-index: 1000;">&#x2715; Close</button>
         <nav>
             <ul class="mobile-nav-links">
                 <li><a href="index.html" class="nav-link">Home</a></li>
@@ -307,10 +308,10 @@
     </footer>
 
     <!-- Custom Scripts -->
-    <script src="js/cms-core.js?v=1784938025617"></script>
-    <script src="js/site-loader.js?v=1784938025617"></script>
-    <script src="js/projects-data.js?v=1784938025617"></script>
-    <script src="js/main.js?v=1784938025617"></script>
+    <script src="js/cms-core.js?v=1784940570546"></script>
+    <script src="js/site-loader.js?v=1784940570546"></script>
+    <script src="js/projects-data.js?v=1784940570546"></script>
+    <script src="js/main.js?v=1784940570546"></script>
     <script>
     (function(){
         var btn = document.getElementById('hamburgerBtn');
@@ -327,13 +328,13 @@
         function closeMenu(){
             drawer.classList.remove('open');
             btn.classList.remove('open');
-            btn.setAttribute('aria-expanded','false');
-            if(overlay) overlay.classList.remove('active');
-            document.body.style.overflow='';
-        }
-        btn.addEventListener('click', function(){
-            drawer.classList.contains('open') ? closeMenu() : openMenu();
-        });
+              overlay.classList.remove('open');
+              document.body.style.overflow = '';
+          }
+          if (document.getElementById('drawerCloseBtn')) {
+              document.getElementById('drawerCloseBtn').addEventListener('click', closeMenu);
+          }
+          overlay.addEventListener('click', closeMenu);;
         if(overlay) overlay.addEventListener('click', closeMenu);
         drawer.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
     })();

@@ -1699,7 +1699,7 @@ function getAllProjects() {
         return CMS.getProjects();
     }
     try {
-        const raw = localStorage.getItem('sandeep_projects_v26');
+        const raw = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('sandeep_projects_v26');
         if (raw) return JSON.parse(raw);
     } catch(e) {}
     return typeof DEFAULT_PROJECTS !== 'undefined' ? DEFAULT_PROJECTS : [];

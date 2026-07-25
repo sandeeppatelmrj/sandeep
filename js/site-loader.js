@@ -1,12 +1,12 @@
 
 // FORCE CACHE CLEAR FOR LATEST PUBLISH
 (function() {
-    if (!localStorage.getItem('site_version_1784936139044')) {
-        localStorage.removeItem('sandeep_projects_v26');
-        localStorage.removeItem('sandeep_photography_v2');
-        localStorage.removeItem('sandeep_site_data_v2');
-        localStorage.removeItem('sandeep_global_settings');
-        localStorage.setItem('site_version_1784936139044', '1');
+    if (!(function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('site_version_1784936139044')) {
+        (function(k){try{localStorage.removeItem(k);}catch(e){}})('sandeep_projects_v26');
+        (function(k){try{localStorage.removeItem(k);}catch(e){}})('sandeep_photography_v2');
+        (function(k){try{localStorage.removeItem(k);}catch(e){}})('sandeep_site_data_v2');
+        (function(k){try{localStorage.removeItem(k);}catch(e){}})('sandeep_global_settings');
+        (function(k,v){try{localStorage.setItem(k,v);}catch(e){}})('site_version_1784936139044', '1');
         console.log('Cleared old local storage to load new published defaults.');
     }
 })();
@@ -51,7 +51,7 @@ function getSiteData() {
         data = { ...DEFAULT_SITE_DATA, ...CMS.getLiveData() };
     } else {
         try {
-            const raw = localStorage.getItem('sandeep_site_data_v2');
+            const raw = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('sandeep_site_data_v2');
             const parsed = raw ? JSON.parse(raw) : {};
             data = { ...DEFAULT_SITE_DATA, ...parsed };
         } catch {
@@ -63,10 +63,10 @@ function getSiteData() {
     try {
         if (data && data.home_hero_title && (data.home_hero_title.includes("SELECTED") || data.home_hero_title.includes("IMMERSIVE") || data.home_hero_title.includes("CINEMATIC"))) {
             data.home_hero_title = `Designed to<br>mean <span class="rotating-word-wrap"><span class="rotating-word">something</span><span class="rotating-word">depth</span><span class="rotating-word">impact</span><span class="rotating-word">purpose</span><span class="rotating-word">intention</span><span class="rotating-word">meaning</span></span>`;
-            if (localStorage.getItem('sandeep_site_data_v2')) {
-                let ls = JSON.parse(localStorage.getItem('sandeep_site_data_v2'));
+            if ((function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('sandeep_site_data_v2')) {
+                let ls = JSON.parse((function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('sandeep_site_data_v2'));
                 ls.home_hero_title = data.home_hero_title;
-                localStorage.setItem('sandeep_site_data_v2', JSON.stringify(ls));
+                (function(k,v){try{localStorage.setItem(k,v);}catch(e){}})('sandeep_site_data_v2', JSON.stringify(ls));
             }
         }
     } catch (e) {}
@@ -74,16 +74,16 @@ function getSiteData() {
     
     // Force override
     try {
-        if (localStorage.getItem('force_hide_v1') !== 'true') {
+        if ((function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('force_hide_v1') !== 'true') {
             data.home_hero_particles_visibility = 'hide';
             data.global_mouse_effect = 'hide';
-            if (localStorage.getItem('sandeep_site_data_v2')) {
-                let ls = JSON.parse(localStorage.getItem('sandeep_site_data_v2'));
+            if ((function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('sandeep_site_data_v2')) {
+                let ls = JSON.parse((function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('sandeep_site_data_v2'));
                 ls.home_hero_particles_visibility = 'hide';
                 ls.global_mouse_effect = 'hide';
-                localStorage.setItem('sandeep_site_data_v2', JSON.stringify(ls));
+                (function(k,v){try{localStorage.setItem(k,v);}catch(e){}})('sandeep_site_data_v2', JSON.stringify(ls));
             }
-            localStorage.setItem('force_hide_v1', 'true');
+            (function(k,v){try{localStorage.setItem(k,v);}catch(e){}})('force_hide_v1', 'true');
         }
     } catch(e){}
 
@@ -92,11 +92,11 @@ function getSiteData() {
     try {
         if (data.home_light_sound_label && data.home_light_sound_label.includes('06')) {
             data.home_light_sound_label = data.home_light_sound_label.replace('06', '07');
-            if (localStorage.getItem('sandeep_site_data_v2')) {
-                let ls = JSON.parse(localStorage.getItem('sandeep_site_data_v2'));
+            if ((function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('sandeep_site_data_v2')) {
+                let ls = JSON.parse((function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('sandeep_site_data_v2'));
                 if (ls.home_light_sound_label) {
                     ls.home_light_sound_label = ls.home_light_sound_label.replace('06', '07');
-                    localStorage.setItem('sandeep_site_data_v2', JSON.stringify(ls));
+                    (function(k,v){try{localStorage.setItem(k,v);}catch(e){}})('sandeep_site_data_v2', JSON.stringify(ls));
                 }
             }
         }
@@ -108,7 +108,7 @@ function getSiteData() {
 /* ——— Apply global settings (colors, fonts, logo, nav) ——— */
 function applyGlobalSettings() {
     const settings = (function() {
-        try { return JSON.parse(localStorage.getItem('sandeep_global_settings') || '{}'); } catch { return {}; }
+        try { return JSON.parse((function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('sandeep_global_settings') || '{}'); } catch { return {}; }
     })();
     const s = { ...DEFAULT_SETTINGS_FALLBACK, ...settings };
 
@@ -345,7 +345,7 @@ function updateDOMFromCMS() {
 document.addEventListener('DOMContentLoaded', () => {
     // Schema migration: Seed missing default keys to localStorage sandeep_site_data_v2
     try {
-        const raw = localStorage.getItem('sandeep_site_data_v2');
+        const raw = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('sandeep_site_data_v2');
         if (raw) {
             const data = JSON.parse(raw);
             let updated = false;
@@ -363,10 +363,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 updated = true;
             }
             if (updated) {
-                localStorage.setItem('sandeep_site_data_v2', JSON.stringify(data));
+                (function(k,v){try{localStorage.setItem(k,v);}catch(e){}})('sandeep_site_data_v2', JSON.stringify(data));
             }
         } else {
-            localStorage.setItem('sandeep_site_data_v2', JSON.stringify(DEFAULT_SITE_DATA));
+            (function(k,v){try{localStorage.setItem(k,v);}catch(e){}})('sandeep_site_data_v2', JSON.stringify(DEFAULT_SITE_DATA));
         }
     } catch (e) {
         console.error('Error during site data schema migration:', e);
@@ -374,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Migrate default settings if old
     try {
-        const rawSettings = localStorage.getItem('sandeep_global_settings');
+        const rawSettings = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('sandeep_global_settings');
         if (rawSettings) {
             const settings = JSON.parse(rawSettings);
             let updatedSettings = false;
@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updatedSettings = true;
             }
             if (updatedSettings) {
-                localStorage.setItem('sandeep_global_settings', JSON.stringify(settings));
+                (function(k,v){try{localStorage.setItem(k,v);}catch(e){}})('sandeep_global_settings', JSON.stringify(settings));
             }
         }
     } catch (e) {
@@ -595,7 +595,7 @@ function initProjectPaginationAndRelated() {
     } else {
         // Fallback if projects-data is not loaded yet
         try {
-            const raw = localStorage.getItem('sandeep_projects_v24');
+            const raw = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('sandeep_projects_v24');
             projects = raw ? JSON.parse(raw) : [];
         } catch(e) {
             return;

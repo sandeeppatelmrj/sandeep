@@ -2232,18 +2232,21 @@ function init3DTilt() {
     });
 }
 
-function initPreloader() {
+function initPreloader() { setTimeout(() => { const p = document.getElementById(\'preloader\'); if (p) { p.style.display = \'none\'; document.body.style.overflow = \'\'; if (window.lenis) window.lenis.start(); console.log(\'preloaderFailsafe triggered\'); } }, 3000);
+
     const preloader = document.getElementById('preloader');
     if (!preloader) return;
 
     // Only show preloader once per session (on first opening the site)
-    if (sessionStorage.getItem('sandeep_preloader_shown')) {
+    let shown = false;
+    try { shown = (function(k){try{return sessionStorage.getItem(k);}catch(e){return null;}})('sandeep_preloader_shown'); } catch(e) {}
+    if (shown) {
         preloader.style.display = 'none';
         document.body.style.overflow = '';
         if (window.lenis) window.lenis.start();
         return;
     }
-    sessionStorage.setItem('sandeep_preloader_shown', 'true');
+    try { (function(k,v){try{sessionStorage.setItem(k,v);}catch(e){}})('sandeep_preloader_shown', 'true'); } catch(e) {}
 
     // Lock scrolling during preloader
     if (window.lenis) {
@@ -2436,7 +2439,7 @@ function initScrollDotsNav() {
 // Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚Ãƒ¢Ã¢â‚¬¢Ã‚
 function _getCmsVideoMutePref() {
     try {
-        const v = localStorage.getItem('cms_video_muted');
+        const v = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})('cms_video_muted');
         if (v === null) return true; // default: muted
         return v === 'true';
     } catch (e) { return true; }

@@ -28,34 +28,34 @@
     /* ── Session ── */
     function getSession() {
         try {
-            const raw = sessionStorage.getItem(CMS_SESSION_KEY);
+            const raw = (function(k){try{return sessionStorage.getItem(k);}catch(e){return null;}})(CMS_SESSION_KEY);
             if (!raw) return null;
             const s = JSON.parse(raw);
-            if (Date.now() > s.expiresAt) { sessionStorage.removeItem(CMS_SESSION_KEY); return null; }
+            if (Date.now() > s.expiresAt) { (function(k){try{sessionStorage.removeItem(k);}catch(e){}})(CMS_SESSION_KEY); return null; }
             return s;
         } catch { return null; }
     }
 
     function createSession(username) {
         const s = { username, createdAt: Date.now(), expiresAt: Date.now() + SESSION_DURATION };
-        sessionStorage.setItem(CMS_SESSION_KEY, JSON.stringify(s));
+        (function(k,v){try{sessionStorage.setItem(k,v);}catch(e){}})(CMS_SESSION_KEY, JSON.stringify(s));
     }
 
     function destroySession() {
-        sessionStorage.removeItem(CMS_SESSION_KEY);
+        (function(k){try{sessionStorage.removeItem(k);}catch(e){}})(CMS_SESSION_KEY);
     }
 
     /* ── Credentials ── */
     function getStoredCreds() {
         try {
-            const raw = localStorage.getItem(CMS_CRED_KEY);
+            const raw = (function(k){try{return localStorage.getItem(k);}catch(e){return null;}})(CMS_CRED_KEY);
             if (raw) return JSON.parse(raw);
         } catch {}
         return DEFAULT_CREDS;
     }
 
     function saveCreds(username, passwordHash) {
-        localStorage.setItem(CMS_CRED_KEY, JSON.stringify({ username, passwordHash }));
+        (function(k,v){try{localStorage.setItem(k,v);}catch(e){}})(CMS_CRED_KEY, JSON.stringify({ username, passwordHash }));
     }
 
     /* ── Public API ── */
@@ -92,7 +92,7 @@
             saveCreds(newUsername.trim(), newHash);
             // Update session username
             const s = getSession();
-            if (s) { s.username = newUsername.trim(); sessionStorage.setItem(CMS_SESSION_KEY, JSON.stringify(s)); }
+            if (s) { s.username = newUsername.trim(); (function(k,v){try{sessionStorage.setItem(k,v);}catch(e){}})(CMS_SESSION_KEY, JSON.stringify(s)); }
             return { ok: true };
         },
 
