@@ -10,11 +10,15 @@
     const CMS_SESSION_KEY    = 'sandeep_cms_session';
     const SESSION_DURATION   = 8 * 60 * 60 * 1000; // 8 hours
 
-    /* ── Default credentials (change via CMS Settings panel) ── */
+    /* ── Default credentials ──
+       IMPORTANT: Log in once with the new default password given to you separately,
+       then IMMEDIATELY go to CMS → Change ID / Password and set your own.
+       The password is intentionally NOT written anywhere in this file — this file is
+       public (anyone can view it in the browser), so the old version leaking the
+       password here was a security hole. ── */
     const DEFAULT_CREDS = {
         username:     'admin',
-        passwordHash: '8bbbad3e968a0e24282107213313a8313975a0a1030bfefb35aa0ddf17edad69'
-        // Default password: sandeep@2024
+        passwordHash: '26299c5be207914f39248144b8e617ec7ea1d98f1ea63f47f78bb74398295499'
     };
 
     /* ── SHA-256 via SubtleCrypto ── */

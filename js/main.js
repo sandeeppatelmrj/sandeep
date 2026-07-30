@@ -964,8 +964,29 @@ function initWizard() {
         data[steps[step].name] = inputEl.value;
         if (step < steps.length-1) { step++; render(); }
         else {
+            // Validate required fields before "sending"
+            if (!data.name || !data.email) {
+                questionEl.textContent = 'Please fill in at least your name and email before submitting.';
+                return;
+            }
+
+            // Build and trigger a mailto so the enquiry actually reaches the inbox
+            const toEmail = 'design.sandeeppatel@gmail.com';
+            const subject = `New Project Enquiry from ${data.name}`;
+            const bodyLines = [
+                `Name: ${data.name}`,
+                `Email: ${data.email}`,
+                `Service: ${data.service || '-'}`,
+                `Project Details: ${data.details || '-'}`,
+                `Budget: ${data.budget || '-'}`
+            ];
+            const mailtoUrl = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
+
+            // Open the user's email client with everything pre-filled
+            window.location.href = mailtoUrl;
+
             indicator.textContent  = 'Success ✨';
-            questionEl.textContent = "Thank you — let's create something great!";
+            questionEl.textContent = "Thank you — your email app should now open with your message ready to send. If it doesn't open, please email us directly at design.sandeeppatel@gmail.com.";
             inputEl.style.display = prevBtn.style.display = nextBtn.style.display = 'none';
         }
     });

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="assets/sandeep.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-cms-key="seo_home_title">Sandeep Patel | Immersive Graphic & AI Visual Designer</title>
     <meta name="description" data-cms-key="seo_home_desc" content="Sandeep Patel is a Graphic Designer, AI Visual Designer, and Museum Experience Designer crafting immersive projection mapping and visual stories.">
@@ -235,7 +236,7 @@
                     <div class="hero-3d-avatar" style="width: 100%; height: 450px; position: relative; margin-bottom: 2rem; pointer-events: auto;">
                         <model-viewer 
                             id="heroAvatarModel"
-                            src="assets/tripo_convert.glb" 
+                            src="assets/Sandeep.glb" 
                             alt="Sandeep Patel Avatar" 
                             camera-controls
                             disable-zoom
@@ -249,11 +250,20 @@
                             style="width: 100%; height: 100%; --poster-color: transparent;">
 
                         </model-viewer>
+                        <img id="heroAvatarFallback" src="assets/sandeep.png" alt="Sandeep Patel"
+                             style="display:none; width: 100%; height: 100%; object-fit: contain; border-radius: 4px;">
                         <script>
                             document.addEventListener('DOMContentLoaded', () => {
                                 const mv = document.getElementById('heroAvatarModel');
+                                const fallbackImg = document.getElementById('heroAvatarFallback');
                                 const cont = document.querySelector('.hero-3d-avatar');
                                 if(mv && cont) {
+                                    // If the 3D model file is missing or fails to load, swap to a static image
+                                    // instead of leaving a blank/broken hero section.
+                                    mv.addEventListener('error', () => {
+                                        mv.style.display = 'none';
+                                        if (fallbackImg) fallbackImg.style.display = 'block';
+                                    });
                                     cont.addEventListener('mousemove', (e) => {
                                         const rect = cont.getBoundingClientRect();
                                         const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));

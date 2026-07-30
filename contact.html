@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="assets/sandeep.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact | Let's Collaborate | Sandeep Patel</title>
     <meta name="description" content="Reach out to Sandeep Patel for immersive museum exhibition designs, projection mapping, or AI visual concepts.">
@@ -88,7 +89,14 @@
 
     <!-- Main Content -->
     <main>
-        
+
+        <!-- Back Button -->
+        <div class="tr-container" style="padding-top: 2rem;">
+            <a href="javascript:void(0)" class="page-back-link" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href='index.html'; }">
+                <span aria-hidden="true">&larr;</span> Back
+            </a>
+        </div>
+
         <!-- Row 1: Contact Intro (Light Theme) -->
         <div class="grid-row grid-row-top theme-light" style="padding: 6rem 0;">
             <div class="corner-plus tl"></div>
@@ -118,7 +126,7 @@
                 <div class="contact-info col-border-right gsap-fade-up" style="padding-right: 4rem;">
                     <span class="contact-label font-mono">BUSINESS ENQUIRY</span>
                     <a href="mailto:design.sandeeppatel@gmail.com" class="contact-link" data-cms-key="contact_email">design.sandeeppatel@gmail.com</a>
-                    <a href="tel:+918565923951" class="contact-link" data-cms-key="contact_phone">+91 8565923951</a>
+                    <a href="tel:+918565923951" class="contact-link contact-phone" data-cms-key="contact_phone">+91 8565923951</a>
                     
                     <div class="contact-buttons" style="margin-top: 2rem; margin-bottom: 2rem;">
                         <a href="mailto:design.sandeeppatel@gmail.com" class="btn btn-primary" data-cms-key="contact_email">Schedule a Call</a>
