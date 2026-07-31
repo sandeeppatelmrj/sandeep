@@ -2061,19 +2061,13 @@ footer {
 
 /* Responsive Overrides */
 @media (max-width: 1024px) {
-    .hero-inner-container {
-        padding: 0 2rem;
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
     #section-home-hero {
         height: auto;
         min-height: 100vh;
         padding: 8rem 0 4rem 0;
     }
     .hero-inner-container {
+        padding: 0 2rem;
         grid-template-columns: 1fr;
         gap: 4rem;
         height: auto;
@@ -2093,7 +2087,7 @@ footer {
         display: block;
     }
     .hero-title {
-        font-size: clamp(1.8rem, 7.5vw, 3.2rem);
+        font-size: clamp(1.8rem, 6vw, 3.6rem);
         margin-bottom: 2rem;
     }
     .rotating-word {
@@ -2103,7 +2097,13 @@ footer {
     .hero-scroll-indicator {
         display: none;
     }
-    
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: clamp(1.8rem, 7.5vw, 3.2rem);
+    }
+
     /* Mobile Navigation Header Layout */
     .nav-wrapper {
         flex-direction: row !important;
